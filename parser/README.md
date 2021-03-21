@@ -18,7 +18,7 @@
 
 All existing tests test only input that is supposed to be valid
 
-## Additional Tests: `parser/`parser_add_test.go` <a name="additional"></a>
+## Additional Tests: `parser_add_test.go` <a name="additional"></a>
 
 The added tests only test certain cases that the parser right now perceives as valid, but shouldn't be valid in my view.
 
