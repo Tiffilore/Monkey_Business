@@ -52,6 +52,7 @@ func TestFunctionLiteralsInvalidParameterOutsider(t *testing.T) {
 func TestFunctionLiteralsInvalidParametersCrowd(t *testing.T) {
 
 	input := "fn(" + strings.Join(invalidParams, ",") + "){} @"
+	input = strings.ReplaceAll(input, ",)", "") // we remove ")" as parameter
 	errors := parseErrors(input)
 	if len(errors) <= 1 {
 		t.Errorf("Parser failed to detect a lot of errors in: " + input)
@@ -92,8 +93,8 @@ var invalidParams = []string{
 	";",      //SEMICOLON
 	"{",      //LPAREN
 	"}",      //RPAREN
-	"(",      //LBRACE - works already
-	")",      //RBRACE
+	"(",      //LBRACE
+	")",      //RBRACE	- works already
 	"fn",     //FUNCTION,
 	"let",    //LET,
 	"true",   //TRUE,
