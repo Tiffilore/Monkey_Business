@@ -7,8 +7,10 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 
 command | meaning
 --------|---------
-`:quit` | quit the secction
-`:clear`| new empty environment
-`:set prompt <prompt>`| sets the string to be used as the prompt
+`:q[uit]` | quit the session
+`:clear`| clear the environment
+`:set prompt <prompt>`| set prompt string to `<prompt>`
+`:help <cmd>`| prints usage for `<cmd>`
+`:help`| prints all cmds with usage
 
 
