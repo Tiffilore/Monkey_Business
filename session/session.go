@@ -9,8 +9,11 @@ import (
 	"monkey/object"
 	"monkey/parser"
 	"os"
+	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 func Start(in io.Reader, out io.Writer) {
@@ -19,7 +22,7 @@ func Start(in io.Reader, out io.Writer) {
 
 	for {
 
-		fmt.Fprint(out, s.PROMPT) // Fprint instead of Fprintf due to SA1006
+		fmt.Fprint(out, s.prompt) // Fprint instead of Fprintf due to SA1006
 
 		scanned := s.scanner.Scan()
 		if !scanned {
@@ -33,7 +36,7 @@ func Start(in io.Reader, out io.Writer) {
 }
 
 type Session struct {
-	PROMPT      string
+	prompt      string
 	environment *object.Environment
 	scanner     *bufio.Scanner
 	out         io.Writer
@@ -43,11 +46,13 @@ type Session struct {
 	// --> maybe not needed, maybe we should put the Stmts programs consist of into historyStmts
 }
 
+const prompt_default = ">> "
+
 // NewSession creates a new Session.
 func NewSession(in io.Reader, out io.Writer) *Session {
 
 	s := &Session{
-		PROMPT:      ">> ",
+		prompt:      prompt_default,
 		environment: object.NewEnvironment(),
 		scanner:     bufio.NewScanner(in),
 		out:         out,
@@ -60,9 +65,12 @@ func NewSession(in io.Reader, out io.Writer) *Session {
 
 type command struct {
 	name     string
-	usage    string
 	single   func()
 	with_arg func(string) // initialized here --> end msg about potential cycle
+	usage    []struct {
+		args string
+		msg  string
+	}
 }
 
 var commands = make(map[string]command)
@@ -72,7 +80,12 @@ func (s *Session) init() { // to avoid cycle
 	c_quit := &command{
 		name:   "q[uit]",
 		single: s.exec_quit,
-		usage:  "quit the session",
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~", "quit the session"},
+		},
 	}
 	commands["quit"] = *c_quit
 	commands["q"] = commands["quit"]
@@ -80,22 +93,63 @@ func (s *Session) init() { // to avoid cycle
 	c_clear := &command{
 		name:   "clear",
 		single: s.exec_clear,
-		usage:  "clear the environment",
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~", "clear the environment"},
+		},
 	}
 	commands["clear"] = *c_clear
+
+	c_list := &command{
+		name:   "l[ist]",
+		single: s.exec_list,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~", "list all identifiers in the environment alphabetically \n\t with types and values"},
+		},
+	}
+	commands["list"] = *c_list
+	commands["l"] = commands["list"]
 
 	c_set := &command{
 		name:     "set",
 		with_arg: s.exec_set,
-		usage:    "~ prompt <prompt> \t set prompt string to <prompt>",
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ prompt <prompt>", "set prompt string to <prompt>"},
+		},
 	}
 	commands["set"] = *c_set
+
+	c_reset := &command{
+		name:     "reset",
+		with_arg: s.exec_reset,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ prompt", "set prompt to default"},
+		},
+	}
+	commands["reset"] = *c_reset
 
 	c_help := &command{
 		name:     "h[elp]",
 		single:   s.exec_help_all,
 		with_arg: s.exec_help,
-		usage:    "list all commands with usage \n\t ~ <cmd> \t usage command <cmd>",
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~", "list all commands with usage"},
+			{"~ <cmd>", "print usage command <cmd>"},
+		},
 	}
 
 	commands["help"] = *c_help
@@ -138,10 +192,62 @@ func (s *Session) exec_clear() {
 	s.environment = object.NewEnvironment()
 }
 
+func (s *Session) exec_list() {
+	store := s.environment.Store()
+
+	//sort alphabetically
+	keys := make([]string, 0, len(store))
+	for k := range store {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	t := table.NewWriter()
+	t.SetOutputMirror(s.out)
+	t.AppendHeader(table.Row{"Identifier", "Type", "Value"})
+	t.AppendSeparator()
+
+	for _, key := range keys {
+		object := store[key]
+		nodetype := reflect.TypeOf(object)
+		var value string
+		if object == nil {
+			value = "nil"
+		} else {
+
+			value = object.Inspect() //strings.ReplaceAll(object.Inspect(), "\n", "\n\t  ")
+		}
+		t.AppendRow([]interface{}{key, nodetype, value})
+	}
+	//t.AppendFooter(table.Row{"", "", "Total", 10000})
+	//t.SetStyle(table.StyleColoredBright)
+	t.Render()
+}
+
 func (s *Session) exec_help(cmd string) {
 
 	if command, ok := commands[cmd]; ok {
-		fmt.Fprintln(s.out, "usage", command.name+":\t", command.usage)
+
+		//print
+		t := table.NewWriter()
+		t.SetOutputMirror(s.out)
+
+		usage := command.usage
+		if len(usage) == 0 {
+			t.AppendRow([]interface{}{command.name, "no usage message provided"})
+		} else {
+			for i, msg := range usage {
+				if i == 0 {
+					t.AppendRow([]interface{}{command.name, msg.args, msg.msg})
+				} else {
+					t.AppendRow([]interface{}{"", msg.args, msg.msg})
+				}
+			}
+
+		}
+		t.Render()
+
 		return
 	}
 
@@ -169,9 +275,39 @@ func (s *Session) exec_help_all() {
 	sort.Strings(names)
 
 	//print
+	t := table.NewWriter()
+	t.SetOutputMirror(s.out)
+	t.AppendHeader(table.Row{"Name", "", "Usage"})
+	t.AppendSeparator()
+
 	for _, name := range names {
 		command := set[name]
-		fmt.Fprintln(s.out, name, "\t", command.usage)
+		usage := command.usage
+		if len(usage) == 0 {
+			t.AppendRow([]interface{}{name, "no usage message provided"})
+		} else {
+			for i, msg := range usage {
+				if i == 0 {
+					t.AppendRow([]interface{}{name, msg.args, msg.msg})
+				} else {
+					t.AppendRow([]interface{}{"", msg.args, msg.msg})
+				}
+			}
+
+		}
+	}
+	t.Render()
+}
+
+func (s *Session) exec_reset(input string) {
+	// todo: datastructure for settings
+	// "prompt" und die, die folgen, sind Steuer[ungs]zeichen
+
+	switch input {
+	case "prompt":
+		s.prompt = prompt_default
+	default:
+		s.exec_help("reset")
 	}
 }
 
@@ -180,7 +316,7 @@ func (s *Session) exec_set(input string) {
 	slice := strings.SplitN(input, " ", 2)
 	if len(slice) == 2 {
 		if slice[0] == "prompt" {
-			s.PROMPT = slice[1] + " "
+			s.prompt = slice[1] + " "
 			return
 		}
 	}

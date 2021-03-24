@@ -5,12 +5,13 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 
 ## Initial Command Set
 
-command | meaning
---------|---------
-`:q[uit]` | quit the session
-`:clear`| clear the environment
-`:set prompt <prompt>`| set prompt string to `<prompt>`
-`:help <cmd>`| prints usage for `<cmd>`
-`:help`| prints all cmds with usage
-
-
+| NAME   |                   | USAGE                                                   |
+|--------|-------------------|---------------------------------------------------------|
+| clear  | ~                 | clear the environment                                   |
+| h[elp] | ~                 | list all commands with usage                            |
+|        | ~ <cmd>           | print usage command <cmd>                               |
+| l[ist] | ~                 | list all identifiers in the environment alphabetically  |
+|        |                   |      with types and values                              |
+| q[uit] | ~                 | quit the session                                        |
+| reset  | ~ prompt          | set prompt to default                                   |
+| set    | ~ prompt <prompt> | set prompt string to <prompt>                           |

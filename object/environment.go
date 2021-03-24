@@ -16,6 +16,10 @@ type Environment struct {
 	outer *Environment
 }
 
+func (e *Environment) Store() map[string]Object {
+	return e.store
+}
+
 func (e *Environment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok && e.outer != nil {
