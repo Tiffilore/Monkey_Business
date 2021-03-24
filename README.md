@@ -19,9 +19,11 @@
 ### `t[ype]`,  `(set|unset|reset) logtype`, `e[val]`
 - eval is default
     - if the user input is not prefixed by `:`, `input` is equivalent to `:eval input`
+
 ![Demo3](demos/demo3.gif)
 
-### TODO: Multiline support: `(set|unset|reset) paste`, `:{...:}`
+### Multiline support: `paste`, `(set|unset|reset) paste`
+
 TODO: ![Demo4](demos/demo4.gif)
 
 

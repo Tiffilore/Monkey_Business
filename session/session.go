@@ -41,6 +41,8 @@ type Session struct {
 	prompt      string
 	environment *object.Environment
 	logtype     bool
+	paste       bool
+
 	//historyExpr		[]ast.Expression
 	//historyStmsts		[]ast.Statement
 	//historyPrograms	[]ast.Programs
@@ -49,6 +51,7 @@ type Session struct {
 
 const prompt_default = ">> "
 const logtype_default = false
+const paste_default = false
 
 // NewSession creates a new Session.
 func NewSession(in io.Reader, out io.Writer) *Session {
@@ -59,6 +62,7 @@ func NewSession(in io.Reader, out io.Writer) *Session {
 		prompt:      prompt_default,
 		environment: object.NewEnvironment(),
 		logtype:     logtype_default,
+		paste:       paste_default,
 	}
 
 	s.init()
@@ -118,6 +122,18 @@ func (s *Session) init() { // to avoid cycle
 	commands["list"] = *c_list
 	commands["l"] = commands["list"]
 
+	c_paste := &command{
+		name:     "paste",
+		with_arg: s.exec_paste,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ <input>", "evaluate multiline <input> (terminated by blank line)"},
+		},
+	}
+	commands["paste"] = *c_paste
+
 	c_set := &command{
 		name:     "set",
 		with_arg: s.exec_set,
@@ -126,6 +142,7 @@ func (s *Session) init() { // to avoid cycle
 			msg  string
 		}{
 			{"~ logtype", "when eval, additionally output objecttype"},
+			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
 		},
 	}
@@ -139,6 +156,7 @@ func (s *Session) init() { // to avoid cycle
 			msg  string
 		}{
 			{"~ logtype", "set logtype to default"},
+			{"~ paste", "set multiline support to default"},
 			{"~ prompt", "set prompt to default"},
 		},
 	}
@@ -152,6 +170,7 @@ func (s *Session) init() { // to avoid cycle
 			msg  string
 		}{
 			{"~ logtype", "when eval, don't additionally output objecttype"},
+			{"~ paste", "disable multiline support"},
 		},
 	}
 	commands["unset"] = *c_unset
@@ -349,16 +368,20 @@ func (s *Session) exec_reset(input string) {
 		s.prompt = prompt_default
 	case "logtype":
 		s.logtype = logtype_default
+	case "paste":
+		s.paste = paste_default
 	default:
 		s.exec_help("reset")
 	}
 }
 
-func (s *Session) exec_unset(input string) {
+func (s *Session) exec_unset(setting string) {
 
-	switch input {
+	switch setting {
 	case "logtype":
 		s.logtype = false
+	case "paste":
+		s.paste = false
 	default:
 		s.exec_help("reset")
 	}
@@ -370,8 +393,12 @@ func (s *Session) exec_set(input string) {
 	//	{"~ logtype", "when eval, additionally output objecttype "},
 	setting := slice[0]
 	if len(slice) == 1 {
-		if setting == "logtype" {
+		switch setting {
+		case "logtype":
 			s.logtype = true
+			return
+		case "paste":
+			s.paste = true
 			return
 		}
 	}
@@ -385,6 +412,15 @@ func (s *Session) exec_set(input string) {
 }
 
 func (s *Session) exec_type(line string) {
+	if s.paste {
+		s.helper_paste(line, s.det_type)
+		return
+	}
+	s.det_type(line)
+}
+
+func (s *Session) det_type(line string) {
+
 	l := lexer.New(line)
 	p := parser.New(l)
 
@@ -400,7 +436,36 @@ func (s *Session) exec_type(line string) {
 	fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
 
 }
+
+func (s *Session) helper_paste(input string, f func(string)) {
+	for {
+		scanned := s.scanner.Scan()
+		if !scanned {
+			return
+		}
+		line := s.scanner.Text()
+		if line == "" {
+			f(input)
+			return
+		}
+		input += " " + line
+	}
+}
+
+func (s *Session) exec_paste(input string) {
+	s.helper_paste(input, s.eval)
+}
+
 func (s *Session) exec_eval(line string) {
+	if s.paste {
+		s.helper_paste(line, s.eval)
+		return
+	}
+	s.eval(line)
+}
+
+func (s *Session) eval(line string) {
+
 	l := lexer.New(line)
 	p := parser.New(l)
 
