@@ -8,10 +8,15 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 | NAME   |                   | USAGE                                                   |
 |--------|-------------------|---------------------------------------------------------|
 | clear  | ~                 | clear the environment                                   |
+| e[val] | ~ <input>         | print out value of object <input> evaluates to          |
 | h[elp] | ~                 | list all commands with usage                            |
 |        | ~ <cmd>           | print usage command <cmd>                               |
 | l[ist] | ~                 | list all identifiers in the environment alphabetically  |
 |        |                   |      with types and values                              |
 | q[uit] | ~                 | quit the session                                        |
-| reset  | ~ prompt          | set prompt to default                                   |
-| set    | ~ prompt <prompt> | set prompt string to <prompt>                           |
+| reset  | ~ logtype         | set logtype to default                                  |
+|        | ~ prompt          | set prompt to default                                   |
+| set    | ~ logtype         | when eval, additionally output objecttype               |
+|        | ~ prompt `<prompt>` | set prompt string to `<prompt> `            |              |
+| t[ype] | ~ `<input>`         | show objecttype `<input>` evaluates to                    |
+| unset  | ~ logtype         | when eval, don't additionally output objecttype         |

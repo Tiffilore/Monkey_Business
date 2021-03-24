@@ -36,10 +36,11 @@ func Start(in io.Reader, out io.Writer) {
 }
 
 type Session struct {
-	prompt      string
-	environment *object.Environment
 	scanner     *bufio.Scanner
 	out         io.Writer
+	prompt      string
+	environment *object.Environment
+	logtype     bool
 	//historyExpr		[]ast.Expression
 	//historyStmsts		[]ast.Statement
 	//historyPrograms	[]ast.Programs
@@ -47,15 +48,17 @@ type Session struct {
 }
 
 const prompt_default = ">> "
+const logtype_default = false
 
 // NewSession creates a new Session.
 func NewSession(in io.Reader, out io.Writer) *Session {
 
 	s := &Session{
-		prompt:      prompt_default,
-		environment: object.NewEnvironment(),
 		scanner:     bufio.NewScanner(in),
 		out:         out,
+		prompt:      prompt_default,
+		environment: object.NewEnvironment(),
+		logtype:     logtype_default,
 	}
 
 	s.init()
@@ -122,6 +125,7 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
+			{"~ logtype", "when eval, additionally output objecttype"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
 		},
 	}
@@ -134,10 +138,23 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
+			{"~ logtype", "set logtype to default"},
 			{"~ prompt", "set prompt to default"},
 		},
 	}
 	commands["reset"] = *c_reset
+
+	c_unset := &command{
+		name:     "unset",
+		with_arg: s.exec_unset,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ logtype", "when eval, don't additionally output objecttype"},
+		},
+	}
+	commands["unset"] = *c_unset
 
 	c_help := &command{
 		name:     "h[elp]",
@@ -151,15 +168,39 @@ func (s *Session) init() { // to avoid cycle
 			{"~ <cmd>", "print usage command <cmd>"},
 		},
 	}
-
 	commands["help"] = *c_help
 	commands["h"] = commands["help"]
 
+	c_type := &command{
+		name:     "t[ype]",
+		with_arg: s.exec_type,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ <input>", "show objecttype <input> evaluates to"},
+		},
+	}
+	commands["type"] = *c_type
+	commands["t"] = commands["type"]
+
+	c_eval := &command{
+		name:     "e[val]",
+		with_arg: s.exec_eval,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ <input>", "print out value of object <input> evaluates to"},
+		},
+	}
+	commands["eval"] = *c_eval
+	commands["e"] = commands["eval"]
 }
 
 func (s *Session) exec_cmd(line string) {
 	if !strings.HasPrefix(line, ":") {
-		s.exec_default(line)
+		s.exec_eval(line) //default action
 		return
 	}
 	line = strings.TrimPrefix(line, ":")
@@ -306,6 +347,18 @@ func (s *Session) exec_reset(input string) {
 	switch input {
 	case "prompt":
 		s.prompt = prompt_default
+	case "logtype":
+		s.logtype = logtype_default
+	default:
+		s.exec_help("reset")
+	}
+}
+
+func (s *Session) exec_unset(input string) {
+
+	switch input {
+	case "logtype":
+		s.logtype = false
 	default:
 		s.exec_help("reset")
 	}
@@ -314,8 +367,16 @@ func (s *Session) exec_reset(input string) {
 func (s *Session) exec_set(input string) {
 	// todo: datastructure for settings
 	slice := strings.SplitN(input, " ", 2)
+	//	{"~ logtype", "when eval, additionally output objecttype "},
+	setting := slice[0]
+	if len(slice) == 1 {
+		if setting == "logtype" {
+			s.logtype = true
+			return
+		}
+	}
 	if len(slice) == 2 {
-		if slice[0] == "prompt" {
+		if setting == "prompt" {
 			s.prompt = slice[1] + " "
 			return
 		}
@@ -323,17 +384,38 @@ func (s *Session) exec_set(input string) {
 	s.exec_help("set")
 }
 
-func (s *Session) exec_default(line string) {
+func (s *Session) exec_type(line string) {
 	l := lexer.New(line)
 	p := parser.New(l)
 
 	program := p.ParseProgram()
+
+	//visualizer.Ast2pdf(program, "show")
 	if len(p.Errors()) != 0 {
 		printParserErrors(s.out, p.Errors())
 		return
 	}
 
 	evaluated := evaluator.Eval(program, s.environment)
+	fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
+
+}
+func (s *Session) exec_eval(line string) {
+	l := lexer.New(line)
+	p := parser.New(l)
+
+	program := p.ParseProgram()
+
+	//visualizer.Ast2pdf(program, "show")
+	if len(p.Errors()) != 0 {
+		printParserErrors(s.out, p.Errors())
+		return
+	}
+
+	evaluated := evaluator.Eval(program, s.environment)
+	if s.logtype {
+		fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
+	}
 	if evaluated != nil {
 		fmt.Fprintln(s.out, evaluated.Inspect())
 	}

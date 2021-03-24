@@ -7,25 +7,22 @@
 - new interactive environment in directory `session`
     - inspo from [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-commands) and [gore](https://github.com/motemen/gore) 
 
-| NAME   |                   | USAGE                                                   |
-|--------|-------------------|---------------------------------------------------------|
-| clear  | ~                 | clear the environment                                   |
-| h[elp] | ~                 | list all commands with usage                            |
-|        | ~ <cmd>           | print usage command <cmd>                               |
-| l[ist] | ~                 | list all identifiers in the environment alphabetically  |
-|        |                   |      with types and values                              |
-| q[uit] | ~                 | quit the session                                        |
-| reset  | ~ prompt          | set prompt to default                                   |
-| set    | ~ prompt <prompt> | set prompt string to <prompt>                           |
 
-### `clear`, `h[elp]`, `q[uit]`, `set prompt`
+
+
+### `clear`, `h[elp]`, `q[uit]`, `set prompt <prompt>`
 ![Demo1](demos/demo1.gif)
 
 ### `reset prompt`, `list` 
 ![Demo2](demos/demo2.gif)
 
-### TODO: Multiline support: `set|unset|reset paste`, `:{...:}`
-![Demo3](demos/demo3.gif)
+### `t[ype]`,  `(set|unset|reset) logtype`, `e[val]`
+- eval is default
+    - if the user input is not prefixed by `:`, `input` is equivalent to `:eval input`
+TODO: ![Demo3](demos/demo3.gif)
+
+### TODO: Multiline support: `(set|unset|reset) paste`, `:{...:}`
+TODO: ![Demo4](demos/demo4.gif)
 
 
 ## Step 1: Writing Tests for Bugs in Parser and Evaluator
