@@ -2,7 +2,7 @@
 
  _to be continued..._
 
-## Step 2: Implement a Small Initial Instruction Set for the interactive environment
+## Step 2: Implement a small initial instruction set for the interactive environment
 
 - new interactive environment in directory `session`
     - inspo from [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-commands) and [gore](https://github.com/motemen/gore) 
@@ -28,6 +28,9 @@
 | unset    | ~ logtype         | when eval, don't additionally output objecttype          |
 |          | ~ paste           | disable multiline support                                |
 
+
+- if `input` is not prefixed by `:<cmd>`, it is equivalent to `:eval input`
+
 ### `clear`, `h[elp]`, `q[uit]`, `set prompt <prompt>`
 ![Demo1](demos/demo1.gif)
 
@@ -44,7 +47,7 @@
 
 ![Demo4](demos/demo4.gif)
 
-## Step 1: Writing Tests for Bugs in Parser and Evaluator
+## Step 1: Write Tests for bugs in parser and evaluator
 
 - `parser/parser_add_test.go`
 - `evaluator/evaluator_add_test.go`
