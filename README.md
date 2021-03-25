@@ -22,10 +22,9 @@
 
 ![Demo3](demos/demo3.gif)
 
-### Multiline support: `paste`, `(set|unset|reset) paste`
+### Multiline support: `paste`, `(set|unset|reset) paste` and `settings`
 
 TODO: ![Demo4](demos/demo4.gif)
-
 
 ## Step 1: Writing Tests for Bugs in Parser and Evaluator
 
