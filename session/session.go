@@ -30,7 +30,6 @@ func Start(in io.Reader, out io.Writer) {
 		}
 
 		line := s.scanner.Text()
-
 		s.exec_cmd(line)
 	}
 }
@@ -66,7 +65,6 @@ func NewSession(in io.Reader, out io.Writer) *Session {
 	}
 
 	s.init()
-
 	return s
 }
 
@@ -96,6 +94,18 @@ func (s *Session) init() { // to avoid cycle
 	}
 	commands["quit"] = *c_quit
 	commands["q"] = commands["quit"]
+
+	c_settings := &command{
+		name:   "settings",
+		single: s.exec_settings,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~", "list all settings with their current values and defaults"},
+		},
+	}
+	commands["settings"] = *c_settings
 
 	c_clear := &command{
 		name:   "clear",
@@ -359,6 +369,28 @@ func (s *Session) exec_help_all() {
 	t.Render()
 }
 
+/*
+	settings:
+		(set|reset|[unset])
+		set bool vs set value
+
+*/
+
+func (s *Session) exec_settings() {
+
+	t := table.NewWriter()
+	t.SetOutputMirror(s.out)
+	t.AppendHeader(table.Row{"setting", "current value", "default value"})
+	t.AppendSeparator()
+
+	t.AppendRow([]interface{}{"logtype", s.logtype, logtype_default})
+	t.AppendRow([]interface{}{"paste", s.paste, paste_default})
+	t.AppendRow([]interface{}{"prompt", s.prompt, prompt_default})
+
+	//t.SetStyle(table.StyleColoredBright)
+	t.Render()
+}
+
 func (s *Session) exec_reset(input string) {
 	// todo: datastructure for settings
 	// "prompt" und die, die folgen, sind Steuer[ungs]zeichen
@@ -411,6 +443,25 @@ func (s *Session) exec_set(input string) {
 	s.exec_help("set")
 }
 
+func (s *Session) exec_paste(input string) {
+	s.helper_paste(input, s.eval)
+}
+
+func (s *Session) helper_paste(input string, f func(string)) {
+	for {
+		scanned := s.scanner.Scan()
+		if !scanned {
+			return
+		}
+		line := s.scanner.Text()
+		if line == "" {
+			f(input)
+			return
+		}
+		input += " " + line
+	}
+}
+
 func (s *Session) exec_type(line string) {
 	if s.paste {
 		s.helper_paste(line, s.det_type)
@@ -434,26 +485,6 @@ func (s *Session) det_type(line string) {
 
 	evaluated := evaluator.Eval(program, s.environment)
 	fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
-
-}
-
-func (s *Session) helper_paste(input string, f func(string)) {
-	for {
-		scanned := s.scanner.Scan()
-		if !scanned {
-			return
-		}
-		line := s.scanner.Text()
-		if line == "" {
-			f(input)
-			return
-		}
-		input += " " + line
-	}
-}
-
-func (s *Session) exec_paste(input string) {
-	s.helper_paste(input, s.eval)
 }
 
 func (s *Session) exec_eval(line string) {
