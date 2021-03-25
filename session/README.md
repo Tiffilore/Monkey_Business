@@ -25,3 +25,20 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 | t[ype]   | ~ `<input>`         | show objecttype `<input>` evaluates to                     |
 | unset    | ~ logtype         | when eval, don't additionally output objecttype          |
 |          | ~ paste           | disable multiline support                                |
+
+
+### `clear`, `h[elp]`, `q[uit]`, `set prompt <prompt>`
+![Demo1](../demos/demo1.gif)
+
+### `reset prompt`, `list` 
+![Demo2](../demos/demo2.gif)
+
+### `t[ype]`,  `(set|unset|reset) logtype`, `e[val]`
+- eval is default
+    - if the user input is not prefixed by `:`, `input` is equivalent to `:eval input`
+
+![Demo3](../demos/demo3.gif)
+
+### Multiline support: `paste`, `(set|unset|reset) paste` and `settings`
+
+![Demo4](../demos/demo4.gif)
