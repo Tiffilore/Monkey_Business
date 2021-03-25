@@ -9,12 +9,16 @@ import (
 
 func TestBlockStatementsParseError(t *testing.T) {
 
-	tests := []string{"if(1){1", "fn(x,y){x+y"}
+	tests := []string{
+		"if(1){1",
+		"fn(x,y){x+y",
+		"let max = fn(x,y){if(x>y){x}else{y",
+	}
 
 	for _, tt := range tests {
 		errors := parseErrors(tt)
 		if len(errors) == 0 {
-			t.Errorf("Parser failed to detect missing right brace in: " + tt)
+			t.Errorf("Parser failed to detect missing right brace(s) in: " + tt)
 			continue
 		}
 

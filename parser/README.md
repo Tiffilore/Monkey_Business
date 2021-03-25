@@ -28,6 +28,7 @@ The added tests only test certain cases that the parser right now perceives as v
 
     - as part of an if expression: `if(1){1`
     - as part of a function literal: `fn(x,y){x+y`
+    - as part of both: `let max = fn(x,y){if(x>y){x}else{y`
 
 ### `TestFunctionLiteralsInvalidParameterSingle` <a name="test2"></a>
 
@@ -59,6 +60,8 @@ fn()){}     // RBRACE
 - first tests whether there is more than one error reported ( which is not the case right now, but should be)
 - then tests whether the last error is the complaint about the illegal end statement
    - thereby wants to test whether the parser parses the input until the end
+
+
 
 ## Asts without the Token fields for some of the test data <a name="asts_without"></a>
 
