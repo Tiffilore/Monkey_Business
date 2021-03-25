@@ -7,6 +7,9 @@
 - new interactive environment in directory `session`
     - inspo from [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-commands) and [gore](https://github.com/motemen/gore) 
 
+![Demo5](demos/demo5.gif)
+
+
 | NAME   |                   | USAGE                                                   |
 |--------|-------------------|---------------------------------------------------------|
 | clear    | ~                 | clear the environment                                    |
@@ -30,8 +33,6 @@
 
 
 - if `input` is not prefixed by `:<cmd>`, it is equivalent to `:eval input`
-
-![Demo5](demos/demo5.gif)
 
 
 ## Step 1: Write Tests for bugs in parser and evaluator
