@@ -15,11 +15,11 @@
 
 ## Existing Tests: `parser_test.go` <a name="existing"></a>
 
-All existing tests test only input that is supposed to be valid
+All existing tests only test input that is supposed to be valid.
 
 ## Additional Tests: `parser_add_test.go` <a name="additional"></a>
 
-The added tests only test certain cases that the parser right now perceives as valid, but shouldn't be valid in my view.
+The added tests mainly test certain cases that the parser right now perceives as valid, but that shouldn't be valid in my view.
 
 ### `TestBlockStatementsParseError` <a name="test1"></a>
 
