@@ -10,6 +10,8 @@
     5. [TestRuntimeErrorsWithNull](#test5)
     6. [TestRuntimeErrorsWithInvalidPrograms](#test6)
     7. [`TestEvalToBoolConsistency` and `TestEvalToBoolCorrectness`](#test7)
+    8. [`TestDivisionByZero` ](#test8)
+
 
 ## Existing Tests: `evaluator_test.go` <a name="existing"></a>
 
@@ -128,6 +130,15 @@ object type | values
 	ast := p.ParseProgram()
 	result := Eval(ast, env)
 ```
+
+### `TestDivisionByZero` <a name="test8"></a>
+
+In the current implementation, dividing a number by zero causes a runtime exception, as the test shows.
+
+However, maybe we want to opt for an implementation of integer division that differs from Golang's choices.
+
+`TestDivisionByZero` demands that division by zero returns an error. The error message still needs to be specified.
+
 
 
 

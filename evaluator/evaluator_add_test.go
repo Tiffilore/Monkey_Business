@@ -267,6 +267,36 @@ func TestEvalToBoolCorrectness(t *testing.T) {
 	}
 }
 
+func TestDivisionByZero(t *testing.T) {
+
+	tests := []string{
+		"3/0",
+		"-3/(1-1)",
+	}
+	for _, input := range tests {
+		testDivisionByZero(input, t)
+	}
+
+}
+
+func testDivisionByZero(input string, t *testing.T) {
+	l := lexer.New(input)
+	p := parser.New(l)
+	ast := p.ParseProgram()
+
+	defer func() {
+		if err := recover(); err != nil {
+			t.Errorf("Runtime error for " + input)
+		}
+	}()
+
+	env := object.NewEnvironment()
+	result := Eval(ast, env)
+	if result.Type() != "ERROR" {
+		t.Errorf("division by zero does not evaluate to an error")
+	}
+
+}
 func evaluate(input string, env *object.Environment, t *testing.T) object.Object {
 
 	l := lexer.New(input)
