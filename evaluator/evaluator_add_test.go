@@ -1,10 +1,12 @@
 package evaluator
 
 import (
+	"fmt"
 	"monkey/ast"
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
+	"monkey/token"
 
 	"testing"
 )
@@ -170,6 +172,107 @@ func TestRuntimeErrorsWithInvalidPrograms(t *testing.T) {
 		// we check specifically for a runtime error caused by the evaluation
 		checkRuntimeError(input, ast, len(p.Errors()) > 0, t)
 	}
+}
+
+func TestEvalToBoolConsistency(t *testing.T) {
+
+	// prep: create environment and build the function object (fn(){})
+	env := object.NewEnvironment()
+	params := []*ast.Identifier{}
+	body := &ast.BlockStatement{
+		Token: token.Token{Type: token.LBRACE, Literal: "{"}}
+	body.Statements = []ast.Statement{}
+	functionObj := &object.Function{Parameters: params, Env: env, Body: body}
+
+	tests := []struct {
+		object      object.Object
+		description string
+	}{
+		{TRUE, "Boolean with value true"},
+		{FALSE, "Boolean with value false"},
+		{&object.Integer{Value: -1},
+			"Integer with negative value"},
+		{&object.Integer{Value: 0},
+			"Integer with zero value"},
+		{&object.Integer{Value: 1},
+			"Integer with positive value"},
+		{NULL, "Null"},
+		{&object.Error{Message: ""}, "Error"},
+		{functionObj, "Function"},
+		{nil, "nil"},
+	}
+
+	for _, tt := range tests {
+		env.Set("a", tt.object)
+
+		expr1 := "if(a){true} else {false}"
+		expr2 := "!!a"
+
+		if evaluate(expr1, env, t) != evaluate(expr2, env, t) {
+			t.Errorf("inconsistent evaluation to bool for " + tt.description)
+		}
+	}
+}
+
+func TestEvalToBoolCorrectness(t *testing.T) {
+
+	// prep: create environment and build the function object (fn(){})
+	env := object.NewEnvironment()
+	params := []*ast.Identifier{}
+	body := &ast.BlockStatement{
+		Token: token.Token{Type: token.LBRACE, Literal: "{"}}
+	body.Statements = []ast.Statement{}
+	functionObj := &object.Function{Parameters: params, Env: env, Body: body}
+
+	tests := []struct {
+		object      object.Object
+		description string
+		expected    string
+	}{
+		{TRUE, "Boolean with value true", "true"},
+		{FALSE, "Boolean with value false", "false"},
+		{&object.Integer{Value: -1},
+			"Integer with negative value", "error"},
+		{&object.Integer{Value: 0},
+			"Integer with zero value", "error"},
+		{&object.Integer{Value: 1},
+			"Integer with positive value", "error"},
+		{NULL, "Null", "error"},
+		{&object.Error{Message: ""}, "Error", "error"},
+		{functionObj, "Function", "error"},
+		{nil, "nil", "true"},
+	}
+
+	for _, tt := range tests {
+		env.Set("a", tt.object)
+
+		result := evaluate("!!a", env, t)
+
+		switch tt.expected {
+		case "true":
+			if result != TRUE {
+				t.Errorf(tt.description + " does not evaluate to true")
+			}
+		case "false":
+			if result != FALSE {
+				t.Errorf(tt.description + " does not evaluate to false")
+			}
+		case "error":
+			if result.Type() != "ERROR" {
+				t.Errorf(tt.description + " does not evaluate to an error")
+			}
+		default:
+			fmt.Println("ha")
+		}
+	}
+}
+
+func evaluate(input string, env *object.Environment, t *testing.T) object.Object {
+
+	l := lexer.New(input)
+	p := parser.New(l)
+	ast := p.ParseProgram()
+	return Eval(ast, env)
 }
 
 func checkRuntimeError(input string, ast *ast.Program, hasParseErrors bool, t *testing.T) {

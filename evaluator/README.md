@@ -9,6 +9,7 @@
     4. [TestRuntimeErrorsWithNil2](#test4)
     5. [TestRuntimeErrorsWithNull](#test5)
     6. [TestRuntimeErrorsWithInvalidPrograms](#test6)
+    7. [`TestEvalToBoolConsistency` and `TestEvalToBoolCorrectness`](#test7)
 
 ## Existing Tests: `evaluator_test.go` <a name="existing"></a>
 
@@ -78,5 +79,55 @@ Additionally, there are two tests with hash literals and index expressions, whic
     <img src="images/ast_wo_tok1.png" width="600" />
 
     <img src="images/ast_with_tok1.png" width="600" />
+
+
+    ---
+    wip
+
+### `TestEvalToBoolConsistency` and `TestEvalToBoolCorrectness` <a name="test7"></a>
+
+In the Monkey PL, every non-erroneous expression can be evaluated to a Boolean value. This can be done in two places: 
+- in the Condition field of an if expressions
+- (implicitly) in the evaluation of prefix expression with BANG as operator
+
+The first desideratum is **consistency**: we want the evaluation of a condition to a boolean be consistent with its evaluation to a boolean in a prefix expression with BANG as operator.
+That means that for any `<expression>`, the evaluation of `if(<expression>){true}else{false}` should yield the same result as the evaluation of `!!<expression>`
+
+The second desideratum is **correctness**: we want the evaluations to be correct. What a correct evaluation is varies from language to language and is a matter of language specification. This test serves as an opportunity to discuss exactly that.
+
+Consistency is being tested in `TestEvalToBoolConsistency`, while correctness is being tested in `TestEvalToBoolCorrectness`. 
+
+In the current implementation, `TestEvalToBoolConsistency` succeeds, but that can easily change if we opt to change the implementation. Evaluation to booleans is implemented twice in the code: for conditions with the help of the function `isTruthy` and for prefix expressions with a BANG operator in `evalBangOperatorExpression`. It thus may serve as a regression test.
+
+`TestEvalToBoolCorrectness` does not suceed, since it needs to be specified correctly first. I wanted to leave the specification open at this stage.
+
+#### Test data
+
+- we want to test the handling of the following types of `object.Object`s:
+
+object type | values
+---|---
+`Boolean` | true, false
+`Integer` | -1, 0, 1
+`Null` | the one and only null object
+`Error` | any
+`Function` | any
+
+
+- we will skip `ReturnValue` objects, since they can never be values of expressions and for now all object types that are only introduced in chapter 4: `String`, `Builtin`, `Array` and `Hash`.
+- we want to add the infamous `nil`, since expressions in MonkeyPL can still evaluate to `nil` given the recent implementation.
+- in the given implementation, the only object type for whiches boolean evaluation it matters, what its value is, is `Boolean`. However, in many languages, when numbers are evaluated to Booleans, their evaluation also varies with regard to their value. Since one might opt for such an implementation for Monkey Pl, too, there are three possible values added for 
+- we could use expressions in our testdata that evaluate to the desired objects (e.g. `fn(){}()` for `nil`, `if(false){}`for `NULL`), but this has the drawback that any changes in the evaluation of such expressions will undermine our tests. Thus, we opt for creating an environment mapping the name "a" to the respective values (for example, `TRUE` or `&object.Integer{Value: -1}`) and then use the name in the expression. Here is some example code (not from the actual tests) illustrating how this approach works: 
+
+```go
+	env := object.NewEnvironment()
+	env.Set("a", &object.Integer{Value: -1})
+	input := "!!a"
+	l := lexer.New(input)
+	p := parser.New(l)
+	ast := p.ParseProgram()
+	result := Eval(ast, env)
+```
+
 
 
