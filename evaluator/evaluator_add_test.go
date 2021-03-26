@@ -1,7 +1,6 @@
 package evaluator
 
 import (
-	"fmt"
 	"monkey/ast"
 	"monkey/lexer"
 	"monkey/object"
@@ -45,7 +44,6 @@ func TestArityCallExpressions(t *testing.T) {
 	for _, tt := range tests {
 		testArityCallExpressions(tt.input, tt.expErr, t)
 	}
-
 }
 
 func TestRuntimeErrorsWithNil1(t *testing.T) {
@@ -150,7 +148,6 @@ func TestRuntimeErrorsWithNull(t *testing.T) {
 		// we check specifically for a runtime error caused by the evaluation
 		checkRuntimeError(input, ast, len(p.Errors()) > 0, t)
 	}
-
 }
 
 func TestRuntimeErrorsWithInvalidPrograms(t *testing.T) {
@@ -209,7 +206,7 @@ func TestEvalToBoolConsistency(t *testing.T) {
 		expr2 := "!!a"
 
 		if evaluate(expr1, env, t) != evaluate(expr2, env, t) {
-			t.Errorf("inconsistent evaluation to bool for " + tt.description)
+			t.Error("inconsistent evaluation to bool for " + tt.description)
 		}
 	}
 }
@@ -251,18 +248,18 @@ func TestEvalToBoolCorrectness(t *testing.T) {
 		switch tt.expected {
 		case "true":
 			if result != TRUE {
-				t.Errorf(tt.description + " does not evaluate to true")
+				t.Error(tt.description + " does not evaluate to true")
 			}
 		case "false":
 			if result != FALSE {
-				t.Errorf(tt.description + " does not evaluate to false")
+				t.Error(tt.description + " does not evaluate to false")
 			}
 		case "error":
 			if result.Type() != "ERROR" {
-				t.Errorf(tt.description + " does not evaluate to an error")
+				t.Error(tt.description + " does not evaluate to an error")
 			}
 		default:
-			fmt.Println("ha")
+			t.Error("test setup fails, since expectation not yet implemented")
 		}
 	}
 }
@@ -276,7 +273,6 @@ func TestDivisionByZero(t *testing.T) {
 	for _, input := range tests {
 		testDivisionByZero(input, t)
 	}
-
 }
 
 func testDivisionByZero(input string, t *testing.T) {
@@ -286,17 +282,17 @@ func testDivisionByZero(input string, t *testing.T) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			t.Errorf("Runtime error for " + input)
+			t.Error("Runtime error for " + input)
 		}
 	}()
 
 	env := object.NewEnvironment()
 	result := Eval(ast, env)
 	if result.Type() != "ERROR" {
-		t.Errorf("division by zero does not evaluate to an error")
+		t.Error("division by zero does not evaluate to an error")
 	}
-
 }
+
 func evaluate(input string, env *object.Environment, t *testing.T) object.Object {
 
 	l := lexer.New(input)
@@ -310,16 +306,16 @@ func checkRuntimeError(input string, ast *ast.Program, hasParseErrors bool, t *t
 	defer func() { // idea from https://golang.org/doc/effective_go#recover
 		if err := recover(); err != nil {
 			if hasParseErrors {
-				t.Errorf("Runtime error after parse errors " + input)
+				t.Error("Runtime error after parse errors " + input)
 
 			} else {
-				t.Errorf("Runtime error though no parse errors for " + input)
+				t.Error("Runtime error though no parse errors for " + input)
 			}
 		}
 	}()
 	//value :=
 	Eval(ast, env)
-	//t.Errorf(value.Inspect())
+	//t.Error(value.Inspect())
 }
 
 func testArityCallExpressions(input string, expErr bool, t *testing.T) {
@@ -331,7 +327,7 @@ func testArityCallExpressions(input string, expErr bool, t *testing.T) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			t.Errorf("Runtime error for " + input)
+			t.Error("Runtime error for " + input)
 		}
 	}()
 
@@ -339,10 +335,10 @@ func testArityCallExpressions(input string, expErr bool, t *testing.T) {
 	_, hasErr := value.(*object.Error)
 
 	if expErr && !hasErr {
-		t.Errorf("Error message missing for " + input)
+		t.Error("Error message missing for " + input)
 		return
 	}
 	if !expErr && hasErr {
-		t.Errorf("Explainworthy error message for " + input)
+		t.Error("Explainworthy error message for " + input)
 	}
 }

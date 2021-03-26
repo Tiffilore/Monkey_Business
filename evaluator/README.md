@@ -83,8 +83,6 @@ Additionally, there are two tests with hash literals and index expressions, whic
     <img src="images/ast_with_tok1.png" width="600" />
 
 
-    ---
-    wip
 
 ### `TestEvalToBoolConsistency` and `TestEvalToBoolCorrectness` <a name="test7"></a>
 
