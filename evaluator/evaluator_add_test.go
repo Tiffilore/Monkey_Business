@@ -165,6 +165,14 @@ func TestDivisionByZero(t *testing.T) {
 	}
 }
 
+func evaluate(input string, env *object.Environment, t *testing.T) object.Object {
+
+	l := lexer.New(input)
+	p := parser.New(l)
+	ast := p.ParseProgram()
+	return Eval(ast, env)
+}
+
 func testDivisionByZero(input string, t *testing.T) {
 	l := lexer.New(input)
 	p := parser.New(l)
@@ -181,12 +189,4 @@ func testDivisionByZero(input string, t *testing.T) {
 	if result.Type() != "ERROR" {
 		t.Error("division by zero does not evaluate to an error")
 	}
-}
-
-func evaluate(input string, env *object.Environment, t *testing.T) object.Object {
-
-	l := lexer.New(input)
-	p := parser.New(l)
-	ast := p.ParseProgram()
-	return Eval(ast, env)
 }

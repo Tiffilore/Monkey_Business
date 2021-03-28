@@ -1,15 +1,12 @@
 # Testing the evaluator
 
-[_Don't panic!_](https://go-proverbs.github.io/)
-
-
 **Table of contents**
 1. [Existing Tests](#existing)
 2. [Additional Tests: `evaluator_add_panic_test.go`](#additional_panic)
-    1. [TestRuntimeErrorsWithNil1](#nil1)
-    2. [TestRuntimeErrorsWithNil2](#nil2)
-    3. [TestRuntimeErrorsWithNull](#null)
-    4. [TestRuntimeErrorsWithInvalidPrograms](#invalid)
+    1. [TestPanicNotEnoughArguments](#panic_args)
+    2. [TestPanicDivisionByZero](#panic_div)
+    3. [TestPanicWithNil](#panic_nil)
+    4. [TestPanicWithInvalidPrograms](#panic_invalid)
 3. [Additional Tests: `evaluator_add_test.go`](#additional)
     1. [TestArityCallExpressions](#arity_call)
     2. [TestEvalToBoolConsistency and TestEvalToBoolCorrectness](#eval2bool)
@@ -36,77 +33,70 @@ Additionally, there are two tests with hash literals and index expressions, whic
 
 ## Additional Tests: `evaluator_add_panic_test.go` <a name="additional_panic"></a>
 
+[_Don't panic!_](https://go-proverbs.github.io/)
 
-Look at [this question](https://stackoverflow.com/questions/66841082/why-does-the-monkey-repl-panic-at-my-program) from stackoverflow:
+The tests in this file mainly serve to collect and document all cases that cause the evaluator to panic in its original implementation. The tests excusively check for runtime errors, they do not test anything else.
 
-<img src="images/stackoverflow.selection.png" width="1000" />
+### `TestPanicNotEnoughArguments` <a name="panic_args"></a>
+
+The interpreter panics at the face of a call expression with not enough arguments.
+
+### `TestPanicDivisionByZero` <a name="panic_div"></a>
+
+The interpreter also panics if we divide a number by zero.
+
+### `TestPanicDivisionByZero` <a name="panic_nil"></a>
+
+First, take a look at [this question](https://stackoverflow.com/questions/66841082/why-does-the-monkey-repl-panic-at-my-program) from stackoverflow:
+
+![stackof](images/stackoverflow.selection.png)
 
 Can you answer it?
 
----
-_in progress:_
+Well, it has to do with the interpreter allowing statements, and thus, expressions to be evaluated to `nil`.
 
-The aim of these tests is primarily to collect all cases that cause the evaluator to panic.
+The testcases test programs containing expressions which in turn contain expressions evaluating to `nil`. The testdata can be grouped in three categories:
+  - nil as value of the function of a function call
+  - nil as value of an operand in an prefix expression
+  - nil as value of an operand in an infix expression
 
-TODO: not enough arguments is now missing 
+The tested expressions that (currently) evaluate to `nil` are:
+  - `if(true){}`
+  - `if(false){}{let a = 1}`
+  - `fn(){}()`
 
-most of it is due to Monkey in its current state allowing expressions to be evaluated to `nil`.
+These show under which circumstances expressions can evaluate to `nil`: 
+when their meaning is derived from evaluating a block statement. 
 
-- when does it happen?
-- when the meaning of an expression is derived from a blockstatement:
-  - in if expressions (either consequence or for if-else syntax: alternative)
-  - in function calls: body of function object that function field evaluates to
+_When is the meaning of an expression derived from a block statement?_
 
-- when does a blockstatement evalate to `nil`?
+Under certain circumstances, the meaning of an expression can become the meaning of a block statement. Without looking at the circumstances, this meaning transfer can be illustrated in pseudo-code:
+
+```
+Eval(if expression i, env) <-- Eval(i.Consequence, env) 
+Eval(if expression i, env) <-- Eval(i.Alternative, env)  
+Eval(function call c, env) <-- Eval(Eval(c.Function, env).Body, ext_env)  
+```
+
+Consequences and alternatives of if expressions are block statements, as well as bodies of function objects. So the next question is:
+
+_When does a blockstatement evaluate to `nil`?_  
   - when it is empty
   - when its last statement 
     - is a let statement
     - is an expression statement evaluating to `nil`
 
-- examples (types):
-```
-  - if(<expression evaluating to truthy>)<blockstatement evaluating to nil>
-  - if(<expression not evaluating to an error, but to a value that is not truthy)<any blockstatement> else <blockstatement evaluating to nil>
-  - <expression evaluating to a function object with a body blockstatement evaluating to nil>(<argument list>)
-```
-
-- concrete examples:
-    - minimal:
-```
-if(true){}
-if(false){1}{}
-fn(){}()
-```
+An expression statement evaluating to `nil` can again derive its meaning directly from a blockstatement like `if(true){}` or indirectly, for example the meaning of the identifier `a` in 
+`let b = if(true){}; let a = b`
 
 
-### `TestRuntimeErrorsWithNil1` <a name="nil1"></a>
 
-- tests whether expressions containing expressions evaluating to `nil` cause the evaluator to panic
-    - definition of `nil`: `let nil=if(true){}` (via empty blockstatement in if expression)
-    - tested expressions:
-        - nil as value of an operand in an prefix expression
-        - nil as value of an operand in an infix expression
-        - nil as value of the function of a function call
+### `TestPanicWithInvalidPrograms` <a name="panic_invalid"></a>
 
-### `TestRuntimeErrorsWithNil2` <a name="nil2"></a>
+This test tests the evaluation of defect asts, i.e. asts accompanied by error messages in the parser, which can also cause the evaluator to panic.
+It might be discussed whether testing the behaviour of the evaluator when being fed defect asts does not put too high standards on the evaluator, since usually the evaluator will be only used after checking the parser for errors.
 
-- exactly like `TestRuntimeErrorsWithNil1`, except:
-    - definition of `nil`:
-`let nil=fn(){}()` (via empty blockstatement in function of function call)
-
-### `TestRuntimeErrorsWithNull` <a name="null"></a>
-
-- same test set as before, but this time with expressions evaluating to the **NULL** object
-    - definition of `null`: `let null=if(false){}` 
-- this test succeeds for the whole test set, but might serve as a starter in discussing how NULL values should be treated and whether the current implementation does it consistently
-
-### `TestRuntimeErrorsWithInvalidPrograms` <a name="invalid"></a>
-
-- tests whether the evaluation of defect asts, i.e. asts accompanied by error messages in the parser causes panic
-    - spoiler: it does right now
-- it might be disputed whether this test does not put too high standards on the evaluator, since usually it will be only used after checking the parser for errors
-
-- examples for defect parse trees (with and without token fields):
+To help understand what is the underlying problem in these cases, her are two examples for defect parse trees (with and without token fields):
 
   - `@ let`
 
@@ -120,9 +110,16 @@ fn(){}()
     <img src="images/ast_with_tok1.png" width="600" />
 
 
-
-
 ## Additional Tests: `evaluator_add_test.go` <a name="additional"></a>
+
+
+---
+wip
+
+
+
+
+
 
 ### `TestArityCallExpressions` <a name="arity_call"></a>
 
