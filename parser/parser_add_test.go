@@ -9,12 +9,16 @@ import (
 
 func TestBlockStatementsParseError(t *testing.T) {
 
-	tests := []string{"if(1){1", "fn(x,y){x+y"}
+	tests := []string{
+		"if(1){1",
+		"fn(x,y){x+y",
+		"let max = fn(x,y){if(x>y){x}else{y",
+	}
 
-	for _, tt := range tests {
-		errors := parseErrors(tt)
+	for _, input := range tests {
+		errors := parseErrors(input)
 		if len(errors) == 0 {
-			t.Errorf("Parser failed to detect missing right brace in: " + tt)
+			t.Errorf("Parser failed to detect missing right brace(s) in: %q", input)
 			continue
 		}
 
@@ -33,7 +37,7 @@ func TestFunctionLiteralsInvalidParameterSingle(t *testing.T) {
 		input := "fn(" + tt + "){}"
 		errors := parseErrors(input)
 		if len(errors) == 0 {
-			t.Errorf("Parser failed to detect invalid Parameter in: " + input)
+			t.Errorf("Parser failed to detect invalid Parameter in: %q ", input)
 		}
 	}
 }
@@ -44,7 +48,7 @@ func TestFunctionLiteralsInvalidParameterOutsider(t *testing.T) {
 		input := "fn(a," + tt + ",b){}"
 		errors := parseErrors(input)
 		if len(errors) == 0 {
-			t.Errorf("Parser failed to detect invalid Parameter in: " + input)
+			t.Errorf("Parser failed to detect invalid Parameter in: %q ", input)
 		}
 	}
 }
@@ -55,16 +59,14 @@ func TestFunctionLiteralsInvalidParametersCrowd(t *testing.T) {
 	input = strings.ReplaceAll(input, ",)", "") // we remove ")" as parameter
 	errors := parseErrors(input)
 	if len(errors) <= 1 {
-		t.Errorf("Parser failed to detect a lot of errors in: " + input)
+		t.Errorf("Parser failed to detect a lot of errors in: %q", input)
 	} else {
 		lastMsg := errors[len(errors)-1] // C
 		if lastMsg != "no prefix parse function for ILLEGAL found" {
-			t.Errorf("Parser failed to parse the whole input for: " + input)
-			t.Errorf("Last error: " + lastMsg)
-
+			t.Errorf("Parser failed to parse the whole input for:  %q", input)
+			t.Errorf("Last error: %q", lastMsg)
 		}
 	}
-
 }
 
 func parseErrors(input string) []string {
@@ -95,11 +97,11 @@ var invalidParams = []string{
 	"}",      //RPAREN
 	"(",      //LBRACE
 	")",      //RBRACE	- works already
-	"fn",     //FUNCTION,
-	"let",    //LET,
-	"true",   //TRUE,
-	"false",  //FALSE,
-	"if",     //IF,
-	"else",   //ELSE,
-	"return", //RETURN,
+	"fn",     //FUNCTION
+	"let",    //LET
+	"true",   //TRUE
+	"false",  //FALSE
+	"if",     //IF
+	"else",   //ELSE
+	"return", //RETURN
 }
