@@ -12,14 +12,14 @@
     4. [TestRuntimeErrorsWithInvalidPrograms](#invalid)
 3. [Additional Tests: `evaluator_add_test.go`](#additional)
     1. [TestArityCallExpressions](#arity_call)
-    7. [TestEvalToBoolConsistency and TestEvalToBoolCorrectness](#eval2bool)
-    8. [TestDivisionByZero](#div_zero)
+    2. [TestEvalToBoolConsistency and TestEvalToBoolCorrectness](#eval2bool)
+    3. [TestDivisionByZero](#div_zero)
 
 ## Existing Tests: `evaluator_test.go` <a name="existing"></a>
 
 For the evaluator, the majority of tests test only input that is supposed to be valid.
 
-There is one Exception: `func TestErrorHandling(t *testing.T)`, which tests type errors.
+There is one exception: `func TestErrorHandling(t *testing.T)`, which tests type errors.
 
 With regard to the part of Monkey PL introduced in chapter 3, these concerns the following types of type errors (represented by their errormessages):
 
