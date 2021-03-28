@@ -73,158 +73,9 @@ func testArityCallExpressions(input string, ast *ast.Program, expErr bool, expMs
 	}
 }
 
-func TestRuntimeErrorsWithNil1(t *testing.T) {
-
-	tests := []string{
-		"let nil=if(true){}; !nil", // works already
-		"let nil=if(true){}; -nil",
-		"let nil=if(true){}; nil +0",
-		"let nil=if(true){}; 0+nil",
-		"let nil=if(true){}; nil-0",
-		"let nil=if(true){}; 0-nil",
-		"let nil=if(true){}; nil*0",
-		"let nil=if(true){}; 0*nil",
-		"let nil=if(true){}; nil/0",
-		"let nil=if(true){}; 0/nil",
-		"let nil=if(true){}; nil<0",
-		"let nil=if(true){}; 0<nil",
-		"let nil=if(true){}; nil>0",
-		"let nil=if(true){}; 0>nil",
-		"let nil=if(true){}; nil==0",
-		"let nil=if(true){}; 0==nil",
-		"let nil=if(true){}; nil!=0",
-		"let nil=if(true){}; 0!=nil",
-		"let nil=if(true){}; nil()",
-	}
-	for _, input := range tests {
-
-		l := lexer.New(input)
-		p := parser.New(l)
-		ast := p.ParseProgram()
-
-		// we check specifically for a runtime error caused by the evaluation
-		checkRuntimeError(input, ast, len(p.Errors()) > 0, t)
-	}
-}
-
-func TestRuntimeErrorsWithNil2(t *testing.T) {
-
-	tests := []string{
-		"let nil=fn(){}(); !nil", // works already
-		"let nil=fn(){}(); -nil",
-		"let nil=fn(){}(); nil +0",
-		"let nil=fn(){}(); 0+nil",
-		"let nil=fn(){}(); nil-0",
-		"let nil=fn(){}(); 0-nil",
-		"let nil=fn(){}(); nil*0",
-		"let nil=fn(){}(); 0*nil",
-		"let nil=fn(){}(); nil/0",
-		"let nil=fn(){}(); 0/nil",
-		"let nil=fn(){}(); nil<0",
-		"let nil=fn(){}(); 0<nil",
-		"let nil=fn(){}(); nil>0",
-		"let nil=fn(){}(); 0>nil",
-		"let nil=fn(){}(); nil==0",
-		"let nil=fn(){}(); 0==nil",
-		"let nil=fn(){}(); nil!=0",
-		"let nil=fn(){}(); 0!=nil",
-		"let nil=fn(){}(); nil()",
-	}
-	for _, input := range tests {
-
-		l := lexer.New(input)
-		p := parser.New(l)
-		ast := p.ParseProgram()
-
-		// we check specifically for a runtime error caused by the evaluation
-		checkRuntimeError(input, ast, len(p.Errors()) > 0, t)
-	}
-}
-
-func TestRuntimeErrorsWithNull(t *testing.T) {
-	// suceeds already; no runtime errors
-	// although looking at the results might be interesting!
-
-	tests := []string{
-		"let null=if(false){}; !null",
-		"let null=if(false){}; -null",
-		"let null=if(false){}; null +0",
-		"let null=if(false){}; 0+null",
-		"let null=if(false){}; null-0",
-		"let null=if(false){}; 0-null",
-		"let null=if(false){}; null*0",
-		"let null=if(false){}; 0*null",
-		"let null=if(false){}; null/0",
-		"let null=if(false){}; 0/null",
-		"let null=if(false){}; null<0",
-		"let null=if(false){}; 0<null",
-		"let null=if(false){}; null>0",
-		"let null=if(false){}; 0>null",
-		"let null=if(false){}; null==0",
-		"let null=if(false){}; 0==null",
-		"let null=if(false){}; null!=0",
-		"let null=if(false){}; 0!=null",
-		"let null= if(false){}; null()",
-	}
-	for _, input := range tests {
-
-		l := lexer.New(input)
-		p := parser.New(l)
-		ast := p.ParseProgram()
-
-		// we check specifically for a runtime error caused by the evaluation
-		checkRuntimeError(input, ast, len(p.Errors()) > 0, t)
-	}
-}
-
-func TestRuntimeErrorsWithInvalidPrograms(t *testing.T) {
-	//whether that is really a problem could be discussed, since usually only valid problems are evaluated.
-
-	// nil vs isNil !
-	tests := []string{
-		"let",
-		"@",
-		"@ let",
-		"let;@; ",
-	}
-	for _, input := range tests {
-
-		l := lexer.New(input)
-		p := parser.New(l)
-		ast := p.ParseProgram()
-
-		// we check specifically for a runtime error caused by the evaluation
-		checkRuntimeError(input, ast, len(p.Errors()) > 0, t)
-	}
-}
-
 func TestEvalToBoolConsistency(t *testing.T) {
 
-	// prep: create environment and build the function object (fn(){})
-	env := object.NewEnvironment()
-	params := []*ast.Identifier{}
-	body := &ast.BlockStatement{
-		Token: token.Token{Type: token.LBRACE, Literal: "{"}}
-	body.Statements = []ast.Statement{}
-	functionObj := &object.Function{Parameters: params, Env: env, Body: body}
-
-	tests := []struct {
-		object      object.Object
-		description string
-	}{
-		{TRUE, "Boolean with value true"},
-		{FALSE, "Boolean with value false"},
-		{&object.Integer{Value: -1},
-			"Integer with negative value"},
-		{&object.Integer{Value: 0},
-			"Integer with zero value"},
-		{&object.Integer{Value: 1},
-			"Integer with positive value"},
-		{NULL, "Null"},
-		{&object.Error{Message: ""}, "Error"},
-		{functionObj, "Function"},
-		{nil, "nil"},
-	}
+	env, tests := setupEvalToBoolean()
 
 	for _, tt := range tests {
 		env.Set("a", tt.object)
@@ -240,32 +91,7 @@ func TestEvalToBoolConsistency(t *testing.T) {
 
 func TestEvalToBoolCorrectness(t *testing.T) {
 
-	// prep: create environment and build the function object (fn(){})
-	env := object.NewEnvironment()
-	params := []*ast.Identifier{}
-	body := &ast.BlockStatement{
-		Token: token.Token{Type: token.LBRACE, Literal: "{"}}
-	body.Statements = []ast.Statement{}
-	functionObj := &object.Function{Parameters: params, Env: env, Body: body}
-
-	tests := []struct {
-		object      object.Object
-		description string
-		expected    string
-	}{
-		{TRUE, "Boolean with value true", "true"},
-		{FALSE, "Boolean with value false", "false"},
-		{&object.Integer{Value: -1},
-			"Integer with negative value", "error"},
-		{&object.Integer{Value: 0},
-			"Integer with zero value", "error"},
-		{&object.Integer{Value: 1},
-			"Integer with positive value", "error"},
-		{NULL, "Null", "error"},
-		{&object.Error{Message: ""}, "Error", "error"},
-		{functionObj, "Function", "error"},
-		{nil, "nil", "true"},
-	}
+	env, tests := setupEvalToBoolean()
 
 	for _, tt := range tests {
 		env.Set("a", tt.object)
@@ -289,6 +115,43 @@ func TestEvalToBoolCorrectness(t *testing.T) {
 			t.Errorf("test setup fails, since expectation %q not yet implemented", tt.expected)
 		}
 	}
+}
+
+// needs specification
+func setupEvalToBoolean() (*object.Environment, []struct {
+	object      object.Object
+	description string
+	expected    string
+}) {
+
+	// prep: create environment and build the function object (fn(){})
+	env := object.NewEnvironment()
+	params := []*ast.Identifier{}
+	body := &ast.BlockStatement{
+		Token: token.Token{Type: token.LBRACE, Literal: "{"}}
+	body.Statements = []ast.Statement{}
+	functionObj := &object.Function{Parameters: params, Env: env, Body: body}
+
+	// create testdata
+	tests := []struct {
+		object      object.Object
+		description string
+		expected    string //TODO: better interface{} - but then we need to specify the errormessages!
+	}{
+		{TRUE, "Boolean with value true", "true"},
+		{FALSE, "Boolean with value false", "false"},
+		{&object.Integer{Value: -1},
+			"Integer with negative value", "error"},
+		{&object.Integer{Value: 0},
+			"Integer with zero value", "error"},
+		{&object.Integer{Value: 1},
+			"Integer with positive value", "error"},
+		{NULL, "Null", "error"},
+		{&object.Error{Message: ""}, "Error", "error"},
+		{functionObj, "Function", "error"},
+		{nil, "nil", "true"},
+	}
+	return env, tests
 }
 
 func TestDivisionByZero(t *testing.T) {
@@ -326,20 +189,4 @@ func evaluate(input string, env *object.Environment, t *testing.T) object.Object
 	p := parser.New(l)
 	ast := p.ParseProgram()
 	return Eval(ast, env)
-}
-
-func checkRuntimeError(input string, ast *ast.Program, hasParseErrors bool, t *testing.T) {
-	env := object.NewEnvironment()
-	defer func() { // idea from https://golang.org/doc/effective_go#recover
-		if err := recover(); err != nil {
-			if hasParseErrors {
-				t.Errorf("Runtime error after parse errors for %v: %q", input, err)
-			} else {
-				t.Errorf("Runtime error though no parse errors for %v: %q", input, err)
-			}
-		}
-	}()
-	//value :=
-	Eval(ast, env)
-	//t.Error(value.Inspect())
 }

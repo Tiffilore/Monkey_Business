@@ -5,15 +5,15 @@
 
 **Table of contents**
 1. [Existing Tests](#existing)
-2. [Additional Tests](#additional)
-    2. [TestArityCallExpressions](#test1)
-    3. [TestRuntimeErrorsWithNil1](#test3)
-    4. [TestRuntimeErrorsWithNil2](#test4)
-    5. [TestRuntimeErrorsWithNull](#test5)
-    6. [TestRuntimeErrorsWithInvalidPrograms](#test6)
-    7. [TestEvalToBoolConsistency and TestEvalToBoolCorrectness](#test7)
-    8. [TestDivisionByZero](#test8)
-
+2. [Additional Tests: `evaluator_add_panic_test.go`](#additional_panic)
+    1. [TestRuntimeErrorsWithNil1](#nil1)
+    2. [TestRuntimeErrorsWithNil2](#nil2)
+    3. [TestRuntimeErrorsWithNull](#null)
+    4. [TestRuntimeErrorsWithInvalidPrograms](#invalid)
+3. [Additional Tests: `evaluator_add_test.go`](#additional)
+    1. [TestArityCallExpressions](#arity_call)
+    7. [TestEvalToBoolConsistency and TestEvalToBoolCorrectness](#eval2bool)
+    8. [TestDivisionByZero](#div_zero)
 
 ## Existing Tests: `evaluator_test.go` <a name="existing"></a>
 
@@ -33,17 +33,11 @@ With regard to the part of Monkey PL introduced in chapter 3, these concerns the
 
 Additionally, there are two tests with hash literals and index expressions, which will be introduced in chapter 4.
 
-## Additional Tests: `evaluator_add_test.go` <a name="additional"></a>
 
-### `TestArityCallExpressions` <a name="test1"></a>
+## Additional Tests: `evaluator_add_panic_test.go` <a name="additional_panic"></a>
 
-- specifies how to deal with call expressions with not enough / too many arguments
-  - in the current implementation, the evaluator panics at the face of not enough arguments
-  - matter of specification (thus discussion):
-    - do we want to return an error if there are too many arguments?
-    - what error messages?
 
-### `TestRuntimeErrorsWithNil1` <a name="test3"></a>
+### `TestRuntimeErrorsWithNil1` <a name="nil1"></a>
 
 - tests whether expressions containing expressions evaluating to `nil` cause the evaluator to panic
     - definition of `nil`: `let nil=if(true){}` (via empty blockstatement in if expression)
@@ -52,19 +46,19 @@ Additionally, there are two tests with hash literals and index expressions, whic
         - nil as value of an operand in an infix expression
         - nil as value of the function of a function call
 
-### `TestRuntimeErrorsWithNil2` <a name="test4"></a>
+### `TestRuntimeErrorsWithNil2` <a name="nil2"></a>
 
 - exactly like `TestRuntimeErrorsWithNil1`, except:
     - definition of `nil`:
 `let nil=fn(){}()` (via empty blockstatement in function of function call)
 
-### `TestRuntimeErrorsWithNull` <a name="test5"></a>
+### `TestRuntimeErrorsWithNull` <a name="null"></a>
 
 - same test set as before, but this time with expressions evaluating to the **NULL** object
     - definition of `null`: `let null=if(false){}` 
 - this test succeeds for the whole test set, but might serve as a starter in discussing how NULL values should be treated and whether the current implementation does it consistently
 
-### `TestRuntimeErrorsWithInvalidPrograms` <a name="test6"></a>
+### `TestRuntimeErrorsWithInvalidPrograms` <a name="invalid"></a>
 
 - tests whether the evaluation of defect asts, i.e. asts accompanied by error messages in the parser causes panic
     - spoiler: it does right now
@@ -85,7 +79,19 @@ Additionally, there are two tests with hash literals and index expressions, whic
 
 
 
-### `TestEvalToBoolConsistency` and `TestEvalToBoolCorrectness` <a name="test7"></a>
+
+## Additional Tests: `evaluator_add_test.go` <a name="additional"></a>
+
+### `TestArityCallExpressions` <a name="arity_call"></a>
+
+- specifies how to deal with call expressions with not enough / too many arguments
+  - in the current implementation, the evaluator panics at the face of not enough arguments
+  - matter of specification (thus discussion):
+    - do we want to return an error if there are too many arguments?
+    - what error messages?
+
+
+### `TestEvalToBoolConsistency` and `TestEvalToBoolCorrectness` <a name="eval2bool"></a>
 
 In the Monkey PL, every non-erroneous expression can be evaluated to a Boolean value. This can be done in two places: 
 - in the Condition field of an if expressions
@@ -130,7 +136,7 @@ object type | values
 	result := Eval(ast, env)
 ```
 
-### `TestDivisionByZero` <a name="test8"></a>
+### `TestDivisionByZero` <a name="div_zero"></a>
 
 In the current implementation, dividing a number by zero causes a runtime exception, as the test shows.
 
