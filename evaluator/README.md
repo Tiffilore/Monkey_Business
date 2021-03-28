@@ -37,6 +37,48 @@ Additionally, there are two tests with hash literals and index expressions, whic
 ## Additional Tests: `evaluator_add_panic_test.go` <a name="additional_panic"></a>
 
 
+Look at [this question](https://stackoverflow.com/questions/66841082/why-does-the-monkey-repl-panic-at-my-program) from stackoverflow:
+
+<img src="images/stackoverflow.selection.png" width="1000" />
+
+Can you answer it?
+
+---
+_in progress:_
+
+The aim of these tests is primarily to collect all cases that cause the evaluator to panic.
+
+TODO: not enough arguments is now missing 
+
+most of it is due to Monkey in its current state allowing expressions to be evaluated to `nil`.
+
+- when does it happen?
+- when the meaning of an expression is derived from a blockstatement:
+  - in if expressions (either consequence or for if-else syntax: alternative)
+  - in function calls: body of function object that function field evaluates to
+
+- when does a blockstatement evalate to `nil`?
+  - when it is empty
+  - when its last statement 
+    - is a let statement
+    - is an expression statement evaluating to `nil`
+
+- examples (types):
+```
+  - if(<expression evaluating to truthy>)<blockstatement evaluating to nil>
+  - if(<expression not evaluating to an error, but to a value that is not truthy)<any blockstatement> else <blockstatement evaluating to nil>
+  - <expression evaluating to a function object with a body blockstatement evaluating to nil>(<argument list>)
+```
+
+- concrete examples:
+    - minimal:
+```
+if(true){}
+if(false){1}{}
+fn(){}()
+```
+
+
 ### `TestRuntimeErrorsWithNil1` <a name="nil1"></a>
 
 - tests whether expressions containing expressions evaluating to `nil` cause the evaluator to panic
