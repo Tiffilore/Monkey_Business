@@ -28,6 +28,7 @@ func TestPanicNotEnoughArguments(t *testing.T) {
 }
 
 func TestPanicDivisionByZero(t *testing.T) {
+
 	tests := []string{
 		"3/0",
 		"-3/(1-1)",
@@ -74,6 +75,7 @@ func TestPanicWithNil(t *testing.T) {
 		"true != NIL",
 		"0 != NIL",
 	}
+
 	for _, mynil := range nils {
 		for _, schema := range tests {
 

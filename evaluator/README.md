@@ -9,8 +9,8 @@
     4. [TestPanicWithInvalidPrograms](#panic_invalid)
 3. [Additional Tests: `evaluator_add_test.go`](#additional)
     1. [TestArityCallExpressions](#arity_call)
-    2. [TestEvalToBoolConsistency and TestEvalToBoolCorrectness](#eval2bool)
-    3. [TestDivisionByZero](#div_zero)
+    2. [TestDivisionByZero](#div_zero)
+    3. [TestEvalToBoolConsistency and TestEvalToBoolCorrectness](#eval2bool)
 
 ## Existing Tests: `evaluator_test.go` <a name="existing"></a>
 
@@ -96,7 +96,7 @@ An expression statement evaluating to `nil` can again derive its meaning directl
 This test tests the evaluation of defect asts, i.e. asts accompanied by error messages in the parser, which can also cause the evaluator to panic.
 It might be discussed whether testing the behaviour of the evaluator when being fed defect asts does not put too high standards on the evaluator, since usually the evaluator will be only used after checking the parser for errors.
 
-To help understand what is the underlying problem in these cases, her are two examples for defect parse trees (with and without token fields):
+To help understand what is the underlying problem in these cases, here are two examples for defect parse trees (with and without token fields):
 
   - `@ let`
 
@@ -110,46 +110,58 @@ To help understand what is the underlying problem in these cases, her are two ex
     <img src="images/ast_with_tok1.png" width="600" />
 
 
+**Note the difference between `nil` and `isNil`!**
+
 ## Additional Tests: `evaluator_add_test.go` <a name="additional"></a>
 
+There are different approaches to deal with the problems mentioned before, especially those that arise from Monkey allowing programs, statements and expressions to evaluate to `nil`.
 
----
-wip
-
-
-
-
-
+This makes it difficult to write further tests with a test design that is reasonable with regard to Monkey's object system, which could be changed in reaction to the discussion before.
+It is also difficult, because after a principal revision, the meaning of expressions used as subexpressions in those further tests might differ from what it was before and thus, the test design doesn't work anymore. Luckily, these concerns do not apply to the first two tests in this file:
 
 ### `TestArityCallExpressions` <a name="arity_call"></a>
 
-- specifies how to deal with call expressions with not enough / too many arguments
-  - in the current implementation, the evaluator panics at the face of not enough arguments
-  - matter of specification (thus discussion):
+This test specifies how to deal with call expressions that either have not enough or too many arguments.
+In the current implementation, the evaluator panics in the first 
+case. After this is fixed, we can turn to matters of specification like:
     - do we want to return an error if there are too many arguments?
-    - what error messages?
+    - what are the error messages supposed to look like?
+
+This test provides an opportunity to do this. It will only make good sense after this has been done. Right now, there are only stand-in errormessages.
+
+### `TestDivisionByZero` <a name="div_zero"></a>
+
+In the current implementation, dividing a number by zero causes a runtime exception. This is the test to decide what whether we expect such an expression to evaluate to an error object and specify its error message.
 
 
 ### `TestEvalToBoolConsistency` and `TestEvalToBoolCorrectness` <a name="eval2bool"></a>
 
 In the Monkey PL, every non-erroneous expression can be evaluated to a Boolean value. This can be done in two places: 
-- in the Condition field of an if expressions
-- (implicitly) in the evaluation of prefix expression with BANG as operator
+- in the _Condition_ field of an if expressions
+- (implicitly) in the evaluation of a prefix expression with BANG as operator
 
-The first desideratum is **consistency**: we want the evaluation of a condition to a boolean be consistent with its evaluation to a boolean in a prefix expression with BANG as operator.
-That means that for any `<expression>`, the evaluation of `if(<expression>){true}else{false}` should yield the same result as the evaluation of `!!<expression>`
+The first desideratum for the evaluation of expressions in boolean contexts is **consistency**: we want the evaluation of a condition to a boolean be consistent with its evaluation to a boolean in a prefix expression with BANG as operator.
+That means that for any `<expression>`, the evaluation of 
+
+`if(<expression>){true}else{false}` 
+
+should yield the same result as the evaluation of 
+
+`!!<expression>`.
 
 The second desideratum is **correctness**: we want the evaluations to be correct. What a correct evaluation is varies from language to language and is a matter of language specification. This test serves as an opportunity to discuss exactly that.
 
 Consistency is being tested in `TestEvalToBoolConsistency`, while correctness is being tested in `TestEvalToBoolCorrectness`. 
 
-In the current implementation, `TestEvalToBoolConsistency` succeeds, but that can easily change if we opt to change the implementation. Evaluation to booleans is implemented twice in the code: for conditions with the help of the function `isTruthy` and for prefix expressions with a BANG operator in `evalBangOperatorExpression`. It thus may serve as a regression test.
+In the current implementation, `TestEvalToBoolConsistency` succeeds, but that can easily change if we opt to change the implementation, since evaluation to booleans is implemented twice in the code: for conditions with the help of the function `isTruthy` and for prefix expressions with a BANG operator in `evalBangOperatorExpression`. It thus may serve as a regression test.
 
-`TestEvalToBoolCorrectness` does not suceed, since it needs to be specified correctly first. I wanted to leave the specification open at this stage.
+`TestEvalToBoolCorrectness` does not suceed, since it needs to be specified correctly first. I wanted to leave the specification open at this stage. A further test could specify and thus test the exact error messages for the cases, in which we expect an expression used in a Boolean context evaluating to an error object.
+
+These two tests try to test all possibilites systematically. It does not rely on specific expressions used in a Boolean context -like `!!fn(x){}()` -, where the evaluation of the argument expression - here `fn(x){}()` - might change, but artificially set up an environment ensuring that under any circumstances, we catch the right object:
 
 #### Test data
 
-- we want to test the handling of the following types of `object.Object`s:
+We want to test the handling of the following types of `object.Object`s:
 
 object type | values
 ---|---
@@ -158,7 +170,6 @@ object type | values
 `Null` | the one and only null object
 `Error` | any
 `Function` | any
-
 
 - we will skip `ReturnValue` objects, since they can never be values of expressions and for now all object types that are only introduced in chapter 4: `String`, `Builtin`, `Array` and `Hash`.
 - we want to add the infamous `nil`, since expressions in MonkeyPL can still evaluate to `nil` given the recent implementation.
@@ -174,15 +185,4 @@ object type | values
 	ast := p.ParseProgram()
 	result := Eval(ast, env)
 ```
-
-### `TestDivisionByZero` <a name="div_zero"></a>
-
-In the current implementation, dividing a number by zero causes a runtime exception, as the test shows.
-
-However, maybe we want to opt for an implementation of integer division that differs from Golang's choices.
-
-`TestDivisionByZero` demands that division by zero returns an error. The error message still needs to be specified.
-
-
-
 

@@ -30,7 +30,7 @@ func TestArityCallExpressions(t *testing.T) {
 		// to be specified: whether we want an error + error msg
 		{"let zero = fn(){0}; zero(1)", false, ""},
 		{"let zero = fn(){0}; zero(1,2,3)", false, ""},
-		{"let truther = fn(x){false}; truther(1)", true, "too many"},
+		{"let truther = fn(x){false}; truther(1,2)", true, "too many"},
 		{"let id = fn(x){x}; id(1,2)", true, "too many"},
 		{"let add = fn(x,y){x+y}; add(1,2,3)", true, "too many"},
 	}
@@ -44,11 +44,37 @@ func TestArityCallExpressions(t *testing.T) {
 			continue
 		}
 		// we are testing specifically for runtime errors in evaluation
-		testArityCallExpressions(tt.input, ast, tt.expErr, tt.errmsg, t)
+		testErrors(tt.input, ast, tt.expErr, tt.errmsg, t)
 	}
 }
 
-func testArityCallExpressions(input string, ast *ast.Program, expErr bool, expMsg string, t *testing.T) {
+//TODO: specify error messages
+func TestDivisionByZero(t *testing.T) {
+
+	tests := []struct {
+		input  string
+		expErr bool
+		errmsg string
+	}{
+		{"3/0", true, "shame on you"},      // literally zero
+		{"-3/(1-1)", true, "shame on you"}, // evaluating to zero
+		{"0/1", false, ""},                 // regression
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := parser.New(l)
+		ast := p.ParseProgram()
+		if len(p.Errors()) > 0 {
+			t.Errorf("Unexpected parse errors for %q", tt.input) // either wrong test setup or bugs in parser
+			continue
+		}
+		// we are testing specifically for runtime errors in evaluation
+		testErrors(tt.input, ast, tt.expErr, tt.errmsg, t)
+	}
+}
+
+func testErrors(input string, ast *ast.Program, expErr bool, expMsg string, t *testing.T) {
 
 	env := object.NewEnvironment()
 
@@ -154,39 +180,10 @@ func setupEvalToBoolean() (*object.Environment, []struct {
 	return env, tests
 }
 
-func TestDivisionByZero(t *testing.T) {
-
-	tests := []string{
-		"3/0",
-		"-3/(1-1)",
-	}
-	for _, input := range tests {
-		testDivisionByZero(input, t)
-	}
-}
-
 func evaluate(input string, env *object.Environment, t *testing.T) object.Object {
 
 	l := lexer.New(input)
 	p := parser.New(l)
 	ast := p.ParseProgram()
 	return Eval(ast, env)
-}
-
-func testDivisionByZero(input string, t *testing.T) {
-	l := lexer.New(input)
-	p := parser.New(l)
-	ast := p.ParseProgram()
-
-	defer func() {
-		if err := recover(); err != nil {
-			t.Errorf("Runtime error for %v: %q", input, err)
-		}
-	}()
-
-	env := object.NewEnvironment()
-	result := Eval(ast, env)
-	if result.Type() != "ERROR" {
-		t.Error("division by zero does not evaluate to an error")
-	}
 }
