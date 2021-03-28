@@ -10,39 +10,66 @@ import (
 	"testing"
 )
 
-func TestRuntimeErrorsNotEnoughArguments(t *testing.T) {
-
-	tests := []string{
-		"let zero = fn(x){0}; zero()",
-		"let id = fn(x){x}; id()",
-		"let add = fn(x,y){x+y}; add(2)",
-	}
-	for _, input := range tests {
-
-		l := lexer.New(input)
-		p := parser.New(l)
-		ast := p.ParseProgram()
-
-		// we check specifically for a runtime error caused by the evaluation
-		checkRuntimeError(input, ast, len(p.Errors()) > 0, t)
-	}
-}
-
+//TODO: specify error messages
 func TestArityCallExpressions(t *testing.T) {
-
-	//after fixing the runtime error problem, we need to specify how to treat function calls with not enough arguments
 
 	tests := []struct {
 		input  string
 		expErr bool
+		errmsg string
 	}{
-		{"let id = fn(x){x}; id()", true},    // not enough arguments
-		{"let id = fn(x){x}; id(1)", false},  // just right
-		{"let id = fn(x){x}; id(1,2)", true}, // too many arguments // that is disputable!
+		// to be specified: error msg
+		{"let truther = fn(x){false}; truther()", true, "not enough"},
+		{"let id = fn(x){x}; id()", true, "not enough"},
+		{"let add = fn(x,y){x+y}; add(2)", true, "not enough"},
+		// regression
+		{"let zero = fn(){0}; zero()", false, ""},
+		{"let truther = fn(x){false}; truther(1)", false, ""},
+		{"let id = fn(x){x}; id(1)", false, ""},
+		{"let add = fn(x,y){x+y}; add(1,2)", false, ""},
+		// to be specified: whether we want an error + error msg
+		{"let zero = fn(){0}; zero(1)", false, ""},
+		{"let zero = fn(){0}; zero(1,2,3)", false, ""},
+		{"let truther = fn(x){false}; truther(1)", true, "too many"},
+		{"let id = fn(x){x}; id(1,2)", true, "too many"},
+		{"let add = fn(x,y){x+y}; add(1,2,3)", true, "too many"},
 	}
 
 	for _, tt := range tests {
-		testArityCallExpressions(tt.input, tt.expErr, t)
+		l := lexer.New(tt.input)
+		p := parser.New(l)
+		ast := p.ParseProgram()
+		if len(p.Errors()) > 0 {
+			t.Errorf("Unexpected parse errors for %q", tt.input) // either wrong test setup or bugs in parser
+			continue
+		}
+		// we are testing specifically for runtime errors in evaluation
+		testArityCallExpressions(tt.input, ast, tt.expErr, tt.errmsg, t)
+	}
+}
+
+func testArityCallExpressions(input string, ast *ast.Program, expErr bool, expMsg string, t *testing.T) {
+
+	env := object.NewEnvironment()
+
+	defer func() {
+		if err := recover(); err != nil {
+			t.Errorf("Evaluation panics for %q: %q", input, err)
+		}
+	}()
+
+	value := Eval(ast, env)
+	errobj, hasErr := value.(*object.Error)
+
+	if expErr && !hasErr {
+		t.Errorf("Error missing for: %q", input)
+		return
+	}
+	if !expErr && hasErr {
+		t.Errorf("Unexpected error message for %q: %q", input, errobj.Message)
+	}
+	if expErr && hasErr && errobj.Message != expMsg {
+		t.Errorf("Wrong error message for %q: %q (should be %q)", input, errobj.Message, expMsg)
 	}
 }
 
@@ -206,7 +233,7 @@ func TestEvalToBoolConsistency(t *testing.T) {
 		expr2 := "!!a"
 
 		if evaluate(expr1, env, t) != evaluate(expr2, env, t) {
-			t.Error("inconsistent evaluation to bool for " + tt.description)
+			t.Errorf("inconsistent evaluation to bool for: %q ", tt.description)
 		}
 	}
 }
@@ -248,18 +275,18 @@ func TestEvalToBoolCorrectness(t *testing.T) {
 		switch tt.expected {
 		case "true":
 			if result != TRUE {
-				t.Error(tt.description + " does not evaluate to true")
+				t.Errorf("%s does not evaluate to true", tt.description)
 			}
 		case "false":
 			if result != FALSE {
-				t.Error(tt.description + " does not evaluate to false")
+				t.Errorf("%s does not evaluate to false", tt.description)
 			}
 		case "error":
 			if result.Type() != "ERROR" {
-				t.Error(tt.description + " does not evaluate to an error")
+				t.Errorf("%s does not evaluate to an error", tt.description)
 			}
 		default:
-			t.Error("test setup fails, since expectation not yet implemented")
+			t.Errorf("test setup fails, since expectation %q not yet implemented", tt.expected)
 		}
 	}
 }
@@ -282,7 +309,7 @@ func testDivisionByZero(input string, t *testing.T) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			t.Error("Runtime error for " + input)
+			t.Errorf("Runtime error for %v: %q", input, err)
 		}
 	}()
 
@@ -306,39 +333,13 @@ func checkRuntimeError(input string, ast *ast.Program, hasParseErrors bool, t *t
 	defer func() { // idea from https://golang.org/doc/effective_go#recover
 		if err := recover(); err != nil {
 			if hasParseErrors {
-				t.Error("Runtime error after parse errors " + input)
-
+				t.Errorf("Runtime error after parse errors for %v: %q", input, err)
 			} else {
-				t.Error("Runtime error though no parse errors for " + input)
+				t.Errorf("Runtime error though no parse errors for %v: %q", input, err)
 			}
 		}
 	}()
 	//value :=
 	Eval(ast, env)
 	//t.Error(value.Inspect())
-}
-
-func testArityCallExpressions(input string, expErr bool, t *testing.T) {
-
-	l := lexer.New(input)
-	p := parser.New(l)
-	ast := p.ParseProgram()
-	env := object.NewEnvironment()
-
-	defer func() {
-		if err := recover(); err != nil {
-			t.Error("Runtime error for " + input)
-		}
-	}()
-
-	value := Eval(ast, env)
-	_, hasErr := value.(*object.Error)
-
-	if expErr && !hasErr {
-		t.Error("Error message missing for " + input)
-		return
-	}
-	if !expErr && hasErr {
-		t.Error("Explainworthy error message for " + input)
-	}
 }

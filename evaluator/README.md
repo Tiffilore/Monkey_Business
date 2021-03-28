@@ -1,16 +1,18 @@
 # Testing the evaluator
 
+[_Don't panic!_](https://go-proverbs.github.io/)
+
+
 **Table of contents**
 1. [Existing Tests](#existing)
 2. [Additional Tests](#additional)
-    1. [TestRuntimeErrorsNotEnoughArguments](#test1)
-    2. [TestArityCallExpressions](#test2)
+    2. [TestArityCallExpressions](#test1)
     3. [TestRuntimeErrorsWithNil1](#test3)
     4. [TestRuntimeErrorsWithNil2](#test4)
     5. [TestRuntimeErrorsWithNull](#test5)
     6. [TestRuntimeErrorsWithInvalidPrograms](#test6)
-    7. [`TestEvalToBoolConsistency` and `TestEvalToBoolCorrectness`](#test7)
-    8. [`TestDivisionByZero` ](#test8)
+    7. [TestEvalToBoolConsistency and TestEvalToBoolCorrectness](#test7)
+    8. [TestDivisionByZero](#test8)
 
 
 ## Existing Tests: `evaluator_test.go` <a name="existing"></a>
@@ -33,14 +35,13 @@ Additionally, there are two tests with hash literals and index expressions, whic
 
 ## Additional Tests: `evaluator_add_test.go` <a name="additional"></a>
 
-### `TestRuntimeErrorsNotEnoughArguments` <a name="test1"></a>
+### `TestArityCallExpressions` <a name="test1"></a>
 
-- tests whether the evaluation of a call expression with not enough arguments causes a runtime error
-
-### `TestArityCallExpressions` <a name="test2"></a>
-
-- once the problem with runtime errors is fixed, we need to specify how we want to treat call expressions with the wrong number of arguments
-    - there is no straightforward answer to that; it needs to be discussed and this test is only a starter
+- specifies how to deal with call expressions with not enough / too many arguments
+  - in the current implementation, the evaluator panics at the face of not enough arguments
+  - matter of specification (thus discussion):
+    - do we want to return an error if there are too many arguments?
+    - what error messages?
 
 ### `TestRuntimeErrorsWithNil1` <a name="test3"></a>
 
