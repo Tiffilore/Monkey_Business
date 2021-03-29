@@ -648,11 +648,14 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 
 	//visualizer.Ast2pdf(program, "show")
 	if len(p.Errors()) != 0 {
-		s.printParserErrors(p.Errors())
+		s.printParserErrors(p.Errors(), level)
 		return
 	}
 
-	if s.logtype || process == ParseP {
+	if s.logparse {
+		fmt.Fprint(s.out, "log ast:\t")
+	}
+	if s.logparse || process == ParseP {
 		fmt.Fprintln(s.out, ast)
 	}
 
@@ -662,6 +665,9 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 
 	evaluated := evaluator.Eval(ast, s.environment)
 
+	if s.logtype {
+		fmt.Fprint(s.out, "log type:\t")
+	}
 	if s.logtype || process == TypeP {
 		fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
 	}
@@ -709,9 +715,9 @@ func (s *Session) multiline_input(input string) string {
 		input += " " + line
 	}
 }
-func (s *Session) printParserErrors(errors []string) {
+func (s *Session) printParserErrors(errors []string, level InputLevel) {
 
-	fmt.Fprintf(s.out, "... cannot be parsed as %v\n", s.level)
+	fmt.Fprintf(s.out, "... cannot be parsed as %v\n", level)
 	//io.WriteString(s.out, " parser errors:\n")
 	for _, msg := range errors {
 		fmt.Fprintf(s.out, "\t%v\n", msg)

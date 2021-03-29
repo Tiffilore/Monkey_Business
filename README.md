@@ -2,11 +2,18 @@
 
  _to be continued..._
 
-## Step 3: Add dimensions: settings `level (program|statement|expression)` and `process (parse|eval|type)`
+## Step 3: Add dimensions: settings `level <l>` and `process <p>`
+
+![Demo6](demos/demo6.gif)
+
+
+#### `(set|reset) level (program|statement|expression)`
 
 Every ast node is either a program, a statement or an expression. Until now, we treat each input as a program, which means, we can also only evaluate a program and show the type for the evaluation result of a program.
 In this step, we implement another setting that chooses to parse and thus further evaluate the input as either program,statement or expression.
 In addition, the commands `expr[ession]`, `stmt|statement` and `prog[ram]` are implemented.
+
+#### `(set|reset) process (parse|eval|type)`
 
 Furthermore, we implement settings for the way the input is to be processed: it can either be only parsed (`parse`) and output the ast, which implements the Stringer interface, or evaluated and output, which type the value is (`type`) or the value of the object via the `Inspect()`-method of objects (`eval`). The commands `type`, `eval` and `parse` behave exactly as if `process (parse|eval|type)` were set for a single command. Since, `type` and `eval` are already implemented, only `parse` is added.
 

@@ -82,3 +82,5 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 ### `(set|reset) level (program|statement|expression)`, `parse`, `logparse`
 
 ### `(set|reset) process  (parse|eval|type)`, `expr[ession]`, `stmt|statement` and `prog[ram]`
+
+![Demo6](../demos/demo6.gif)
