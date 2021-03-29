@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"monkey/ast"
 	"monkey/evaluator"
 	"monkey/lexer"
 	"monkey/object"
@@ -34,6 +35,27 @@ func Start(in io.Reader, out io.Writer) {
 	}
 }
 
+type InputLevel int
+
+const (
+	ProgramL InputLevel = iota
+	StatementL
+	ExpressionL
+)
+
+func (i InputLevel) String() string {
+	switch i {
+	case ProgramL:
+		return "program"
+	case StatementL:
+		return "statement"
+	case ExpressionL:
+		return "expression"
+	default:
+		return fmt.Sprintf("%d", int(i))
+	}
+}
+
 type Session struct {
 	scanner     *bufio.Scanner
 	out         io.Writer
@@ -41,6 +63,7 @@ type Session struct {
 	environment *object.Environment
 	logtype     bool
 	paste       bool
+	inputLevel  InputLevel
 
 	//historyExpr		[]ast.Expression
 	//historyStmsts		[]ast.Statement
@@ -51,6 +74,7 @@ type Session struct {
 const prompt_default = ">> "
 const logtype_default = false
 const paste_default = false
+const inputLevel_default = ProgramL
 
 // NewSession creates a new Session.
 func NewSession(in io.Reader, out io.Writer) *Session {
@@ -151,6 +175,7 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
+			{"~ level <level>", "level must be: [p]rogram, [s]tatement, [e]xpression"},
 			{"~ logtype", "when eval, additionally output objecttype"},
 			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
@@ -165,6 +190,7 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
+			{"~ level", "set level to default"},
 			{"~ logtype", "set logtype to default"},
 			{"~ paste", "set multiline support to default"},
 			{"~ prompt", "set prompt to default"},
@@ -382,7 +408,7 @@ func (s *Session) exec_settings() {
 	t.SetOutputMirror(s.out)
 	t.AppendHeader(table.Row{"setting", "current value", "default value"})
 	t.AppendSeparator()
-
+	t.AppendRow([]interface{}{"level", s.inputLevel, inputLevel_default})
 	t.AppendRow([]interface{}{"logtype", s.logtype, logtype_default})
 	t.AppendRow([]interface{}{"paste", s.paste, paste_default})
 	t.AppendRow([]interface{}{"prompt", s.prompt, prompt_default})
@@ -402,6 +428,8 @@ func (s *Session) exec_reset(input string) {
 		s.logtype = logtype_default
 	case "paste":
 		s.paste = paste_default
+	case "level":
+		s.inputLevel = inputLevel_default
 	default:
 		s.exec_help("reset")
 	}
@@ -420,6 +448,15 @@ func (s *Session) exec_unset(setting string) {
 }
 
 func (s *Session) exec_set(input string) {
+
+	levelmap := make(map[string]InputLevel)
+	levelmap["program"] = ProgramL
+	levelmap["p"] = ProgramL
+	levelmap["statement"] = StatementL
+	levelmap["s"] = StatementL
+	levelmap["expression"] = ExpressionL
+	levelmap["e"] = ExpressionL
+
 	// todo: datastructure for settings
 	slice := strings.SplitN(input, " ", 2)
 	//	{"~ logtype", "when eval, additionally output objecttype "},
@@ -435,9 +472,17 @@ func (s *Session) exec_set(input string) {
 		}
 	}
 	if len(slice) == 2 {
-		if setting == "prompt" {
-			s.prompt = slice[1] + " "
+		arg := slice[1]
+		switch setting {
+		case "prompt":
+			s.prompt = arg + " "
 			return
+		case "level":
+			level, ok := levelmap[arg]
+			if ok {
+				s.inputLevel = level
+				return
+			}
 		}
 	}
 	s.exec_help("set")
@@ -475,15 +520,15 @@ func (s *Session) det_type(line string) {
 	l := lexer.New(line)
 	p := parser.New(l)
 
-	program := p.ParseProgram()
+	ast := s.parseL(p, line)
 
 	//visualizer.Ast2pdf(program, "show")
 	if len(p.Errors()) != 0 {
-		printParserErrors(s.out, p.Errors())
+		s.printParserErrors(p.Errors())
 		return
 	}
 
-	evaluated := evaluator.Eval(program, s.environment)
+	evaluated := evaluator.Eval(ast, s.environment)
 	fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
 }
 
@@ -495,20 +540,35 @@ func (s *Session) exec_eval(line string) {
 	s.eval(line)
 }
 
+func (s *Session) parseL(p *parser.Parser, line string) ast.Node {
+
+	switch s.inputLevel {
+	case ExpressionL:
+		return p.ParseExpression()
+	case StatementL:
+		return p.ParseStatement()
+	case ProgramL:
+		return p.ParseProgram()
+	default:
+		return nil
+	}
+
+}
+
 func (s *Session) eval(line string) {
 
 	l := lexer.New(line)
 	p := parser.New(l)
 
-	program := p.ParseProgram()
+	ast := s.parseL(p, line)
 
 	//visualizer.Ast2pdf(program, "show")
 	if len(p.Errors()) != 0 {
-		printParserErrors(s.out, p.Errors())
+		s.printParserErrors(p.Errors())
 		return
 	}
 
-	evaluated := evaluator.Eval(program, s.environment)
+	evaluated := evaluator.Eval(ast, s.environment)
 	if s.logtype {
 		fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
 	}
@@ -522,24 +582,11 @@ func (s *Session) eval(line string) {
 	*/
 }
 
-const MONKEY_FACE = `            __,__
-   .--.  .-"     "-.  .--.
-  / .. \/  .-. .-.  \/ .. \
- | |  '|  /   Y   \  |'  | |
- | \   \  \ 0 | 0 /  /   / |
-  \ '- ,\.-"""""""-./, -' /
-   ''-' /_   ^ ^   _\ '-''
-       |  \._   _./  |
-       \   \ '~' /   /
-        '._ '-=-' _.'
-           '-----'
-`
+func (s *Session) printParserErrors(errors []string) {
 
-func printParserErrors(out io.Writer, errors []string) {
-	io.WriteString(out, MONKEY_FACE)
-	io.WriteString(out, "Woops! We ran into some monkey business here!\n")
-	io.WriteString(out, " parser errors:\n")
+	fmt.Fprintf(s.out, "... cannot be parsed as %v\n", s.inputLevel)
+	//io.WriteString(s.out, " parser errors:\n")
 	for _, msg := range errors {
-		io.WriteString(out, "\t"+msg+"\n")
+		fmt.Fprintf(s.out, "\t%v\n", msg)
 	}
 }

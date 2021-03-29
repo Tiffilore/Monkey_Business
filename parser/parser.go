@@ -489,3 +489,16 @@ func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
 func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
 	p.infixParseFns[tokenType] = fn
 }
+
+func (p *Parser) ParseStatement() ast.Statement {
+	switch p.curToken.Type {
+	case token.LBRACE:
+		return p.parseBlockStatement()
+	default:
+		return p.parseStatement()
+	}
+}
+
+func (p *Parser) ParseExpression() ast.Expression {
+	return p.parseExpression(LOWEST)
+}
