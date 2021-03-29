@@ -80,12 +80,14 @@ func (i InputProcess) String() string {
 type Session struct {
 	scanner     *bufio.Scanner
 	out         io.Writer
-	prompt      string
 	environment *object.Environment
-	logtype     bool
-	paste       bool
-	level       InputLevel
-	process     InputProcess
+	prompt      string
+	//
+	process InputProcess
+	level   InputLevel
+	paste   bool
+	// levels of verbosity / amount of logging:
+	logtype bool
 
 	//historyExpr		[]ast.Expression
 	//historyStmsts		[]ast.Statement
@@ -93,11 +95,15 @@ type Session struct {
 	// --> maybe not needed, maybe we should put the Stmts programs consist of into historyStmts
 }
 
-const prompt_default = ">> "
-const logtype_default = false
-const paste_default = false
-const inputLevel_default = ProgramL
-const inputProcess_default = EvalP
+const ( //default settings
+	prompt_default = ">> "
+
+	inputProcess_default = EvalP
+	inputLevel_default   = ProgramL
+	paste_default        = false
+
+	logtype_default = false
+)
 
 // NewSession creates a new Session.
 func NewSession(in io.Reader, out io.Writer) *Session {
@@ -293,6 +299,7 @@ func (s *Session) init() { // to avoid cycle
 	commands["e"] = commands["eval"]
 }
 
+// decide which function
 func (s *Session) exec_cmd(line string) {
 	if !strings.HasPrefix(line, ":") {
 		s.exec_process(line)
@@ -320,10 +327,12 @@ func (s *Session) exec_cmd(line string) {
 	s.exec_help(cmd)
 }
 
+// quit
 func (s *Session) exec_quit() {
 	os.Exit(0)
 }
 
+// environment
 func (s *Session) exec_clear() {
 	s.environment = object.NewEnvironment()
 }
@@ -361,6 +370,7 @@ func (s *Session) exec_list() {
 	t.Render()
 }
 
+// commands
 func (s *Session) exec_help(cmd string) {
 
 	if command, ok := commands[cmd]; ok {
@@ -435,13 +445,7 @@ func (s *Session) exec_help_all() {
 	t.Render()
 }
 
-/*
-	settings:
-		(set|reset|[unset])
-		set bool vs set value
-
-*/
-
+// settings
 func (s *Session) exec_settings() {
 
 	t := table.NewWriter()
@@ -545,100 +549,76 @@ func (s *Session) exec_set(input string) {
 	s.exec_help("set")
 }
 
-func (s *Session) exec_paste(input string) {
-	s.helper_paste(input, s.eval)
-}
-
-func (s *Session) helper_paste(input string, f func(string)) {
-	for {
-		scanned := s.scanner.Scan()
-		if !scanned {
-			return
-		}
-		line := s.scanner.Text()
-		if line == "" {
-			f(input)
-			return
-		}
-		input += " " + line
-	}
-}
-
+// input processing
 func (s *Session) exec_process(line string) {
-	switch s.process {
-	case EvalP:
-		s.exec_eval(line)
-	case ParseP:
-		s.exec_parse(line)
-	case TypeP:
-		s.exec_type(line)
-	default:
-		fmt.Println(s.out, "uppsi")
+	s.process_input_dim(s.paste, s.level, s.process, line)
+}
 
-	}
+func (s *Session) exec_paste(line string) {
+	s.process_input_dim(true, s.level, s.process, line)
 }
 
 func (s *Session) exec_eval(line string) {
-	if s.paste {
-		s.helper_paste(line, s.eval)
-		return
-	}
-	s.eval(line)
+	s.process_input_dim(s.paste, s.level, EvalP, line)
 }
 
 func (s *Session) exec_type(line string) {
-	if s.paste {
-		s.helper_paste(line, s.det_type)
-		return
-	}
-	s.det_type(line)
+	s.process_input_dim(s.paste, s.level, TypeP, line)
 }
 
-func (s *Session) det_type(line string) {
+func (s *Session) exec_parse(line string) {
+	s.process_input_dim(s.paste, s.level, ParseP, line)
+}
 
-	l := lexer.New(line)
+////////////////
+
+func (s *Session) process_input_dim(paste bool, level InputLevel, process InputProcess, input string) {
+
+	if paste {
+		input = s.multiline_input(input)
+	}
+
+	l := lexer.New(input)
 	p := parser.New(l)
 
-	ast := s.parseL(p, line)
+	ast := parse_level(p, level)
 
 	//visualizer.Ast2pdf(program, "show")
 	if len(p.Errors()) != 0 {
 		s.printParserErrors(p.Errors())
+		return
+	}
+
+	if process == ParseP {
+		fmt.Fprintln(s.out, ast)
 		return
 	}
 
 	evaluated := evaluator.Eval(ast, s.environment)
-	fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
-}
 
-func (s *Session) exec_parse(line string) {
-	if s.paste {
-		s.helper_paste(line, s.parse)
-		return
+	if s.logtype || process == TypeP {
+		fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
 	}
-	s.parse(line)
-}
-
-func (s *Session) parse(line string) {
-
-	l := lexer.New(line)
-	p := parser.New(l)
-
-	ast := s.parseL(p, line)
-
-	//visualizer.Ast2pdf(program, "show")
-	if len(p.Errors()) != 0 {
-		s.printParserErrors(p.Errors())
+	if process == TypeP {
 		return
 	}
 
-	fmt.Fprintln(s.out, ast)
-
+	if evaluated != nil { // TODO: Umgang mit nil würdig?
+		fmt.Fprintln(s.out, evaluated.Inspect())
+	}
+	//	} else {
+	//		fmt.Fprintln(s.out, nil)
+	//	}
+	/*
+		io.WriteString vs fmt.Fprint ?????
+			The difference is that fmt.Fprint is formatting the arguments provided first in a buffer before calling w.Write.
+			And io.WriteString is checking if w provides the StringWriter interface and calls that instead.
+	*/
 }
 
-func (s *Session) parseL(p *parser.Parser, line string) ast.Node {
+func parse_level(p *parser.Parser, level InputLevel) ast.Node {
 
-	switch s.level {
+	switch level {
 	case ExpressionL:
 		return p.ParseExpression()
 	case StatementL:
@@ -648,36 +628,21 @@ func (s *Session) parseL(p *parser.Parser, line string) ast.Node {
 	default:
 		return nil
 	}
-
 }
 
-func (s *Session) eval(line string) {
-
-	l := lexer.New(line)
-	p := parser.New(l)
-
-	ast := s.parseL(p, line)
-
-	//visualizer.Ast2pdf(program, "show")
-	if len(p.Errors()) != 0 {
-		s.printParserErrors(p.Errors())
-		return
+func (s *Session) multiline_input(input string) string {
+	for {
+		scanned := s.scanner.Scan()
+		if !scanned {
+			return input //TODO!!
+		}
+		line := s.scanner.Text()
+		if line == "" {
+			return input
+		}
+		input += " " + line
 	}
-
-	evaluated := evaluator.Eval(ast, s.environment)
-	if s.logtype {
-		fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
-	}
-	if evaluated != nil {
-		fmt.Fprintln(s.out, evaluated.Inspect())
-	}
-	/*
-		io.WriteString vs fmt.Fprint ?????
-			The difference is that fmt.Fprint is formatting the arguments provided first in a buffer before calling w.Write.
-			And io.WriteString is checking if w provides the StringWriter interface and calls that instead.
-	*/
 }
-
 func (s *Session) printParserErrors(errors []string) {
 
 	fmt.Fprintf(s.out, "... cannot be parsed as %v\n", s.level)
