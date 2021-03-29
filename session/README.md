@@ -27,19 +27,19 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 |          | ~ paste           | disable multiline support                                |
 
 
-### `clear`, `h[elp]`, `q[uit]`, `set prompt <prompt>`
+#### `clear`, `h[elp]`, `q[uit]`, `set prompt <prompt>`
 ![Demo1](../demos/demo1.gif)
 
-### `reset prompt`, `list` 
+#### `reset prompt`, `list` 
 ![Demo2](../demos/demo2.gif)
 
-### `t[ype]`,  `(set|unset|reset) logtype`, `e[val]`
+#### `t[ype]`,  `(set|unset|reset) logtype`, `e[val]`
 - eval is default
     - if the user input is not prefixed by `:`, `input` is equivalent to `:eval input`
 
 ![Demo3](../demos/demo3.gif)
 
-### Multiline support: `paste`, `(set|unset|reset) paste` and `settings`
+#### Multiline support: `paste`, `(set|unset|reset) paste` and `settings`
 
 ![Demo4](../demos/demo4.gif)
 
@@ -79,8 +79,8 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 
 
 
-### `(set|reset) level (program|statement|expression)`, `parse`, `logparse`
+#### `(set|reset) level (program|statement|expression)`, `parse`, `logparse`
 
-### `(set|reset) process  (parse|eval|type)`, `expr[ession]`, `stmt|statement` and `prog[ram]`
+#### `(set|reset) process  (parse|eval|type)`, `expr[ession]`, `stmt|statement` and `prog[ram]`
 
 ![Demo6](../demos/demo6.gif)
