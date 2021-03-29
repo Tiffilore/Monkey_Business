@@ -2,10 +2,11 @@
 
  _to be continued..._
 
-## Step 3: Add input levels: (program|statement|expression)
+## Step 3: Add settings `level (program|statement|expression)` and `process (parse|eval|type)`
 
 Every ast node is either a program, a statement or an expression. Until now, we treat each input as a program, which means, we can also only evaluate a program and show the type for the evaluation result of a program.
 In this step, we implement another setting that chooses to parse and thus further evaluate the input as either program,statement or expression.
+...
 
 ## Step 2: Implement a small initial instruction set for the interactive environment
 
