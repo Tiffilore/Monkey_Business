@@ -297,6 +297,46 @@ func (s *Session) init() { // to avoid cycle
 	}
 	commands["eval"] = *c_eval
 	commands["e"] = commands["eval"]
+
+	c_expr := &command{
+		name:     "expr[ession]",
+		with_arg: s.exec_expression,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ <input>", "expect <input> to be an expression"},
+		},
+	}
+	commands["expression"] = *c_expr
+	commands["expr"] = commands["expression"]
+
+	c_stmt := &command{
+		name:     "stmt|statement",
+		with_arg: s.exec_statement,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ <input>", "expect <input> to be a statement"},
+		},
+	}
+	commands["statement"] = *c_stmt
+	commands["stmt"] = commands["statement"]
+
+	c_prog := &command{
+		name:     "prog[ram]",
+		with_arg: s.exec_program,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ <input>", "expect <input> to be a program"},
+		},
+	}
+	commands["program"] = *c_prog
+	commands["prog"] = commands["program"]
+
 }
 
 // decide which function
@@ -558,6 +598,18 @@ func (s *Session) exec_paste(line string) {
 	s.process_input_dim(true, s.level, s.process, line)
 }
 
+func (s *Session) exec_expression(line string) {
+	s.process_input_dim(s.paste, ExpressionL, s.process, line)
+}
+
+func (s *Session) exec_statement(line string) {
+	s.process_input_dim(s.paste, StatementL, s.process, line)
+}
+
+func (s *Session) exec_program(line string) {
+	s.process_input_dim(s.paste, ProgramL, s.process, line)
+}
+
 func (s *Session) exec_eval(line string) {
 	s.process_input_dim(s.paste, s.level, EvalP, line)
 }
@@ -569,8 +621,6 @@ func (s *Session) exec_type(line string) {
 func (s *Session) exec_parse(line string) {
 	s.process_input_dim(s.paste, s.level, ParseP, line)
 }
-
-////////////////
 
 func (s *Session) process_input_dim(paste bool, level InputLevel, process InputProcess, input string) {
 
