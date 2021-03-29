@@ -2,13 +2,15 @@
 
  _to be continued..._
 
-## Step 3: Add settings `level (program|statement|expression)` and `process (parse|eval|type)`
+## Step 3: Add dimensions: settings `level (program|statement|expression)` and `process (parse|eval|type)`
 
 Every ast node is either a program, a statement or an expression. Until now, we treat each input as a program, which means, we can also only evaluate a program and show the type for the evaluation result of a program.
 In this step, we implement another setting that chooses to parse and thus further evaluate the input as either program,statement or expression.
 In addition, the commands `expr[ession]`, `stmt|statement` and `prog[ram]` are implemented.
 
-Furthermore, we implement settings for the way the input is to be processed: `(parse|eval|type)`. The commands `type` and `eval` are already implemented, so only `parse` is added.
+Furthermore, we implement settings for the way the input is to be processed: it can either be only parsed (`parse`) and output the ast, which implements the Stringer interface, or evaluated and output, which type the value is (`type`) or the value of the object via the `Inspect()`-method of objects (`eval`). The commands `type`, `eval` and `parse` behave exactly as if `process (parse|eval|type)` were set for a single command. Since, `type` and `eval` are already implemented, only `parse` is added.
+
+Logging can be extended by the setting `logparse`, which additionally outputs the ast as string.
 
 The full instruction set is now:
 
@@ -27,18 +29,21 @@ The full instruction set is now:
 | q[uit]         | ~                 | quit the session                                         |
 | reset          | ~ process         | set process to default                                   |
 |                | ~ level           | set level to default                                     |
+|                | ~ logparse        | set logparse to default                                  |
 |                | ~ logtype         | set logtype to default                                   |
 |                | ~ paste           | set multiline support to default                         |
 |                | ~ prompt          | set prompt to default                                    |
 | set            | ~ process `<p>`     | `<p>` must be: [e]val, [p]arse, [t]ype                     |
 |                | ~ level `<l>`       | `<l>` must be: [p]rogram, [s]tatement, [e]xpression        |
-|                | ~ logtype         | when eval, additionally output objecttype                |
+|                | ~ logparse        | additionally output ast-string                           |
+|                | ~ logtype         | additionally output objecttype                           |
 |                | ~ paste           | enable multiline support                                 |
 |                | ~ prompt `<prompt>` | set prompt string to `<prompt>`                            |
 | settings       | ~                 | list all settings with their current values and defaults |
 | stmt|statement | ~ `<input>`         | expect `<input>` to be a statement                         |
 | t[ype]         | ~ `<input>`         | show objecttype `<input>` evaluates to                     |
-| unset          | ~ logtype         | when eval, don't additionally output objecttype          |
+| unset          | ~ logparse        | don't additionally output ast-string                     |
+|                | ~ logtype         | don't additionally output objecttype                     |
 |                | ~ paste           | disable multiline support                                |
 
 

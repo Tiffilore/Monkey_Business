@@ -87,7 +87,8 @@ type Session struct {
 	level   InputLevel
 	paste   bool
 	// levels of verbosity / amount of logging:
-	logtype bool
+	logtype  bool
+	logparse bool
 
 	//historyExpr		[]ast.Expression
 	//historyStmsts		[]ast.Statement
@@ -102,7 +103,8 @@ const ( //default settings
 	inputLevel_default   = ProgramL
 	paste_default        = false
 
-	logtype_default = false
+	logtype_default  = false
+	logparse_default = false
 )
 
 // NewSession creates a new Session.
@@ -116,6 +118,7 @@ func NewSession(in io.Reader, out io.Writer) *Session {
 		level:       inputLevel_default,
 		process:     inputProcess_default,
 		logtype:     logtype_default,
+		logparse:    logparse_default,
 		paste:       paste_default,
 	}
 
@@ -208,7 +211,8 @@ func (s *Session) init() { // to avoid cycle
 		}{
 			{"~ process <p>", "<p> must be: [e]val, [p]arse, [t]ype"},
 			{"~ level <l>", "<l> must be: [p]rogram, [s]tatement, [e]xpression"},
-			{"~ logtype", "when eval, additionally output objecttype"},
+			{"~ logparse", "additionally output ast-string"},
+			{"~ logtype", "additionally output objecttype"},
 			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
 		},
@@ -224,6 +228,7 @@ func (s *Session) init() { // to avoid cycle
 		}{
 			{"~ process", "set process to default"},
 			{"~ level", "set level to default"},
+			{"~ logparse", "set logparse to default"},
 			{"~ logtype", "set logtype to default"},
 			{"~ paste", "set multiline support to default"},
 			{"~ prompt", "set prompt to default"},
@@ -238,7 +243,8 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
-			{"~ logtype", "when eval, don't additionally output objecttype"},
+			{"~ logparse", "don't additionally output ast-string"},
+			{"~ logtype", "don't additionally output objecttype"},
 			{"~ paste", "disable multiline support"},
 		},
 	}
@@ -495,6 +501,7 @@ func (s *Session) exec_settings() {
 	t.AppendRow([]interface{}{"process", s.process, inputProcess_default})
 	t.AppendRow([]interface{}{"level", s.level, inputLevel_default})
 	t.AppendRow([]interface{}{"logtype", s.logtype, logtype_default})
+	t.AppendRow([]interface{}{"logparse", s.logparse, logparse_default})
 	t.AppendRow([]interface{}{"paste", s.paste, paste_default})
 	t.AppendRow([]interface{}{"prompt", s.prompt, prompt_default})
 
@@ -511,6 +518,8 @@ func (s *Session) exec_reset(input string) {
 		s.prompt = prompt_default
 	case "logtype":
 		s.logtype = logtype_default
+	case "logparse":
+		s.logparse = logparse_default
 	case "paste":
 		s.paste = paste_default
 	case "level":
@@ -527,6 +536,8 @@ func (s *Session) exec_unset(setting string) {
 	switch setting {
 	case "logtype":
 		s.logtype = false
+	case "logparse":
+		s.logparse = false
 	case "paste":
 		s.paste = false
 	default:
@@ -554,12 +565,14 @@ func (s *Session) exec_set(input string) {
 
 	// todo: datastructure for settings
 	slice := strings.SplitN(input, " ", 2)
-	//	{"~ logtype", "when eval, additionally output objecttype "},
 	setting := slice[0]
 	if len(slice) == 1 {
 		switch setting {
 		case "logtype":
 			s.logtype = true
+			return
+		case "logparse":
+			s.logparse = true
 			return
 		case "paste":
 			s.paste = true
@@ -639,8 +652,11 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 		return
 	}
 
-	if process == ParseP {
+	if s.logtype || process == ParseP {
 		fmt.Fprintln(s.out, ast)
+	}
+
+	if process == ParseP {
 		return
 	}
 
