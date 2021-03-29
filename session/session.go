@@ -46,11 +46,11 @@ const (
 func (i InputLevel) String() string {
 	switch i {
 	case ProgramL:
-		return "[p]rogram"
+		return "program"
 	case StatementL:
-		return "[s]tatement"
+		return "statement"
 	case ExpressionL:
-		return "[e]xpression"
+		return "expression"
 	default:
 		return fmt.Sprintf("%d", int(i))
 	}
@@ -524,7 +524,7 @@ func (s *Session) det_type(line string) {
 
 	//visualizer.Ast2pdf(program, "show")
 	if len(p.Errors()) != 0 {
-		printParserErrors(s.out, p.Errors())
+		s.printParserErrors(p.Errors())
 		return
 	}
 
@@ -564,7 +564,7 @@ func (s *Session) eval(line string) {
 
 	//visualizer.Ast2pdf(program, "show")
 	if len(p.Errors()) != 0 {
-		printParserErrors(s.out, p.Errors())
+		s.printParserErrors(p.Errors())
 		return
 	}
 
@@ -582,24 +582,11 @@ func (s *Session) eval(line string) {
 	*/
 }
 
-const MONKEY_FACE = `            __,__
-   .--.  .-"     "-.  .--.
-  / .. \/  .-. .-.  \/ .. \
- | |  '|  /   Y   \  |'  | |
- | \   \  \ 0 | 0 /  /   / |
-  \ '- ,\.-"""""""-./, -' /
-   ''-' /_   ^ ^   _\ '-''
-       |  \._   _./  |
-       \   \ '~' /   /
-        '._ '-=-' _.'
-           '-----'
-`
+func (s *Session) printParserErrors(errors []string) {
 
-func printParserErrors(out io.Writer, errors []string) {
-	io.WriteString(out, MONKEY_FACE)
-	io.WriteString(out, "Woops! We ran into some monkey business here!\n")
-	io.WriteString(out, " parser errors:\n")
+	fmt.Fprintf(s.out, "... cannot be parsed as %v\n", s.inputLevel)
+	//io.WriteString(s.out, " parser errors:\n")
 	for _, msg := range errors {
-		io.WriteString(out, "\t"+msg+"\n")
+		fmt.Fprintf(s.out, "\t%v\n", msg)
 	}
 }
