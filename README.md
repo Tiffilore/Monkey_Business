@@ -1,12 +1,62 @@
 # Extending the interpreter and its interactive environment
 
+_The purpose of the Monkey Programming Language is to learn different aspects of implementing a language. The main purpose of this repo is for me to learn go by fooling around. In addition, it serves the purpose of plunging into the business of interpreting Monkey PL more systematically. It reveals bugs in the original software by adding tests and offers fixes for these bugs. Moreover, it extends the interactive environment such that a use can gain more insight into the structure of the chosen abstract syntax tree (ast) and the steps of interpretation. At least, that's the plan..._
+
+## Step 4:
+
  _to be continued..._
 
-## Step 3: Add settings `level (program|statement|expression)` and `process (parse|eval|type)`
+## Step 3: Add dimensions: settings `level <l>` and `process <p>`
+
+![Demo6](demos/demo6.gif)
+
+
+#### `(set|reset) level (program|statement|expression)`
 
 Every ast node is either a program, a statement or an expression. Until now, we treat each input as a program, which means, we can also only evaluate a program and show the type for the evaluation result of a program.
 In this step, we implement another setting that chooses to parse and thus further evaluate the input as either program,statement or expression.
-...
+In addition, the commands `expr[ession]`, `stmt|statement` and `prog[ram]` are implemented.
+
+#### `(set|reset) process (parse|eval|type)`
+
+Furthermore, we implement settings for the way the input is to be processed: it can either be only parsed (`parse`) and output the ast, which implements the Stringer interface, or evaluated and output, which type the value is (`type`) or the value of the object via the `Inspect()`-method of objects (`eval`). The commands `type`, `eval` and `parse` behave exactly as if `process (parse|eval|type)` were set for a single command. Since, `type` and `eval` are already implemented, only `parse` is added.
+
+Logging can be extended by the setting `logparse`, which additionally outputs the ast as string.
+
+The full instruction set is now:
+
+| NAME           |                   | USAGE                                                    |
+--- | --- | --- |
+| clear          | ~                 | clear the environment                                    |
+| e[val]         | ~ `<input>`         | print out value of object `<input>` evaluates to           |
+| expr[ession]   | ~ `<input>`         | expect `<input>` to be an expression                       |
+| h[elp]         | ~                 | list all commands with usage                             |
+|                | ~ `<cmd>`           | print usage command `<cmd>`                                |
+| l[ist]         | ~                 | list all identifiers in the environment alphabetically   |
+|                |                   |      with types and values                               |
+| p[arse]        | ~ `<input>`         | parse `<input>`                                            |
+| paste          | ~ `<input>`         | evaluate multiline `<input>` (terminated by blank line)    |
+| prog[ram]      | ~ `<input>`         | expect `<input>` to be a program                           |
+| q[uit]         | ~                 | quit the session                                         |
+| reset          | ~ process         | set process to default                                   |
+|                | ~ level           | set level to default                                     |
+|                | ~ logparse        | set logparse to default                                  |
+|                | ~ logtype         | set logtype to default                                   |
+|                | ~ paste           | set multiline support to default                         |
+|                | ~ prompt          | set prompt to default                                    |
+| set            | ~ process `<p>`     | `<p>` must be: [e]val, [p]arse, [t]ype                     |
+|                | ~ level `<l>`       | `<l>` must be: [p]rogram, [s]tatement, [e]xpression        |
+|                | ~ logparse        | additionally output ast-string                           |
+|                | ~ logtype         | additionally output objecttype                           |
+|                | ~ paste           | enable multiline support                                 |
+|                | ~ prompt `<prompt>` | set prompt string to `<prompt>`                            |
+| settings       | ~                 | list all settings with their current values and defaults |
+| stmt|statement | ~ `<input>`         | expect `<input>` to be a statement                         |
+| t[ype]         | ~ `<input>`         | show objecttype `<input>` evaluates to                     |
+| unset          | ~ logparse        | don't additionally output ast-string                     |
+|                | ~ logtype         | don't additionally output objecttype                     |
+|                | ~ paste           | disable multiline support                                |
+
 
 ## Step 2: Implement a small initial instruction set for the interactive environment
 

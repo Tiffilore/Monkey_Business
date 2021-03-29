@@ -27,18 +27,60 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 |          | ~ paste           | disable multiline support                                |
 
 
-### `clear`, `h[elp]`, `q[uit]`, `set prompt <prompt>`
+#### `clear`, `h[elp]`, `q[uit]`, `set prompt <prompt>`
 ![Demo1](../demos/demo1.gif)
 
-### `reset prompt`, `list` 
+#### `reset prompt`, `list` 
 ![Demo2](../demos/demo2.gif)
 
-### `t[ype]`,  `(set|unset|reset) logtype`, `e[val]`
+#### `t[ype]`,  `(set|unset|reset) logtype`, `e[val]`
 - eval is default
     - if the user input is not prefixed by `:`, `input` is equivalent to `:eval input`
 
 ![Demo3](../demos/demo3.gif)
 
-### Multiline support: `paste`, `(set|unset|reset) paste` and `settings`
+#### Multiline support: `paste`, `(set|unset|reset) paste` and `settings`
 
 ![Demo4](../demos/demo4.gif)
+
+## Adding dimensions: settings `level` and `process` 
+
+| NAME           |                   | USAGE                                                    |
+--- | --- | --- |
+| clear          | ~                 | clear the environment                                    |
+| e[val]         | ~ `<input>`         | print out value of object `<input>` evaluates to           |
+| expr[ession]   | ~ `<input>`         | expect `<input>` to be an expression                       |
+| h[elp]         | ~                 | list all commands with usage                             |
+|                | ~ `<cmd>`           | print usage command `<cmd>`                                |
+| l[ist]         | ~                 | list all identifiers in the environment alphabetically   |
+|                |                   |      with types and values                               |
+| p[arse]        | ~ `<input>`         | parse `<input>`                                            |
+| paste          | ~ `<input>`         | evaluate multiline `<input>` (terminated by blank line)    |
+| prog[ram]      | ~ `<input>`         | expect `<input>` to be a program                           |
+| q[uit]         | ~                 | quit the session                                         |
+| reset          | ~ process         | set process to default                                   |
+|                | ~ level           | set level to default                                     |
+|                | ~ logparse        | set logparse to default                                  |
+|                | ~ logtype         | set logtype to default                                   |
+|                | ~ paste           | set multiline support to default                         |
+|                | ~ prompt          | set prompt to default                                    |
+| set            | ~ process `<p>`     | `<p>` must be: [e]val, [p]arse, [t]ype                     |
+|                | ~ level `<l>`       | `<l>` must be: [p]rogram, [s]tatement, [e]xpression        |
+|                | ~ logparse        | additionally output ast-string                           |
+|                | ~ logtype         | additionally output objecttype                           |
+|                | ~ paste           | enable multiline support                                 |
+|                | ~ prompt `<prompt>` | set prompt string to `<prompt>`                            |
+| settings       | ~                 | list all settings with their current values and defaults |
+| stmt|statement | ~ `<input>`         | expect `<input>` to be a statement                         |
+| t[ype]         | ~ `<input>`         | show objecttype `<input>` evaluates to                     |
+| unset          | ~ logparse        | don't additionally output ast-string                     |
+|                | ~ logtype         | don't additionally output objecttype                     |
+|                | ~ paste           | disable multiline support                                |
+
+
+
+#### `(set|reset) level (program|statement|expression)`, `parse`, `logparse`
+
+#### `(set|reset) process  (parse|eval|type)`, `expr[ession]`, `stmt|statement` and `prog[ram]`
+
+![Demo6](../demos/demo6.gif)
