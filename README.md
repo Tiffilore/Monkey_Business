@@ -2,9 +2,12 @@
 
 _The purpose of the Monkey Programming Language is to learn different aspects of implementing a language. The main purpose of this repo is for me to learn go by fooling around. In addition, it serves the purpose of plunging into the business of interpreting Monkey PL more systematically. It reveals bugs in the original software by adding tests and offers fixes for these bugs. Moreover, it extends the interactive environment such that a use can gain more insight into the structure of the chosen abstract syntax tree (ast) and the steps of interpretation. At least, that's the plan..._
 
-## Step 4:
-
  _to be continued..._
+
+## Step 4: Add representation of asts 
+
+![Demo7](demos/demo7.gif)
+
 
 ## Step 3: Add dimensions: settings `level <l>` and `process <p>`
 

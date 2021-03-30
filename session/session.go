@@ -657,7 +657,7 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	}
 	if s.logparse || process == ParseP {
 		fmt.Fprintln(s.out, node)
-		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "| ", true))
+		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", true))
 
 	}
 
