@@ -644,7 +644,7 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	l := lexer.New(input)
 	p := parser.New(l)
 
-	ast := parse_level(p, level)
+	node := parse_level(p, level)
 
 	//visualizer.Ast2pdf(program, "show")
 	if len(p.Errors()) != 0 {
@@ -656,14 +656,16 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 		fmt.Fprint(s.out, "log ast:\t")
 	}
 	if s.logparse || process == ParseP {
-		fmt.Fprintln(s.out, ast)
+		fmt.Fprintln(s.out, node)
+		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "| ", true))
+
 	}
 
 	if process == ParseP {
 		return
 	}
 
-	evaluated := evaluator.Eval(ast, s.environment)
+	evaluated := evaluator.Eval(node, s.environment)
 
 	if s.logtype {
 		fmt.Fprint(s.out, "log type:\t")
