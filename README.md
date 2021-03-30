@@ -6,8 +6,10 @@ _The purpose of the Monkey Programming Language is to learn different aspects of
 
 ## Step 4: Add representation of asts 
 
-![Demo7](demos/demo7.gif)
+If the setting `logtype` is set or the command `parse` is used, the output so far was just the output of the `String()`-method that nodes provide. Now, there is a more detailed representation provided.
 
+
+![Demo7](demos/demo7.gif)
 
 ## Step 3: Add dimensions: settings `level <l>` and `process <p>`
 

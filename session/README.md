@@ -84,3 +84,32 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 #### `(set|reset) process  (parse|eval|type)`, `expr[ession]`, `stmt|statement` and `prog[ram]`
 
 ![Demo6](../demos/demo6.gif)
+
+
+
+## Step 4: Add representation of asts 
+
+The demo shows the output for the current function call in session.go:
+
+The function `process_input_dim` of `session.go` determines the processing of Monkey input, given what the current settings and the current command determine with regard to 
+- multiline input 
+- input level (expression/statement/program)
+- input process (parse/type/eval)
+
+The piece of code, where the new representation is added, is:
+
+```go
+	if s.logparse || process == ParseP {
+		fmt.Fprintln(s.out, node)
+		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", true)) //<---
+	}
+```
+The arrow indicates the added line.
+
+The function RepresentNodeConsoleTree is defined in `ast/ast_add.go` and has the signature 
+
+`func RepresentNodeConsoleTree(node Node, indent string, exclToken bool) string `
+
+The indentation can be set by the second Parameter and the third specifies whether Token-fields are to be displayed or not. Currently, they are not displayed.
+
+![Demo7](../demos/demo7.gif)
