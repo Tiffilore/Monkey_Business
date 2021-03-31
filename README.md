@@ -12,11 +12,8 @@ TODO:
 - doc setting incltoken
 - doc tree-output
 
-<object data="show.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="show.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="show.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
+![some tree](show.png)
+
 
 #### In the console
 If the setting `logtype` is set or the command `parse` is used, the output so far was just the output of the `String()`-method that nodes provide. Now, there is a more detailed representation provided.

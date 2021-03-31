@@ -1,0 +1,9 @@
+sudo apt-get install poppler-utils
+
+ -singlefile              : write only the first page and do not add digits
+
+pdftoppm -png  -singlefile  show.pdf show 
+
+--> für alle pdfs im aktuellen Verzeichnis:
+
+for f in *.pdf; do prefix="${f%.*}"; pdftoppm -png  -singlefile  $f $prefix;  done
