@@ -12,9 +12,9 @@ TODO:
 - doc setting incltoken
 - doc tree-output
 
-<object data="https://github.com/Tiffilore/monkey-business/blob/represent-ast-LaTeX/show.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="https://github.com/Tiffilore/monkey-business/blob/represent-ast-LaTeX/show.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://github.com/Tiffilore/monkey-business/blob/represent-ast-LaTeX/show.pdf">Download PDF</a>.</p>
+<object data="show.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="show.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="show.pdf">Download PDF</a>.</p>
     </embed>
 </object>
 
