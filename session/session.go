@@ -103,14 +103,14 @@ type Session struct {
 
 const ( //default settings
 	prompt_default       = ">> "
-	treefile_default     = "tree.pfd"
-	inputProcess_default = ParseP
+	treefile_default     = "tree.pdf"
+	inputProcess_default = EvalP
 	inputLevel_default   = ProgramL
 	paste_default        = false
 
 	logtype_default   = false
 	logparse_default  = false
-	incltoken_default = true
+	incltoken_default = false
 )
 
 // NewSession creates a new Session.
