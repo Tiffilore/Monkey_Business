@@ -89,6 +89,7 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 
 ## Step 4: Add representation of asts 
 
+#### Trees in the console
 The demo shows the output for the current function call in session.go:
 
 The function `process_input_dim` of `session.go` determines the processing of Monkey input, given what the current settings and the current command determine with regard to 
@@ -113,3 +114,48 @@ The function RepresentNodeConsoleTree is defined in `ast/ast_add.go` and has the
 The indentation can be set by the second Parameter and the third specifies whether Token-fields are to be displayed or not. Currently, they are not displayed.
 
 ![Demo7](../demos/demo7.gif)
+
+#### Trees in pdf
+
+- with the help of LaTeX
+
+#### added cmd `clearscreen`, settings `incltoken` and `treefile`
+
+- `clearscreen` clears the screen
+- when `incltoken` is set, the Token fields are displayed in the ast-representations
+- with `treefile`, one can set the path of the file, in which the pdf-tree is output to
+
+
+- new command set: 
+
+| NAME           |                   | USAGE                                                    |
+--- | --- | --- |
+| cl[earscreen]  | ~                 | clear the terminal screen                                |
+| clear          | ~                 | clear the environment                                    |
+| e[val]         | ~ `<input>`         | print out value of object `<input>` evaluates to           |
+| expr[ession]   | ~ `<input>`         | expect `<input>` to be an expression                       |
+| h[elp]         | ~                 | list all commands with usage                             |
+|                | ~ `<cmd>`           | print usage command `<cmd>`                                |
+| l[ist]         | ~                 | list all identifiers in the environment alphabetically   |
+|                |                   |      with types and values                               |
+| p[arse]        | ~ `<input>`         | parse `<input>`                                            |
+| paste          | ~ `<input>`         | evaluate multiline `<input>` (terminated by blank line)    |
+| prog[ram]      | ~ `<input>`         | expect `<input>` to be a program                           |
+| q[uit]         | ~                 | quit the session                                         |
+| reset          | ~ `<setting>`       | set `<setting>` to default                                 |
+|                |                   |      for an overview consult :settings and/or :h set     |
+| set            | ~ process `<p>`     | `<p>` must be: [e]val, [p]arse, [t]ype                     |
+|                | ~ level `<l>`       | `<l>` must be: [p]rogram, [s]tatement, [e]xpression        |
+|                | ~ logparse        | additionally output ast-string                           |
+|                | ~ logtype         | additionally output objecttype                           |
+|                | ~ incltoken       | include tokens in representations of asts                |
+|                | ~ paste           | enable multiline support                                 |
+|                | ~ prompt `<prompt>` | set prompt string to `<prompt>`                            |
+|                | ~ treefile `<f>`    | set file that outputs pdfs to `<f>`                        |
+| settings       | ~                 | list all settings with their current values and defaults |
+| stmt|statement | ~ `<input>`         | expect `<input>` to be a statement                         |
+| t[ype]         | ~ `<input>`         | show objecttype `<input>` evaluates to                     |
+| unset          | ~ `<setting>`       | set boolean `<setting>` to false                           |
+|                |                   |      for an overview consult :settings and/or :h set     |
+
+![Demo8](../demos/demo8.gif)

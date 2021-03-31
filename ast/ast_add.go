@@ -97,8 +97,6 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 	}
 
 	nextIndent := thisIndent + indent
-	//children
-	var children string
 	switch node := node.(type) {
 	case *Program:
 		// Statements []Statement
@@ -153,7 +151,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
 		}
-		// Value string
+		// Value bool
 		out.WriteString("\n" + nextIndent + "Value: ")
 		fmt.Fprintf(&out, "%T %+v", node.Value, node.Value)
 	case *IntegerLiteral:
@@ -161,7 +159,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
 		}
-		// Value string
+		// Value int64
 		out.WriteString("\n" + nextIndent + "Value: ")
 		fmt.Fprintf(&out, "%T %+v", node.Value, node.Value)
 	case *PrefixExpression:
@@ -230,11 +228,8 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		out.WriteString("\n" + thisIndent + indent + "Fields not yet implemented")
 	}
 
-	_ = children
 	out.WriteString("\n" + thisIndent + "}")
 	return out.String()
-
-	//return typestr + tokenfield + children
 
 }
 

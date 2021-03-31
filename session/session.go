@@ -4,12 +4,15 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"monkey/ast"
 	"monkey/evaluator"
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
+	"monkey/visualizer"
 	"os"
+	"os/exec"
 	"reflect"
 	"sort"
 	"strings"
@@ -87,8 +90,10 @@ type Session struct {
 	level   InputLevel
 	paste   bool
 	// levels of verbosity / amount of logging:
-	logtype  bool
-	logparse bool
+	logtype   bool
+	logparse  bool
+	incltoken bool
+	treefile  string
 
 	//historyExpr		[]ast.Expression
 	//historyStmsts		[]ast.Statement
@@ -97,14 +102,15 @@ type Session struct {
 }
 
 const ( //default settings
-	prompt_default = ">> "
-
+	prompt_default       = ">> "
+	treefile_default     = "tree.pdf"
 	inputProcess_default = EvalP
 	inputLevel_default   = ProgramL
 	paste_default        = false
 
-	logtype_default  = false
-	logparse_default = false
+	logtype_default   = false
+	logparse_default  = false
+	incltoken_default = false
 )
 
 // NewSession creates a new Session.
@@ -120,6 +126,8 @@ func NewSession(in io.Reader, out io.Writer) *Session {
 		logtype:     logtype_default,
 		logparse:    logparse_default,
 		paste:       paste_default,
+		incltoken:   incltoken_default,
+		treefile:    treefile_default,
 	}
 
 	s.init()
@@ -177,6 +185,19 @@ func (s *Session) init() { // to avoid cycle
 	}
 	commands["clear"] = *c_clear
 
+	c_clearscreen := &command{
+		name:   "cl[earscreen]",
+		single: s.exec_clearscreen,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~", "clear the terminal screen"},
+		},
+	}
+	commands["clearscreen"] = *c_clearscreen
+	commands["cl"] = commands["clearscreen"]
+
 	c_list := &command{
 		name:   "l[ist]",
 		single: s.exec_list,
@@ -213,8 +234,10 @@ func (s *Session) init() { // to avoid cycle
 			{"~ level <l>", "<l> must be: [p]rogram, [s]tatement, [e]xpression"},
 			{"~ logparse", "additionally output ast-string"},
 			{"~ logtype", "additionally output objecttype"},
+			{"~ incltoken", "include tokens in representations of asts"},
 			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
+			{"~ treefile <f>", "set file that outputs pdfs to <f>"},
 		},
 	}
 	commands["set"] = *c_set
@@ -226,12 +249,7 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
-			{"~ process", "set process to default"},
-			{"~ level", "set level to default"},
-			{"~ logparse", "set logparse to default"},
-			{"~ logtype", "set logtype to default"},
-			{"~ paste", "set multiline support to default"},
-			{"~ prompt", "set prompt to default"},
+			{"~ <setting>", "set <setting> to default\n\t for an overview consult :settings and/or :h set"},
 		},
 	}
 	commands["reset"] = *c_reset
@@ -243,9 +261,11 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
-			{"~ logparse", "don't additionally output ast-string"},
-			{"~ logtype", "don't additionally output objecttype"},
-			{"~ paste", "disable multiline support"},
+			{"~ <setting>", "set boolean <setting> to false\n\t for an overview consult :settings and/or :h set"},
+			//	{"~ logparse", "don't additionally output ast-string"},
+			//	{"~ logtype", "don't additionally output objecttype"},
+			//	{"~ paste", "disable multiline support"},
+			//incltoken
 		},
 	}
 	commands["unset"] = *c_unset
@@ -378,6 +398,22 @@ func (s *Session) exec_quit() {
 	os.Exit(0)
 }
 
+// clear the screen
+func (s *Session) exec_clearscreen() {
+
+	_, err := exec.LookPath("clear")
+	if err != nil {
+		fmt.Fprintln(s.out, "command clearscreen is not available to you")
+	}
+
+	cmd := exec.Command("clear")
+	cmd.Stdout = s.out
+	err = cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // environment
 func (s *Session) exec_clear() {
 	s.environment = object.NewEnvironment()
@@ -498,12 +534,14 @@ func (s *Session) exec_settings() {
 	t.SetOutputMirror(s.out)
 	t.AppendHeader(table.Row{"setting", "current value", "default value"})
 	t.AppendSeparator()
+	t.AppendRow([]interface{}{"paste", s.paste, paste_default})
 	t.AppendRow([]interface{}{"process", s.process, inputProcess_default})
 	t.AppendRow([]interface{}{"level", s.level, inputLevel_default})
 	t.AppendRow([]interface{}{"logtype", s.logtype, logtype_default})
 	t.AppendRow([]interface{}{"logparse", s.logparse, logparse_default})
-	t.AppendRow([]interface{}{"paste", s.paste, paste_default})
 	t.AppendRow([]interface{}{"prompt", s.prompt, prompt_default})
+	t.AppendRow([]interface{}{"incltoken", s.incltoken, incltoken_default})
+	t.AppendRow([]interface{}{"treefile", s.treefile, treefile_default})
 
 	//t.SetStyle(table.StyleColoredBright)
 	t.Render()
@@ -520,6 +558,10 @@ func (s *Session) exec_reset(input string) {
 		s.logtype = logtype_default
 	case "logparse":
 		s.logparse = logparse_default
+	case "incltoken":
+		s.incltoken = incltoken_default
+	case "treefile":
+		s.treefile = treefile_default
 	case "paste":
 		s.paste = paste_default
 	case "level":
@@ -538,6 +580,8 @@ func (s *Session) exec_unset(setting string) {
 		s.logtype = false
 	case "logparse":
 		s.logparse = false
+	case "incltoken":
+		s.incltoken = false
 	case "paste":
 		s.paste = false
 	default:
@@ -574,6 +618,9 @@ func (s *Session) exec_set(input string) {
 		case "logparse":
 			s.logparse = true
 			return
+		case "incltoken":
+			s.incltoken = true
+			return
 		case "paste":
 			s.paste = true
 			return
@@ -597,6 +644,13 @@ func (s *Session) exec_set(input string) {
 				s.process = process
 				return
 			}
+		case "treefile":
+			//TODO: maybe check whether that's a valid filename nö
+			if !strings.HasSuffix(arg, ".pdf") {
+				arg = arg + ".pdf"
+			}
+			s.treefile = arg
+			return
 		}
 	}
 	s.exec_help("set")
@@ -646,19 +700,24 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 
 	node := parse_level(p, level)
 
-	//visualizer.Ast2pdf(program, "show")
-	if len(p.Errors()) != 0 {
-		s.printParserErrors(p.Errors(), level)
-		return
-	}
-
 	if s.logparse {
 		fmt.Fprint(s.out, "log ast:\t")
 	}
 	if s.logparse || process == ParseP {
 		fmt.Fprintln(s.out, node)
-		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", true))
+		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", !s.incltoken))
+		//fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
+		path, err := exec.LookPath("pdflatex")
+		if err != nil {
+			fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
+		} else {
+			visualizer.Ast2pdf(node, !s.incltoken, s.treefile, path)
+		}
+	}
 
+	if len(p.Errors()) != 0 {
+		s.printParserErrors(p.Errors(), level)
+		return
 	}
 
 	if process == ParseP {

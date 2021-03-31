@@ -4,10 +4,52 @@ _The purpose of the Monkey Programming Language is to learn different aspects of
 
  _to be continued..._
 
-## Step 4: Add representation of asts 
+## Step 4: Add representations of asts 
 
+![Demo8](demos/demo8.gif)
+
+- new instruction set: 
+
+| NAME           |                   | USAGE                                                    |
+--- | --- | --- |
+| cl[earscreen]  | ~                 | clear the terminal screen                                |
+| clear          | ~                 | clear the environment                                    |
+| e[val]         | ~ `<input>`         | print out value of object `<input>` evaluates to           |
+| expr[ession]   | ~ `<input>`         | expect `<input>` to be an expression                       |
+| h[elp]         | ~                 | list all commands with usage                             |
+|                | ~ `<cmd>`           | print usage command `<cmd>`                                |
+| l[ist]         | ~                 | list all identifiers in the environment alphabetically   |
+|                |                   |      with types and values                               |
+| p[arse]        | ~ `<input>`         | parse `<input>`                                            |
+| paste          | ~ `<input>`         | evaluate multiline `<input>` (terminated by blank line)    |
+| prog[ram]      | ~ `<input>`         | expect `<input>` to be a program                           |
+| q[uit]         | ~                 | quit the session                                         |
+| reset          | ~ `<setting>`       | set `<setting>` to default                                 |
+|                |                   |      for an overview consult :settings and/or :h set     |
+| set            | ~ process `<p>`     | `<p>` must be: [e]val, [p]arse, [t]ype                     |
+|                | ~ level `<l>`       | `<l>` must be: [p]rogram, [s]tatement, [e]xpression        |
+|                | ~ logparse        | additionally output ast-string                           |
+|                | ~ logtype         | additionally output objecttype                           |
+|                | ~ incltoken       | include tokens in representations of asts                |
+|                | ~ paste           | enable multiline support                                 |
+|                | ~ prompt `<prompt>` | set prompt string to `<prompt>`                            |
+|                | ~ treefile `<f>`    | set file that outputs pdfs to `<f>`                        |
+| settings       | ~                 | list all settings with their current values and defaults |
+| stmt|statement | ~ `<input>`         | expect `<input>` to be a statement                         |
+| t[ype]         | ~ `<input>`         | show objecttype `<input>` evaluates to                     |
+| unset          | ~ `<setting>`       | set boolean `<setting>` to false                           |
+|                |                   |      for an overview consult :settings and/or :h set     |
+
+#### As pdf
+
+
+![some tree](show.png)
+
+
+#### In the console
 If the setting `logtype` is set or the command `parse` is used, the output so far was just the output of the `String()`-method that nodes provide. Now, there is a more detailed representation provided.
 
+Expression nodes are colored in yellow, statement nodes in blue and program nodes in a darker blue. The colors don't work for windows users.
 
 ![Demo7](demos/demo7.gif)
 
