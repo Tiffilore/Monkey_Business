@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"monkey/ast"
 	"monkey/evaluator"
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
 	"os"
+	"os/exec"
 	"reflect"
 	"sort"
 	"strings"
@@ -176,6 +178,19 @@ func (s *Session) init() { // to avoid cycle
 		},
 	}
 	commands["clear"] = *c_clear
+
+	c_clearscreen := &command{
+		name:   "cl[earscreen]",
+		single: s.exec_clearscreen,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~", "clear the terminal screen"},
+		},
+	}
+	commands["clearscreen"] = *c_clearscreen
+	commands["cl"] = commands["clearscreen"]
 
 	c_list := &command{
 		name:   "l[ist]",
@@ -376,6 +391,22 @@ func (s *Session) exec_cmd(line string) {
 // quit
 func (s *Session) exec_quit() {
 	os.Exit(0)
+}
+
+// clear the screen
+func (s *Session) exec_clearscreen() {
+
+	_, err := exec.LookPath("clear")
+	if err != nil {
+		fmt.Fprintln(s.out, "command clearscreen is not available to you")
+	}
+
+	cmd := exec.Command("clear")
+	cmd.Stdout = s.out
+	err = cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // environment
