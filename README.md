@@ -8,6 +8,7 @@ _The purpose of the Monkey Programming Language is to learn different aspects of
 
 If the setting `logtype` is set or the command `parse` is used, the output so far was just the output of the `String()`-method that nodes provide. Now, there is a more detailed representation provided.
 
+Expression nodes are colored in yellow, statement nodes in blue and program nodes in a darker blue. The colors don't work for windows users.
 
 ![Demo7](demos/demo7.gif)
 
