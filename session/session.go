@@ -702,7 +702,7 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", !s.incltoken))
 		fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
 
-		visualizer.Ast2pdf(node, !s.incltoken, "show")
+		visualizer.Ast2pdf(node, !s.incltoken, "show.pdf")
 	}
 
 	if len(p.Errors()) != 0 {
