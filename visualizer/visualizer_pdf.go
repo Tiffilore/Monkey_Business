@@ -32,21 +32,22 @@ func tex2pdf(document string, filename string, path string) {
 }
 
 var document_prefix = `
-	\documentclass[border=0.2cm]{standalone}
- 		\usepackage{xcolor}
-		 %\usepackage{qtree}
-		 \usepackage{tikz}
-		 \usepackage{tikz-qtree}
-		 \definecolor{yellish}{HTML}{E0EBF5}
-		 \definecolor{bluish}{HTML}{FFFFA8}
-		 \definecolor{dbluish}{HTML}{375EAB}
+\documentclass[border=0.2cm]{standalone}
+\usepackage{xcolor}
+%\usepackage{qtree}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
 
-		\begin{document}
+\definecolor{yellish}{HTML}{E0EBF5}
+\definecolor{bluish}{HTML}{FFFFA8}
+\definecolor{dbluish}{HTML}{375EAB}
 
-		`
+\begin{document}
+
+`
 var document_suffix = `
-		\end{document}
-        `
+\end{document}
+`
 
 func makeTeX(qtreenode string) string {
 	return document_prefix + qtreenode + document_suffix

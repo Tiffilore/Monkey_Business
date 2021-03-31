@@ -94,7 +94,7 @@ func nodeQtree(node ast.Node, thisIndent string, exclToken bool) string {
 	case *ast.PrefixExpression:
 		// Operator string
 		fmt.Fprint(&out, "\n", nextIndent, "[.", fieldQTree("Operator"))
-		fmt.Fprintf(&out, "\n%v%v", nextIndent, leafQTree(node.Operator))
+		fmt.Fprintf(&out, "\n%v%v", nextIndent, leafQTree(lateXify(node.Operator)))
 		fmt.Fprint(&out, "\n", nextIndent, "]")
 		// Right    Expression
 		fmt.Fprint(&out, "\n", nextIndent, "[.", fieldQTree("Right"))
@@ -107,7 +107,7 @@ func nodeQtree(node ast.Node, thisIndent string, exclToken bool) string {
 		fmt.Fprint(&out, "\n", nextIndent, "]")
 		// Operator string
 		fmt.Fprint(&out, "\n", nextIndent, "[.", fieldQTree("Operator"))
-		fmt.Fprintf(&out, "\n%v%v", nextIndent, leafQTree(node.Operator))
+		fmt.Fprintf(&out, "\n%v%v", nextIndent, leafQTree(lateXify(node.Operator)))
 		fmt.Fprint(&out, "\n", nextIndent, "]")
 		// Right    Expression
 		fmt.Fprint(&out, "\n", nextIndent, "[.", fieldQTree("Right"))
@@ -168,6 +168,18 @@ func tokenleafQTree(value string) string {
 func lateXify(input string) string {
 	input = strings.ReplaceAll(input, "{", "\\{")
 	input = strings.ReplaceAll(input, "}", "\\}")
+	input = strings.ReplaceAll(input, "<", "$<$")
+	input = strings.ReplaceAll(input, ">", "$>$")
+	input = strings.ReplaceAll(input, "!=", "$=$")
+	input = strings.ReplaceAll(input, "==", "$==$")
+	input = strings.ReplaceAll(input, "!", "$!$")
+	input = strings.ReplaceAll(input, "=", "$=$")
+	input = strings.ReplaceAll(input, "+", "$+$")
+	input = strings.ReplaceAll(input, "-", "$-$")
+	input = strings.ReplaceAll(input, "*", "$*$")
+	input = strings.ReplaceAll(input, "/", "$/$")
+	input = strings.ReplaceAll(input, "_", "\\_")
+
 	return input
 }
 
@@ -175,8 +187,7 @@ func leafQTree(value interface{}) string {
 	//return "\\underline{\\it " + value + "}"
 	var out bytes.Buffer
 	fmt.Fprintf(&out, "\\underline{\\it %T %+v }", value, value)
-	return out.String()
-
+	return strings.ReplaceAll(out.String(), "_", "\\_")
 }
 
 func fieldQTree(value string) string {

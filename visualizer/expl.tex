@@ -1,15 +1,16 @@
 \documentclass[border=0.2cm]{standalone}
-                \usepackage{xcolor}
-                 %\usepackage{qtree}
-                 \usepackage{tikz}
-                 \usepackage{tikz-qtree}
-                 \definecolor{yellish}{HTML}{E0EBF5}
-                 \definecolor{bluish}{HTML}{FFFFA8}
-                 \definecolor{dbluish}{HTML}{375EAB}
+\usepackage{xcolor}
+%\usepackage{qtree}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
 
-                \begin{document}
+\definecolor{yellish}{HTML}{E0EBF5}
+\definecolor{bluish}{HTML}{FFFFA8}
+\definecolor{dbluish}{HTML}{375EAB}
 
-                \Tree[.\colorbox{yellish}{\textcolor{black}{\tt LetStatement}}
+\begin{document}
+
+\Tree[.\colorbox{yellish}{\textcolor{black}{\tt LetStatement}}
     [.{\small Name}
         [.\colorbox{bluish}{\textcolor{black}{\tt Identifier}}
             [.{\small Value}
@@ -47,7 +48,7 @@
                                                 ]
                                             ]
                                             [.{\small Operator}
-                                            \underline{\it string > }
+                                            \underline{\it string $>$ }
                                             ]
                                             [.{\small Right}
                                                 [.\colorbox{bluish}{\textcolor{black}{\tt Identifier}}
