@@ -234,10 +234,10 @@ func (s *Session) init() { // to avoid cycle
 			{"~ level <l>", "<l> must be: [p]rogram, [s]tatement, [e]xpression"},
 			{"~ logparse", "additionally output ast-string"},
 			{"~ logtype", "additionally output objecttype"},
+			{"~ incltoken", "include tokens in representations of asts"},
 			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
-			//incltoken, treefile
-
+			{"~ treefile <f>", "set file that outputs pdfs to <f>"},
 		},
 	}
 	commands["set"] = *c_set
@@ -249,14 +249,7 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
-			{"~ process", "set process to default"},
-			{"~ level", "set level to default"},
-			{"~ logparse", "set logparse to default"},
-			{"~ logtype", "set logtype to default"},
-			{"~ paste", "set multiline support to default"},
-			{"~ prompt", "set prompt to default"},
-			//incltoken, treefile
-
+			{"~ <setting>", "set <setting> to default\n\t for an overview consult :settings and/or :h set"},
 		},
 	}
 	commands["reset"] = *c_reset
@@ -268,9 +261,10 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
-			{"~ logparse", "don't additionally output ast-string"},
-			{"~ logtype", "don't additionally output objecttype"},
-			{"~ paste", "disable multiline support"},
+			{"~ <setting>", "set boolean <setting> to false\n\t for an overview consult :settings and/or :h set"},
+			//	{"~ logparse", "don't additionally output ast-string"},
+			//	{"~ logtype", "don't additionally output objecttype"},
+			//	{"~ paste", "disable multiline support"},
 			//incltoken
 		},
 	}
