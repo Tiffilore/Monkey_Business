@@ -8,15 +8,17 @@ import (
 	"github.com/rwestlund/gotex"
 )
 
-func Ast2pdf(node ast.Node, excltoken bool, filename string) {
+func Ast2pdf(node ast.Node, excltoken bool, filename string, path string) {
+
 	qtreenode := QTree(node, excltoken)
 	document := makeTeX(qtreenode)
-	tex2pdf(document, filename)
+	tex2pdf(document, filename, path)
 }
 
-func tex2pdf(document string, filename string) {
+func tex2pdf(document string, filename string, path string) {
+
 	var pdf, err = gotex.Render(document, gotex.Options{
-		Command: "/usr/bin/pdflatex",
+		Command: path,
 		Runs:    1})
 
 	if err != nil {

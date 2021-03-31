@@ -93,6 +93,7 @@ type Session struct {
 	logtype   bool
 	logparse  bool
 	incltoken bool
+	treefile  string
 
 	//historyExpr		[]ast.Expression
 	//historyStmsts		[]ast.Statement
@@ -101,8 +102,8 @@ type Session struct {
 }
 
 const ( //default settings
-	prompt_default = ">> "
-
+	prompt_default       = ">> "
+	treefile_default     = "tree.pfd"
 	inputProcess_default = ParseP
 	inputLevel_default   = ProgramL
 	paste_default        = false
@@ -126,6 +127,7 @@ func NewSession(in io.Reader, out io.Writer) *Session {
 		logparse:    logparse_default,
 		paste:       paste_default,
 		incltoken:   incltoken_default,
+		treefile:    treefile_default,
 	}
 
 	s.init()
@@ -234,7 +236,7 @@ func (s *Session) init() { // to avoid cycle
 			{"~ logtype", "additionally output objecttype"},
 			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
-			//incltoken
+			//incltoken, treefile
 
 		},
 	}
@@ -253,7 +255,7 @@ func (s *Session) init() { // to avoid cycle
 			{"~ logtype", "set logtype to default"},
 			{"~ paste", "set multiline support to default"},
 			{"~ prompt", "set prompt to default"},
-			//incltoken
+			//incltoken, treefile
 
 		},
 	}
@@ -538,13 +540,14 @@ func (s *Session) exec_settings() {
 	t.SetOutputMirror(s.out)
 	t.AppendHeader(table.Row{"setting", "current value", "default value"})
 	t.AppendSeparator()
+	t.AppendRow([]interface{}{"paste", s.paste, paste_default})
 	t.AppendRow([]interface{}{"process", s.process, inputProcess_default})
 	t.AppendRow([]interface{}{"level", s.level, inputLevel_default})
 	t.AppendRow([]interface{}{"logtype", s.logtype, logtype_default})
 	t.AppendRow([]interface{}{"logparse", s.logparse, logparse_default})
-	t.AppendRow([]interface{}{"paste", s.paste, paste_default})
 	t.AppendRow([]interface{}{"prompt", s.prompt, prompt_default})
 	t.AppendRow([]interface{}{"incltoken", s.incltoken, incltoken_default})
+	t.AppendRow([]interface{}{"treefile", s.treefile, treefile_default})
 
 	//t.SetStyle(table.StyleColoredBright)
 	t.Render()
@@ -563,6 +566,8 @@ func (s *Session) exec_reset(input string) {
 		s.logparse = logparse_default
 	case "incltoken":
 		s.incltoken = incltoken_default
+	case "treefile":
+		s.treefile = treefile_default
 	case "paste":
 		s.paste = paste_default
 	case "level":
@@ -645,6 +650,13 @@ func (s *Session) exec_set(input string) {
 				s.process = process
 				return
 			}
+		case "treefile":
+			//TODO: maybe check whether that's a valid filename nö
+			if !strings.HasSuffix(arg, ".pdf") {
+				arg = arg + ".pdf"
+			}
+			s.treefile = arg
+			return
 		}
 	}
 	s.exec_help("set")
@@ -700,9 +712,13 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	if s.logparse || process == ParseP {
 		fmt.Fprintln(s.out, node)
 		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", !s.incltoken))
-		fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
-
-		visualizer.Ast2pdf(node, !s.incltoken, "show.pdf")
+		//fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
+		path, err := exec.LookPath("pdflatex")
+		if err != nil {
+			fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
+		} else {
+			visualizer.Ast2pdf(node, !s.incltoken, s.treefile, path)
+		}
 	}
 
 	if len(p.Errors()) != 0 {

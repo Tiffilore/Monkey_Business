@@ -9,7 +9,8 @@ _The purpose of the Monkey Programming Language is to learn different aspects of
 #### As pdf
 
 TODO: 
-- doc setting incltoken
+- doc cmd clearscreen
+- doc setting incltoken, treefile
 - doc tree-output
 
 ![some tree](show.png)
