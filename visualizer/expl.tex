@@ -1,0 +1,99 @@
+\documentclass[border=0.2cm]{standalone}
+                \usepackage{xcolor}
+                 %\usepackage{qtree}
+                 \usepackage{tikz}
+                 \usepackage{tikz-qtree}
+                 \definecolor{yellish}{HTML}{E0EBF5}
+                 \definecolor{bluish}{HTML}{FFFFA8}
+                 \definecolor{dbluish}{HTML}{375EAB}
+
+                \begin{document}
+
+                \Tree[.\colorbox{yellish}{\textcolor{black}{\tt LetStatement}}
+    [.{\small Name}
+        [.\colorbox{bluish}{\textcolor{black}{\tt Identifier}}
+            [.{\small Value}
+            \underline{\it string max }
+            ]
+        ]
+    ]
+    [.{\small Value}
+        [.\colorbox{bluish}{\textcolor{black}{\tt FunctionLiteral}}
+            [.{\small Parameters}
+                [.\colorbox{bluish}{\textcolor{black}{\tt Identifier}}
+                    [.{\small Value}
+                    \underline{\it string x }
+                    ]
+                ]
+                [.\colorbox{bluish}{\textcolor{black}{\tt Identifier}}
+                    [.{\small Value}
+                    \underline{\it string y }
+                    ]
+                ]
+            ]
+            [.{\small Body}
+                [.\colorbox{yellish}{\textcolor{black}{\tt BlockStatement}}
+                    [.{\small Statements}
+                        [.\colorbox{yellish}{\textcolor{black}{\tt ExpressionStatement}}
+                            [.{\small Expression}
+                                [.\colorbox{bluish}{\textcolor{black}{\tt IfExpression}}
+                                    [.{\small Condition}
+                                        [.\colorbox{bluish}{\textcolor{black}{\tt InfixExpression}}
+                                            [.{\small Left}
+                                                [.\colorbox{bluish}{\textcolor{black}{\tt Identifier}}
+                                                    [.{\small Value}
+                                                    \underline{\it string x }
+                                                    ]
+                                                ]
+                                            ]
+                                            [.{\small Operator}
+                                            \underline{\it string > }
+                                            ]
+                                            [.{\small Right}
+                                                [.\colorbox{bluish}{\textcolor{black}{\tt Identifier}}
+                                                    [.{\small Value}
+                                                    \underline{\it string y }
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                    [.{\small Consequence}
+                                        [.\colorbox{yellish}{\textcolor{black}{\tt BlockStatement}}
+                                            [.{\small Statements}
+                                                [.\colorbox{yellish}{\textcolor{black}{\tt ReturnStatement}}
+                                                    [.{\small ReturnValue}
+                                                        [.\colorbox{bluish}{\textcolor{black}{\tt Identifier}}
+                                                            [.{\small Value}
+                                                            \underline{\it string x }
+                                                            ]
+                                                        ]
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                    [.{\small Alternative}
+                                        [.\colorbox{yellish}{\textcolor{black}{\tt BlockStatement}} $\emptyset$
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                        [.\colorbox{yellish}{\textcolor{black}{\tt ExpressionStatement}}
+                            [.{\small Expression}
+                                [.\colorbox{bluish}{\textcolor{black}{\tt Identifier}}
+                                    [.{\small Value}
+                                    \underline{\it string y }
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+]
+
+\end{document}
