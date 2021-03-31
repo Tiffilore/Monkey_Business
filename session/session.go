@@ -89,8 +89,9 @@ type Session struct {
 	level   InputLevel
 	paste   bool
 	// levels of verbosity / amount of logging:
-	logtype  bool
-	logparse bool
+	logtype   bool
+	logparse  bool
+	incltoken bool
 
 	//historyExpr		[]ast.Expression
 	//historyStmsts		[]ast.Statement
@@ -105,8 +106,9 @@ const ( //default settings
 	inputLevel_default   = ProgramL
 	paste_default        = false
 
-	logtype_default  = false
-	logparse_default = false
+	logtype_default   = false
+	logparse_default  = false
+	incltoken_default = false
 )
 
 // NewSession creates a new Session.
@@ -230,6 +232,8 @@ func (s *Session) init() { // to avoid cycle
 			{"~ logtype", "additionally output objecttype"},
 			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
+			//incltoken
+
 		},
 	}
 	commands["set"] = *c_set
@@ -247,6 +251,8 @@ func (s *Session) init() { // to avoid cycle
 			{"~ logtype", "set logtype to default"},
 			{"~ paste", "set multiline support to default"},
 			{"~ prompt", "set prompt to default"},
+			//incltoken
+
 		},
 	}
 	commands["reset"] = *c_reset
@@ -261,6 +267,7 @@ func (s *Session) init() { // to avoid cycle
 			{"~ logparse", "don't additionally output ast-string"},
 			{"~ logtype", "don't additionally output objecttype"},
 			{"~ paste", "disable multiline support"},
+			//incltoken
 		},
 	}
 	commands["unset"] = *c_unset
@@ -535,6 +542,7 @@ func (s *Session) exec_settings() {
 	t.AppendRow([]interface{}{"logparse", s.logparse, logparse_default})
 	t.AppendRow([]interface{}{"paste", s.paste, paste_default})
 	t.AppendRow([]interface{}{"prompt", s.prompt, prompt_default})
+	t.AppendRow([]interface{}{"incltoken", s.incltoken, incltoken_default})
 
 	//t.SetStyle(table.StyleColoredBright)
 	t.Render()
@@ -551,6 +559,8 @@ func (s *Session) exec_reset(input string) {
 		s.logtype = logtype_default
 	case "logparse":
 		s.logparse = logparse_default
+	case "incltoken":
+		s.incltoken = incltoken_default
 	case "paste":
 		s.paste = paste_default
 	case "level":
@@ -569,6 +579,8 @@ func (s *Session) exec_unset(setting string) {
 		s.logtype = false
 	case "logparse":
 		s.logparse = false
+	case "incltoken":
+		s.incltoken = false
 	case "paste":
 		s.paste = false
 	default:
@@ -604,6 +616,9 @@ func (s *Session) exec_set(input string) {
 			return
 		case "logparse":
 			s.logparse = true
+			return
+		case "incltoken":
+			s.incltoken = true
 			return
 		case "paste":
 			s.paste = true
@@ -688,7 +703,7 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	}
 	if s.logparse || process == ParseP {
 		fmt.Fprintln(s.out, node)
-		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", true))
+		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", !s.incltoken))
 
 	}
 
