@@ -10,6 +10,7 @@ import (
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
+	"monkey/visualizer"
 	"os"
 	"os/exec"
 	"reflect"
@@ -102,13 +103,13 @@ type Session struct {
 const ( //default settings
 	prompt_default = ">> "
 
-	inputProcess_default = EvalP
+	inputProcess_default = ParseP
 	inputLevel_default   = ProgramL
 	paste_default        = false
 
 	logtype_default   = false
 	logparse_default  = false
-	incltoken_default = false
+	incltoken_default = true
 )
 
 // NewSession creates a new Session.
@@ -124,6 +125,7 @@ func NewSession(in io.Reader, out io.Writer) *Session {
 		logtype:     logtype_default,
 		logparse:    logparse_default,
 		paste:       paste_default,
+		incltoken:   incltoken_default,
 	}
 
 	s.init()
@@ -692,19 +694,20 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 
 	node := parse_level(p, level)
 
-	//visualizer.Ast2pdf(program, "show")
-	if len(p.Errors()) != 0 {
-		s.printParserErrors(p.Errors(), level)
-		return
-	}
-
 	if s.logparse {
 		fmt.Fprint(s.out, "log ast:\t")
 	}
 	if s.logparse || process == ParseP {
 		fmt.Fprintln(s.out, node)
 		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", !s.incltoken))
+		fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
 
+		visualizer.Ast2pdf(node, !s.incltoken, "show")
+	}
+
+	if len(p.Errors()) != 0 {
+		s.printParserErrors(p.Errors(), level)
+		return
 	}
 
 	if process == ParseP {
