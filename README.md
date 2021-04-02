@@ -2,7 +2,36 @@
 
 _The purpose of the Monkey Programming Language is to learn different aspects of implementing a language. The main purpose of this repo is for me to learn go by fooling around. In addition, it serves the purpose of plunging into the business of interpreting Monkey PL more systematically. It reveals bugs in the original software by adding tests and offers fixes for these bugs. Moreover, it extends the interactive environment such that a use can gain more insight into the structure of the chosen abstract syntax tree (ast) and the steps of interpretation. At least, that's the plan..._
 
+
+## Step 5: Add representations of evaluation
+
  _to be continued..._
+
+
+
+### In the console - version 1
+inspo from [swipl](https://www.swi-prolog.org/)
+
+If the setting `logtrace` is set, the evaluation trace is still output in a table.
+
+If the command `trace` is used, the evaluation trace is output step by step - this can be interrupted by typing `a`.
+
+![Demo10](demos/demo10.gif)
+
+#### New instructions
+
+| NAME           |                   | USAGE                                                    |
+--- | --- | --- |
+| trace          | ~ `<input>`         | show evaluation trace step by step                       |
+| (set)          | ~ logtrace        | additionally output evaluation trace                     |
+
+
+### In the console - version 0
+If the setting `logtrace` is set or the command `trace` is used, the evaluation trace is output.
+
+
+![Demo9](demos/demo9.gif)
+
 
 ## Step 4: Add representations of asts 
 

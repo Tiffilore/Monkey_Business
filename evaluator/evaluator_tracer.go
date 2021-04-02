@@ -45,14 +45,6 @@ func NewTracer() *Tracer {
 	}
 }
 
-func (t Tracer) IsActive() bool {
-	return t.active
-}
-
-func (t Tracer) Off() {
-	t.active = false
-}
-
 func (t Tracer) Steps() int {
 	return t.counter
 }
@@ -75,6 +67,9 @@ func StopTracer() {
 }
 
 func traceCall(node ast.Node, env *object.Environment) int {
+	if !T.active {
+		return 0
+	}
 	var call Call
 	call.No = T.counter
 	no := call.No
@@ -90,6 +85,9 @@ func traceCall(node ast.Node, env *object.Environment) int {
 }
 
 func traceExit(id int, node ast.Node, env *object.Environment, val object.Object) {
+	if !T.active {
+		return
+	}
 	var exit Exit
 	exit.No = T.counter
 	no := exit.No

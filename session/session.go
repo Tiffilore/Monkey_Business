@@ -90,8 +90,9 @@ type Session struct {
 	level   InputLevel
 	paste   bool
 	// levels of verbosity / amount of logging:
-	logtype   bool
 	logparse  bool
+	logtype   bool
+	logtrace  bool
 	incltoken bool
 	treefile  string
 
@@ -108,8 +109,10 @@ const ( //default settings
 	inputLevel_default   = ProgramL
 	paste_default        = false
 
-	logtype_default   = false
-	logparse_default  = false
+	logparse_default = false
+	logtype_default  = false
+	logtrace_default = false
+
 	incltoken_default = false
 )
 
@@ -124,6 +127,7 @@ func NewSession(in io.Reader, out io.Writer) *Session {
 		level:       inputLevel_default,
 		process:     inputProcess_default,
 		logtype:     logtype_default,
+		logtrace:    logtrace_default,
 		logparse:    logparse_default,
 		paste:       paste_default,
 		incltoken:   incltoken_default,
@@ -234,6 +238,7 @@ func (s *Session) init() { // to avoid cycle
 			{"~ level <l>", "<l> must be: [p]rogram, [s]tatement, [e]xpression"},
 			{"~ logparse", "additionally output ast-string"},
 			{"~ logtype", "additionally output objecttype"},
+			{"~ logtrace", "additionally output evaluation trace"},
 			{"~ incltoken", "include tokens in representations of asts"},
 			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
@@ -265,7 +270,7 @@ func (s *Session) init() { // to avoid cycle
 			//	{"~ logparse", "don't additionally output ast-string"},
 			//	{"~ logtype", "don't additionally output objecttype"},
 			//	{"~ paste", "disable multiline support"},
-			//incltoken
+			//incltoken logtrace
 		},
 	}
 	commands["unset"] = *c_unset
@@ -297,6 +302,18 @@ func (s *Session) init() { // to avoid cycle
 	}
 	commands["type"] = *c_type
 	commands["t"] = commands["type"]
+
+	c_trace := &command{
+		name:     "trace",
+		with_arg: s.exec_trace,
+		usage: []struct {
+			args string
+			msg  string
+		}{
+			{"~ <input>", "show evaluation trace step by step"},
+		},
+	}
+	commands["trace"] = *c_trace
 
 	c_parse := &command{
 		name:     "p[arse]",
@@ -537,8 +554,9 @@ func (s *Session) exec_settings() {
 	t.AppendRow([]interface{}{"paste", s.paste, paste_default})
 	t.AppendRow([]interface{}{"process", s.process, inputProcess_default})
 	t.AppendRow([]interface{}{"level", s.level, inputLevel_default})
-	t.AppendRow([]interface{}{"logtype", s.logtype, logtype_default})
 	t.AppendRow([]interface{}{"logparse", s.logparse, logparse_default})
+	t.AppendRow([]interface{}{"logtype", s.logtype, logtype_default})
+	t.AppendRow([]interface{}{"logtrace", s.logtrace, logtrace_default})
 	t.AppendRow([]interface{}{"prompt", s.prompt, prompt_default})
 	t.AppendRow([]interface{}{"incltoken", s.incltoken, incltoken_default})
 	t.AppendRow([]interface{}{"treefile", s.treefile, treefile_default})
@@ -558,6 +576,8 @@ func (s *Session) exec_reset(input string) {
 		s.logtype = logtype_default
 	case "logparse":
 		s.logparse = logparse_default
+	case "logtrace":
+		s.logtrace = logtrace_default
 	case "incltoken":
 		s.incltoken = incltoken_default
 	case "treefile":
@@ -580,6 +600,8 @@ func (s *Session) exec_unset(setting string) {
 		s.logtype = false
 	case "logparse":
 		s.logparse = false
+	case "logtrace":
+		s.logtrace = false
 	case "incltoken":
 		s.incltoken = false
 	case "paste":
@@ -617,6 +639,9 @@ func (s *Session) exec_set(input string) {
 			return
 		case "logparse":
 			s.logparse = true
+			return
+		case "logtrace":
+			s.logtrace = true
 			return
 		case "incltoken":
 			s.incltoken = true
@@ -658,38 +683,42 @@ func (s *Session) exec_set(input string) {
 
 // input processing
 func (s *Session) exec_process(line string) {
-	s.process_input_dim(s.paste, s.level, s.process, line)
+	s.process_input_dim(s.paste, s.level, s.process, false, line)
 }
 
 func (s *Session) exec_paste(line string) {
-	s.process_input_dim(true, s.level, s.process, line)
+	s.process_input_dim(true, s.level, s.process, false, line)
 }
 
 func (s *Session) exec_expression(line string) {
-	s.process_input_dim(s.paste, ExpressionL, s.process, line)
+	s.process_input_dim(s.paste, ExpressionL, s.process, false, line)
 }
 
 func (s *Session) exec_statement(line string) {
-	s.process_input_dim(s.paste, StatementL, s.process, line)
+	s.process_input_dim(s.paste, StatementL, s.process, false, line)
 }
 
 func (s *Session) exec_program(line string) {
-	s.process_input_dim(s.paste, ProgramL, s.process, line)
+	s.process_input_dim(s.paste, ProgramL, s.process, false, line)
 }
 
 func (s *Session) exec_eval(line string) {
-	s.process_input_dim(s.paste, s.level, EvalP, line)
+	s.process_input_dim(s.paste, s.level, EvalP, false, line)
 }
 
 func (s *Session) exec_type(line string) {
-	s.process_input_dim(s.paste, s.level, TypeP, line)
+	s.process_input_dim(s.paste, s.level, TypeP, false, line)
+}
+
+func (s *Session) exec_trace(line string) {
+	s.process_input_dim(s.paste, s.level, EvalP, true, line)
 }
 
 func (s *Session) exec_parse(line string) {
-	s.process_input_dim(s.paste, s.level, ParseP, line)
+	s.process_input_dim(s.paste, s.level, ParseP, false, line)
 }
 
-func (s *Session) process_input_dim(paste bool, level InputLevel, process InputProcess, input string) {
+func (s *Session) process_input_dim(paste bool, level InputLevel, process InputProcess, trace bool, input string) {
 
 	if paste {
 		input = s.multiline_input(input)
@@ -724,10 +753,15 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 		return
 	}
 
-	evaluator.StartTracer()
+	if trace || s.logtrace {
+		evaluator.StartTracer()
+	}
 
 	evaluated := evaluator.Eval(node, s.environment)
-	evaluator.StopTracer()
+
+	if trace || s.logtrace {
+		evaluator.StopTracer()
+	}
 
 	if s.logtype {
 		fmt.Fprint(s.out, "log type:\t")
@@ -739,7 +773,14 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 		return
 	}
 
-	visualizer.RepresentEvalConsole(evaluator.T, s.out)
+	if s.logtrace {
+		visualizer.RepresentEvalConsole(evaluator.T, s.out)
+	}
+
+	if trace {
+		visualizer.TraceEvalConsole(evaluator.T, s.out, s.scanner)
+		return
+	}
 
 	if evaluated != nil { // TODO: Umgang mit nil würdig?
 		fmt.Fprintln(s.out, evaluated.Inspect())
