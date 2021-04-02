@@ -9,10 +9,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-// we want to output the Tracer
-
-//Schritt 1: textuell
-
+// TODO: environment, side-effects ?
 func RepresentEvalConsole(t *evaluator.Tracer, out io.Writer) {
 	tab := table.NewWriter()
 	tab.SetOutputMirror(out)
