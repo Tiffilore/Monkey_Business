@@ -7,6 +7,22 @@ _The purpose of the Monkey Programming Language is to learn different aspects of
 
  _to be continued..._
 
+### As pdf
+
+- version 0 - dags are represented by node duplication
+- new setting: `evalfile`
+
+| NAME           |                   | USAGE                                                    |
+--- | --- | --- |
+| (set)          | ~ evalfile `<f>`   | set file that outputs  eval-pdfs to `<f>`                        |
+
+
+
+- expl:
+
+![expl](visualizer/images/eval1.png)
+
+
 
 ### In the console - version 2
 
