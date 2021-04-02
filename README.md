@@ -8,6 +8,9 @@ _The purpose of the Monkey Programming Language is to learn different aspects of
  _to be continued..._
 
 
+### In the console - version 2
+
+- TODO: _add verbosity by displaying info on environment_
 
 ### In the console - version 1
 inspo from [swipl](https://www.swi-prolog.org/)
