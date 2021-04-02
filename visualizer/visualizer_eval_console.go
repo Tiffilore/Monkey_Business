@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"monkey/evaluator"
-	"reflect"
 	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -25,8 +24,8 @@ func RepresentEvalConsole(t *evaluator.Tracer, out io.Writer) {
 		if call, ok := calls[i]; ok {
 			tab.AppendRow([]interface{}{
 				Red + fmt.Sprintf("call %v", call.Depth) + Reset,
-				RepresentType(call.Node, 1),
-				call.Node})
+				representNodeType(call.Node, 1),
+				fmt.Sprintf("%v", call.Node)})
 
 		} else if exit, ok := exits[i]; ok {
 			val := "nil"
@@ -35,9 +34,9 @@ func RepresentEvalConsole(t *evaluator.Tracer, out io.Writer) {
 			}
 			tab.AppendRow([]interface{}{
 				Green + fmt.Sprintf("exit %v", exit.Depth) + Reset,
-				RepresentType(exit.Node, 1),
-				exit.Node,
-				reflect.TypeOf(exit.Val),
+				representNodeType(exit.Node, 1),
+				fmt.Sprintf("%v", exit.Node),
+				representObjectType(exit.Val, 0),
 				val,
 			})
 
@@ -57,11 +56,11 @@ func TraceEvalConsole(t *evaluator.Tracer, out io.Writer, scanner *bufio.Scanner
 	for cur_step < t.Steps() {
 		if call, ok := calls[cur_step]; ok {
 			fmt.Fprintf(out, Red+fmt.Sprintf("call %v: ", call.Depth)+Reset)
-			fmt.Fprintf(out, "%v %v", RepresentType(call.Node, 2), call.Node)
+			fmt.Fprintf(out, "%v %v", representNodeType(call.Node, 2), call.Node)
 
 		} else if exit, ok := exits[cur_step]; ok {
 			fmt.Fprintf(out, Green+fmt.Sprintf("exit %v: ", exit.Depth)+Reset)
-			fmt.Fprintf(out, "%v %v", RepresentType(exit.Node, 2), exit.Node)
+			fmt.Fprintf(out, "%v %v", representNodeType(exit.Node, 2), exit.Node)
 			val := "nil"
 			if exit.Val != nil {
 				val = strings.ReplaceAll(exit.Val.Inspect(), "\n", " ")

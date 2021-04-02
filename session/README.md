@@ -28,20 +28,20 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 
 
 #### `clear`, `h[elp]`, `q[uit]`, `set prompt <prompt>`
-![Demo1](../demos/demo1.gif)
+![Demo1](../assets/demos/demo1.gif)
 
 #### `reset prompt`, `list` 
-![Demo2](../demos/demo2.gif)
+![Demo2](../assets/demos/demo2.gif)
 
 #### `t[ype]`,  `(set|unset|reset) logtype`, `e[val]`
 - eval is default
     - if the user input is not prefixed by `:`, `input` is equivalent to `:eval input`
 
-![Demo3](../demos/demo3.gif)
+![Demo3](../assets/demos/demo3.gif)
 
 #### Multiline support: `paste`, `(set|unset|reset) paste` and `settings`
 
-![Demo4](../demos/demo4.gif)
+![Demo4](../assets/demos/demo4.gif)
 
 ## Adding dimensions: settings `level` and `process` 
 
@@ -83,7 +83,7 @@ inspired by [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_gui
 
 #### `(set|reset) process  (parse|eval|type)`, `expr[ession]`, `stmt|statement` and `prog[ram]`
 
-![Demo6](../demos/demo6.gif)
+![Demo6](../assets/demos/demo6.gif)
 
 
 
@@ -113,7 +113,7 @@ The function RepresentNodeConsoleTree is defined in `ast/ast_add.go` and has the
 
 The indentation can be set by the second Parameter and the third specifies whether Token-fields are to be displayed or not. Currently, they are not displayed.
 
-![Demo7](../demos/demo7.gif)
+![Demo7](../assets/demos/demo7.gif)
 
 #### Trees in pdf
 
@@ -158,4 +158,4 @@ The indentation can be set by the second Parameter and the third specifies wheth
 | unset          | ~ `<setting>`       | set boolean `<setting>` to false                           |
 |                |                   |      for an overview consult :settings and/or :h set     |
 
-![Demo8](../demos/demo8.gif)
+![Demo8](../assets/demos/demo8.gif)

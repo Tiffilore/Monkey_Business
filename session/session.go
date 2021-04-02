@@ -95,6 +95,7 @@ type Session struct {
 	logtrace  bool
 	incltoken bool
 	treefile  string
+	evalfile  string
 
 	//historyExpr		[]ast.Expression
 	//historyStmsts		[]ast.Statement
@@ -105,6 +106,7 @@ type Session struct {
 const ( //default settings
 	prompt_default       = ">> "
 	treefile_default     = "tree.pdf"
+	evalfile_default     = "eval.pdf"
 	inputProcess_default = EvalP
 	inputLevel_default   = ProgramL
 	paste_default        = false
@@ -132,6 +134,7 @@ func NewSession(in io.Reader, out io.Writer) *Session {
 		paste:       paste_default,
 		incltoken:   incltoken_default,
 		treefile:    treefile_default,
+		evalfile:    evalfile_default,
 	}
 
 	s.init()
@@ -242,7 +245,8 @@ func (s *Session) init() { // to avoid cycle
 			{"~ incltoken", "include tokens in representations of asts"},
 			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
-			{"~ treefile <f>", "set file that outputs pdfs to <f>"},
+			{"~ treefile <f>", "set file that outputs ast-pdfs to <f>"},
+			{"~ evalfile <f>", "set file that outputs eval-pdfs to <f>"},
 		},
 	}
 	commands["set"] = *c_set
@@ -560,6 +564,7 @@ func (s *Session) exec_settings() {
 	t.AppendRow([]interface{}{"prompt", s.prompt, prompt_default})
 	t.AppendRow([]interface{}{"incltoken", s.incltoken, incltoken_default})
 	t.AppendRow([]interface{}{"treefile", s.treefile, treefile_default})
+	t.AppendRow([]interface{}{"evalfile", s.evalfile, evalfile_default})
 
 	//t.SetStyle(table.StyleColoredBright)
 	t.Render()
@@ -582,6 +587,8 @@ func (s *Session) exec_reset(input string) {
 		s.incltoken = incltoken_default
 	case "treefile":
 		s.treefile = treefile_default
+	case "evalfile":
+		s.evalfile = evalfile_default
 	case "paste":
 		s.paste = paste_default
 	case "level":
@@ -676,7 +683,17 @@ func (s *Session) exec_set(input string) {
 			}
 			s.treefile = arg
 			return
+
+		case "evalfile":
+			//TODO: maybe check whether that's a valid filename nö
+			if !strings.HasSuffix(arg, ".pdf") {
+				arg = arg + ".pdf"
+			}
+			s.evalfile = arg
+			return
+
 		}
+
 	}
 	s.exec_help("set")
 }
@@ -774,7 +791,15 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	}
 
 	if s.logtrace {
-		visualizer.RepresentEvalConsole(evaluator.T, s.out)
+		//visualizer.RepresentEvalConsole(evaluator.T, s.out)
+		//fmt.Fprint(s.out, visualizer.QTreeEval(evaluator.T))
+		path, err := exec.LookPath("pdflatex")
+		if err != nil {
+			fmt.Fprintln(s.out, "Displaying evaluation trees as pdfs is not available to you, since you have not installed pdflatex.")
+		} else {
+			visualizer.EvalTree2pdf(evaluator.T, s.evalfile, path)
+		}
+
 	}
 
 	if trace {
