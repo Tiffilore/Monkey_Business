@@ -16,7 +16,7 @@ If the setting `logtrace` is set, the evaluation trace is still output in a tabl
 
 If the command `trace` is used, the evaluation trace is output step by step - this can be interrupted by typing `a`.
 
-![Demo10](demos/demo10.gif)
+![Demo10](assets/demos/demo10.gif)
 
 #### New instructions
 
@@ -30,12 +30,12 @@ If the command `trace` is used, the evaluation trace is output step by step - th
 If the setting `logtrace` is set or the command `trace` is used, the evaluation trace is output.
 
 
-![Demo9](demos/demo9.gif)
+![Demo9](assets/demos/demo9.gif)
 
 
 ## Step 4: Add representations of asts 
 
-![Demo8](demos/demo8.gif)
+![Demo8](assets/demos/demo8.gif)
 
 - new instruction set: 
 
@@ -72,7 +72,7 @@ If the setting `logtrace` is set or the command `trace` is used, the evaluation 
 #### As pdf
 
 
-![some tree](show.png)
+![some tree](assets/images/show.png)
 
 
 #### In the console
@@ -80,11 +80,11 @@ If the setting `logtype` is set or the command `parse` is used, the output so fa
 
 Expression nodes are colored in yellow, statement nodes in blue and program nodes in a darker blue. The colors don't work for windows users.
 
-![Demo7](demos/demo7.gif)
+![Demo7](assets/demos/demo7.gif)
 
 ## Step 3: Add dimensions: settings `level <l>` and `process <p>`
 
-![Demo6](demos/demo6.gif)
+![Demo6](assets/demos/demo6.gif)
 
 
 #### `(set|reset) level (program|statement|expression)`
@@ -139,7 +139,7 @@ The full instruction set is now:
 - new interactive environment in directory `session`
     - inspo from [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-commands) and [gore](https://github.com/motemen/gore) 
 
-![Demo5](demos/demo5.gif)
+![Demo5](assets/demos/demo5.gif)
 
 
 | NAME   |                   | USAGE                                                   |
