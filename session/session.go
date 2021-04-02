@@ -705,7 +705,7 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	}
 	if s.logparse || process == ParseP {
 		fmt.Fprintln(s.out, node)
-		fmt.Fprintln(s.out, ast.RepresentNodeConsoleTree(node, "|   ", !s.incltoken))
+		fmt.Fprintln(s.out, visualizer.RepresentNodeConsoleTree(node, "|   ", !s.incltoken))
 		//fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
 		path, err := exec.LookPath("pdflatex")
 		if err != nil {
@@ -724,7 +724,10 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 		return
 	}
 
+	evaluator.StartTracer()
+
 	evaluated := evaluator.Eval(node, s.environment)
+	evaluator.StopTracer()
 
 	if s.logtype {
 		fmt.Fprint(s.out, "log type:\t")
@@ -736,9 +739,12 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 		return
 	}
 
+	visualizer.RepresentEvalConsole(evaluator.T, s.out)
+
 	if evaluated != nil { // TODO: Umgang mit nil würdig?
 		fmt.Fprintln(s.out, evaluated.Inspect())
 	}
+
 	//	} else {
 	//		fmt.Fprintln(s.out, nil)
 	//	}

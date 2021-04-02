@@ -12,7 +12,20 @@ var (
 	FALSE = &object.Boolean{Value: false}
 )
 
+var T *Tracer
+
+//func init() {
+//	T = NewTracer()
+//}
+
 func Eval(node ast.Node, env *object.Environment) object.Object {
+	depth := traceCall(node, env)
+	val := eval(node, env)
+	traceExit(depth, node, env, val)
+	return val
+}
+
+func eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 
 	// Statements

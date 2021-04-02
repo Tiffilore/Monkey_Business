@@ -23,7 +23,7 @@ func nodeQtree(node ast.Node, thisIndent string, exclToken bool) string {
 	typestr := typeQTree(node)
 	var out bytes.Buffer
 	fmt.Fprint(&out, thisIndent, "[.", typestr)
-	if ast.HasNilValue(node) {
+	if HasNilValue(node) {
 		fmt.Fprint(&out, " $\\emptyset$\n", thisIndent, "]")
 		return out.String()
 	}

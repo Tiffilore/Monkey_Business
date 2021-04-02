@@ -1,42 +1,18 @@
-package ast
+package visualizer
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"monkey/ast"
 	"reflect"
-	"runtime"
 )
 
-var Reset = "\033[0m"
-var Red = "\033[31m"
-var Green = "\033[32m"
-var Yellow = "\033[33m"
-var Blue = "\033[34m"
-var Purple = "\033[35m"
-var Cyan = "\033[36m"
-var Gray = "\033[37m"
-var White = "\033[97m"
-
-func init() {
-	if runtime.GOOS == "windows" {
-		Reset = ""
-		Red = ""
-		Green = ""
-		Yellow = ""
-		Blue = ""
-		Purple = ""
-		Cyan = ""
-		Gray = ""
-		White = ""
-	}
-}
-
-func RepresentNodeConsoleTree(node Node, indent string, exclToken bool) string {
+func RepresentNodeConsoleTree(node ast.Node, indent string, exclToken bool) string {
 	return representNode(node, "", indent, exclToken)
 }
 
-func representStmtList(nodes []Statement, thisIndent string, indent string, exclToken bool) string {
+func representStmtList(nodes []ast.Statement, thisIndent string, indent string, exclToken bool) string {
 	nextIndent := thisIndent + indent
 	var out bytes.Buffer
 	out.WriteString("[")
@@ -50,7 +26,7 @@ func representStmtList(nodes []Statement, thisIndent string, indent string, excl
 	return out.String()
 }
 
-func representExprList(nodes []Expression, thisIndent string, indent string, exclToken bool) string {
+func representExprList(nodes []ast.Expression, thisIndent string, indent string, exclToken bool) string {
 	nextIndent := thisIndent + indent
 	var out bytes.Buffer
 	out.WriteString("[")
@@ -64,7 +40,7 @@ func representExprList(nodes []Expression, thisIndent string, indent string, exc
 	return out.String()
 }
 
-func representIdentifierList(identifiers []*Identifier, thisIndent string, indent string, exclToken bool) string {
+func representIdentifierList(identifiers []*ast.Identifier, thisIndent string, indent string, exclToken bool) string {
 	nextIndent := thisIndent + indent
 	var out bytes.Buffer
 	out.WriteString("[")
@@ -78,14 +54,14 @@ func representIdentifierList(identifiers []*Identifier, thisIndent string, inden
 	return out.String()
 }
 
-func representNode(node Node, thisIndent string, indent string, exclToken bool) string {
+func representNode(node ast.Node, thisIndent string, indent string, exclToken bool) string {
 
 	if node == nil {
 		return White + "nil" + Reset
 	}
 
 	//type
-	typestr := representType(node)
+	typestr := RepresentType(node)
 
 	var out bytes.Buffer
 	out.WriteString(typestr)
@@ -98,12 +74,11 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 
 	nextIndent := thisIndent + indent
 	switch node := node.(type) {
-	case *Program:
+	case *ast.Program:
 		// Statements []Statement
 		out.WriteString("\n" + nextIndent + "Statements: ")
 		out.WriteString(representStmtList(node.Statements, nextIndent, indent, exclToken))
-
-	case *LetStatement:
+	case *ast.LetStatement:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -114,7 +89,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Value Expression
 		out.WriteString("\n" + nextIndent + "Value: ")
 		out.WriteString(representNode(node.Value, nextIndent, indent, exclToken))
-	case *ReturnStatement:
+	case *ast.ReturnStatement:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -122,7 +97,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// ReturnValue Expression
 		out.WriteString("\n" + nextIndent + "ReturnValue: ")
 		out.WriteString(representNode(node.ReturnValue, nextIndent, indent, exclToken))
-	case *ExpressionStatement:
+	case *ast.ExpressionStatement:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -130,7 +105,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Expression Expression
 		out.WriteString("\n" + nextIndent + "Expression: ")
 		out.WriteString(representNode(node.Expression, nextIndent, indent, exclToken))
-	case *BlockStatement:
+	case *ast.BlockStatement:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -138,7 +113,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Statements []Statement
 		out.WriteString("\n" + nextIndent + "Statements: ")
 		out.WriteString(representStmtList(node.Statements, nextIndent, indent, exclToken))
-	case *Identifier:
+	case *ast.Identifier:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -146,7 +121,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Value string
 		out.WriteString("\n" + nextIndent + "Value: ")
 		fmt.Fprintf(&out, "%T %+v", node.Value, node.Value)
-	case *Boolean:
+	case *ast.Boolean:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -154,7 +129,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Value bool
 		out.WriteString("\n" + nextIndent + "Value: ")
 		fmt.Fprintf(&out, "%T %+v", node.Value, node.Value)
-	case *IntegerLiteral:
+	case *ast.IntegerLiteral:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -162,7 +137,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Value int64
 		out.WriteString("\n" + nextIndent + "Value: ")
 		fmt.Fprintf(&out, "%T %+v", node.Value, node.Value)
-	case *PrefixExpression:
+	case *ast.PrefixExpression:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -173,7 +148,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Right    Expression
 		out.WriteString("\n" + nextIndent + "Right: ")
 		out.WriteString(representNode(node.Right, nextIndent, indent, exclToken))
-	case *InfixExpression:
+	case *ast.InfixExpression:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -187,7 +162,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Right    Expression
 		out.WriteString("\n" + nextIndent + "Right: ")
 		out.WriteString(representNode(node.Right, nextIndent, indent, exclToken))
-	case *IfExpression:
+	case *ast.IfExpression:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -201,7 +176,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Alternative *BlockStatement
 		out.WriteString("\n" + nextIndent + "Alternative: ")
 		out.WriteString(representNode(node.Alternative, nextIndent, indent, exclToken))
-	case *FunctionLiteral:
+	case *ast.FunctionLiteral:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -212,7 +187,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 		// Body       *BlockStatement
 		out.WriteString("\n" + nextIndent + "Body: ")
 		out.WriteString(representNode(node.Body, nextIndent, indent, exclToken))
-	case *CallExpression:
+	case *ast.CallExpression:
 		if !exclToken { //Token
 			out.WriteString("\n" + nextIndent + "Token: ")
 			fmt.Fprintf(&out, "%T %+v", node.Token, node.Token)
@@ -233,7 +208,7 @@ func representNode(node Node, thisIndent string, indent string, exclToken bool) 
 
 }
 
-func representType(n Node) string {
+func RepresentType(n ast.Node) string {
 
 	if n == nil { //should not happen
 		return Red + "nil" + Reset
@@ -241,9 +216,9 @@ func representType(n Node) string {
 
 	nodetype := reflect.TypeOf(n)
 
-	expr_interface := reflect.TypeOf((*Expression)(nil)).Elem()
-	stmt_interface := reflect.TypeOf((*Statement)(nil)).Elem()
-	node_interface := reflect.TypeOf((*Node)(nil)).Elem()
+	expr_interface := reflect.TypeOf((*ast.Expression)(nil)).Elem()
+	stmt_interface := reflect.TypeOf((*ast.Statement)(nil)).Elem()
+	node_interface := reflect.TypeOf((*ast.Node)(nil)).Elem()
 
 	if nodetype.Implements(expr_interface) {
 		return Yellow + nodetype.String() + Reset
@@ -269,11 +244,11 @@ func HasNilValue(i interface{}) bool {
 	return reflect.ValueOf(i).IsNil()
 }
 
-func HasNilValue2(i Node) bool {
+func HasNilValue2(i ast.Node) bool {
 	if IsLiterallyNil(i) {
 		return false
 	}
-	t := i.(Node)
+	t := i.(ast.Node)
 	return reflect.ValueOf(t).IsNil()
 }
 
@@ -287,7 +262,7 @@ func WhatAmI(i interface{}) string {
 	return nodetype.String()
 }
 
-func WhatNodeInterfaceAmI(n Node) string {
+func WhatNodeInterfaceAmI(n ast.Node) string {
 
 	if n == nil {
 		return "no interface"
@@ -295,9 +270,9 @@ func WhatNodeInterfaceAmI(n Node) string {
 
 	nodetype := reflect.TypeOf(n)
 
-	expr_interface := reflect.TypeOf((*Expression)(nil)).Elem()
-	stmt_interface := reflect.TypeOf((*Statement)(nil)).Elem()
-	node_interface := reflect.TypeOf((*Node)(nil)).Elem()
+	expr_interface := reflect.TypeOf((*ast.Expression)(nil)).Elem()
+	stmt_interface := reflect.TypeOf((*ast.Statement)(nil)).Elem()
+	node_interface := reflect.TypeOf((*ast.Node)(nil)).Elem()
 
 	if nodetype.Implements(expr_interface) {
 		return expr_interface.String()
@@ -314,7 +289,7 @@ func WhatNodeInterfaceAmI(n Node) string {
 
 func IsNode(i interface{}) bool {
 	nodetype := reflect.TypeOf(i)
-	node_interface := reflect.TypeOf((*Node)(nil)).Elem()
+	node_interface := reflect.TypeOf((*ast.Node)(nil)).Elem()
 	return nodetype.Implements(node_interface)
 }
 
