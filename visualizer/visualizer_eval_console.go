@@ -1,10 +1,12 @@
 package visualizer
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"monkey/evaluator"
 	"reflect"
+	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 )
@@ -23,7 +25,7 @@ func RepresentEvalConsole(t *evaluator.Tracer, out io.Writer) {
 		if call, ok := calls[i]; ok {
 			tab.AppendRow([]interface{}{
 				Red + fmt.Sprintf("call %v", call.Depth) + Reset,
-				RepresentType(call.Node),
+				RepresentType(call.Node, 1),
 				call.Node})
 
 		} else if exit, ok := exits[i]; ok {
@@ -33,7 +35,7 @@ func RepresentEvalConsole(t *evaluator.Tracer, out io.Writer) {
 			}
 			tab.AppendRow([]interface{}{
 				Green + fmt.Sprintf("exit %v", exit.Depth) + Reset,
-				RepresentType(exit.Node),
+				RepresentType(exit.Node, 1),
 				exit.Node,
 				reflect.TypeOf(exit.Val),
 				val,
@@ -45,5 +47,47 @@ func RepresentEvalConsole(t *evaluator.Tracer, out io.Writer) {
 
 	}
 	tab.Render()
+}
+func TraceEvalConsole(t *evaluator.Tracer, out io.Writer, scanner *bufio.Scanner) {
 
+	calls := t.Calls
+	exits := t.Exits
+
+	cur_step := 0
+	for cur_step < t.Steps() {
+		if call, ok := calls[cur_step]; ok {
+			fmt.Fprintf(out, Red+fmt.Sprintf("call %v: ", call.Depth)+Reset)
+			fmt.Fprintf(out, "%v %v", RepresentType(call.Node, 2), call.Node)
+
+		} else if exit, ok := exits[cur_step]; ok {
+			fmt.Fprintf(out, Green+fmt.Sprintf("exit %v: ", exit.Depth)+Reset)
+			fmt.Fprintf(out, "%v %v", RepresentType(exit.Node, 2), exit.Node)
+			val := "nil"
+			if exit.Val != nil {
+				val = strings.ReplaceAll(exit.Val.Inspect(), "\n", " ")
+			}
+			fmt.Fprintf(out, " -> %T %v ", exit.Val, val)
+		} else {
+			fmt.Fprint(out, "We have a problem")
+		}
+		fmt.Fprint(out, " ? ")
+
+		scanned := scanner.Scan()
+		if !scanned {
+			return
+		}
+		reply := scanner.Text()
+		switch reply {
+		case "a":
+			return
+		case "h":
+			fmt.Fprintf(out, "\tOptions: a: abort, c:continue\n")
+		case "c", "":
+			cur_step++
+			continue
+		default:
+			fmt.Fprint(out, "\tUnknown option (h for help)\n")
+
+		}
+	}
 }

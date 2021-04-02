@@ -683,31 +683,31 @@ func (s *Session) exec_set(input string) {
 
 // input processing
 func (s *Session) exec_process(line string) {
-	s.process_input_dim(s.paste, s.level, s.process, s.logtrace, line)
+	s.process_input_dim(s.paste, s.level, s.process, false, line)
 }
 
 func (s *Session) exec_paste(line string) {
-	s.process_input_dim(true, s.level, s.process, s.logtrace, line)
+	s.process_input_dim(true, s.level, s.process, false, line)
 }
 
 func (s *Session) exec_expression(line string) {
-	s.process_input_dim(s.paste, ExpressionL, s.process, s.logtrace, line)
+	s.process_input_dim(s.paste, ExpressionL, s.process, false, line)
 }
 
 func (s *Session) exec_statement(line string) {
-	s.process_input_dim(s.paste, StatementL, s.process, s.logtrace, line)
+	s.process_input_dim(s.paste, StatementL, s.process, false, line)
 }
 
 func (s *Session) exec_program(line string) {
-	s.process_input_dim(s.paste, ProgramL, s.process, s.logtrace, line)
+	s.process_input_dim(s.paste, ProgramL, s.process, false, line)
 }
 
 func (s *Session) exec_eval(line string) {
-	s.process_input_dim(s.paste, s.level, EvalP, s.logtrace, line)
+	s.process_input_dim(s.paste, s.level, EvalP, false, line)
 }
 
 func (s *Session) exec_type(line string) {
-	s.process_input_dim(s.paste, s.level, TypeP, s.logtrace, line)
+	s.process_input_dim(s.paste, s.level, TypeP, false, line)
 }
 
 func (s *Session) exec_trace(line string) {
@@ -715,7 +715,7 @@ func (s *Session) exec_trace(line string) {
 }
 
 func (s *Session) exec_parse(line string) {
-	s.process_input_dim(s.paste, s.level, ParseP, s.logtrace, line)
+	s.process_input_dim(s.paste, s.level, ParseP, false, line)
 }
 
 func (s *Session) process_input_dim(paste bool, level InputLevel, process InputProcess, trace bool, input string) {
@@ -753,13 +753,13 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 		return
 	}
 
-	if trace {
+	if trace || s.logtrace {
 		evaluator.StartTracer()
 	}
 
 	evaluated := evaluator.Eval(node, s.environment)
 
-	if trace {
+	if trace || s.logtrace {
 		evaluator.StopTracer()
 	}
 
@@ -773,8 +773,13 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 		return
 	}
 
-	if trace {
+	if s.logtrace {
 		visualizer.RepresentEvalConsole(evaluator.T, s.out)
+	}
+
+	if trace {
+		visualizer.TraceEvalConsole(evaluator.T, s.out, s.scanner)
+		return
 	}
 
 	if evaluated != nil { // TODO: Umgang mit nil würdig?

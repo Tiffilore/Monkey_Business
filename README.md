@@ -7,7 +7,16 @@ _The purpose of the Monkey Programming Language is to learn different aspects of
 
  _to be continued..._
 
-#### In the console
+#### In the console - version 1
+inspo from [swipl](https://www.swi-prolog.org/)
+
+If the setting `logtrace` is set, the evaluation trace is still output in a table.
+
+If the command `trace` is used, the evaluation trace is output step by step - this can be interrupted by typing `a`.
+
+![Demo10](demos/demo10.gif)
+
+#### In the console - version 0
 If the setting `logtrace` is set or the command `trace` is used, the evaluation trace is output.
 
 

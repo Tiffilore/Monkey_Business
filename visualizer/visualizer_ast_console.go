@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"monkey/ast"
 	"reflect"
+	"strings"
 )
 
 func RepresentNodeConsoleTree(node ast.Node, indent string, exclToken bool) string {
@@ -61,7 +62,7 @@ func representNode(node ast.Node, thisIndent string, indent string, exclToken bo
 	}
 
 	//type
-	typestr := RepresentType(node)
+	typestr := RepresentType(node, 1)
 
 	var out bytes.Buffer
 	out.WriteString(typestr)
@@ -208,7 +209,11 @@ func representNode(node ast.Node, thisIndent string, indent string, exclToken bo
 
 }
 
-func RepresentType(n ast.Node) string {
+func RepresentType(n ast.Node, short int) string {
+
+	//short 0: whole type
+	//short 1: without *ast.
+	//short 2: abbreviation
 
 	if n == nil { //should not happen
 		return Red + "nil" + Reset
@@ -220,17 +225,60 @@ func RepresentType(n ast.Node) string {
 	stmt_interface := reflect.TypeOf((*ast.Statement)(nil)).Elem()
 	node_interface := reflect.TypeOf((*ast.Node)(nil)).Elem()
 
-	if nodetype.Implements(expr_interface) {
-		return Yellow + nodetype.String() + Reset
+	nodetype_str := nodetype.String()
+	if short > 0 {
+		nodetype_str = strings.TrimLeft(nodetype_str, "*ast.")
 	}
-	if nodetype.Implements(stmt_interface) {
-		return Cyan + nodetype.String() + Reset
-	}
-	if nodetype.Implements(node_interface) {
-		return Blue + nodetype.String() + Reset
+	if short > 1 {
+		nodetype_str = abbreviate(nodetype_str)
+
 	}
 
-	return nodetype.String()
+	if nodetype.Implements(expr_interface) {
+		return Yellow + nodetype_str + Reset
+	}
+	if nodetype.Implements(stmt_interface) {
+		return Cyan + nodetype_str + Reset
+	}
+	if nodetype.Implements(node_interface) {
+		return Blue + nodetype_str + Reset
+	}
+
+	return nodetype_str
+}
+
+func abbreviate(nodetype string) string {
+	switch nodetype {
+	case "Program": //Program
+		return "Prog"
+	case "LetStatement": //Statements
+		return "LetS"
+	case "ExpressionStatement":
+		return "ExpS"
+	case "BlockStatement":
+		return "BlkS"
+	case "ReturnStatement":
+		return "RetS"
+	case "IfExpression": //Expressions
+		return "IfEx"
+	case "InfixExpression":
+		return "InfE"
+	case "PrefixExpression":
+		return "PreE"
+	case "CallExpression":
+		return "CalE"
+	case "Identifier":
+		return "Iden"
+	case "Boolean":
+		return "Bool"
+	case "IntegerLiteral":
+		return "IntL"
+	case "FunctionLiteral":
+		return "FctL"
+
+	default:
+		return nodetype
+	}
 }
 
 func IsLiterallyNil(i interface{}) bool {
