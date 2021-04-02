@@ -310,7 +310,7 @@ func (s *Session) init() { // to avoid cycle
 			args string
 			msg  string
 		}{
-			{"~ <input>", "show evaluation trace"},
+			{"~ <input>", "show evaluation trace step by step"},
 		},
 	}
 	commands["trace"] = *c_trace
