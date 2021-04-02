@@ -775,6 +775,14 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 
 	if s.logtrace {
 		visualizer.RepresentEvalConsole(evaluator.T, s.out)
+		//fmt.Fprint(s.out, visualizer.QTreeEval(evaluator.T))
+		path, err := exec.LookPath("pdflatex")
+		if err != nil {
+			fmt.Fprintln(s.out, "Displaying evaluation trees as pdfs is not available to you, since you have not installed pdflatex.")
+		} else {
+			visualizer.EvalTree2pdf(evaluator.T, "tescht", path)
+		}
+
 	}
 
 	if trace {

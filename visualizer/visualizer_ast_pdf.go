@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"monkey/ast"
+	"monkey/evaluator"
 
 	"github.com/rwestlund/gotex"
 )
@@ -12,6 +13,13 @@ func Ast2pdf(node ast.Node, excltoken bool, filename string, path string) {
 
 	qtreenode := QTree(node, excltoken)
 	document := makeTeX(qtreenode)
+	tex2pdf(document, filename, path)
+}
+
+func EvalTree2pdf(t *evaluator.Tracer, filename string, path string) {
+
+	evalqtreenode := QTreeEval(t)
+	document := makeTeX(evalqtreenode)
 	tex2pdf(document, filename, path)
 }
 

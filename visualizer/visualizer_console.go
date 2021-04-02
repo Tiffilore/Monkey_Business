@@ -2,6 +2,7 @@ package visualizer
 
 import (
 	"monkey/ast"
+	"monkey/object"
 	"reflect"
 	"runtime"
 	"strings"
@@ -31,7 +32,7 @@ func init() {
 	}
 }
 
-func RepresentType(n ast.Node, brevity int) string {
+func representNodeType(n ast.Node, brevity int) string {
 
 	//brevity 0: whole type
 	//brevity 1: without *ast.
@@ -52,7 +53,7 @@ func RepresentType(n ast.Node, brevity int) string {
 		nodetype_str = strings.TrimLeft(nodetype_str, "*ast.")
 	}
 	if brevity > 1 {
-		nodetype_str = abbreviate(nodetype_str)
+		nodetype_str = abbreviateNodeType(nodetype_str)
 
 	}
 
@@ -67,4 +68,23 @@ func RepresentType(n ast.Node, brevity int) string {
 	}
 
 	return nodetype_str
+}
+
+func representObjectType(o object.Object, brevity int) string {
+
+	if o == nil { //should not happen
+		return Red + "nil" + Reset
+	}
+	objtype := reflect.TypeOf(o)
+
+	objtype_str := objtype.String()
+	if brevity > 0 {
+		objtype_str = strings.TrimLeft(objtype_str, "*object.")
+	}
+	if brevity > 1 {
+		objtype_str = abbreviateObjectType(objtype_str)
+
+	}
+
+	return objtype_str
 }

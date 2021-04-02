@@ -2,7 +2,7 @@ package visualizer
 
 import "reflect"
 
-func abbreviate(nodetype string) string {
+func abbreviateNodeType(nodetype string) string {
 	switch nodetype {
 	case "Program": //Program
 		return "Prog"
@@ -33,6 +33,25 @@ func abbreviate(nodetype string) string {
 
 	default:
 		return nodetype
+	}
+}
+
+func abbreviateObjectType(objecttype string) string {
+	switch objecttype {
+	case "Integer":
+		return "Intg"
+	case "Boolean":
+		return "Bool"
+	case "Null":
+		return "Null"
+	case "ReturnValue":
+		return "RetV"
+	case "Error":
+		return "Errr"
+	case "Function":
+		return "Func"
+	default:
+		return objecttype
 	}
 }
 

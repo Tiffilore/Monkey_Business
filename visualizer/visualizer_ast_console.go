@@ -59,7 +59,7 @@ func representNode(node ast.Node, thisIndent string, indent string, exclToken bo
 	}
 
 	//type
-	typestr := RepresentType(node, 1)
+	typestr := representNodeType(node, 1)
 
 	var out bytes.Buffer
 	out.WriteString(typestr)
