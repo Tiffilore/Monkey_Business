@@ -18,7 +18,7 @@ _The purpose of the Monkey Programming Language is to learn different aspects of
 
 
 
-- expl for parsing the program `if(true){}`:
+- expl for evaluation of the program `if(true){}`:
 
 ![expl](visualizer/images/eval1.png)
 
