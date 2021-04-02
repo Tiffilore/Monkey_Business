@@ -1,0 +1,91 @@
+%% example:  let a = 5/2 == 2
+
+\documentclass[border=0.2cm]{standalone}
+\usepackage{xcolor}
+%\usepackage{qtree}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+
+\definecolor{yellish}{HTML}{E0EBF5}
+\definecolor{bluish}{HTML}{FFFFA8}
+\definecolor{dbluish}{HTML}{375EAB}
+
+\begin{document}
+
+\Tree[.{0$\downarrow$ \colorbox{dbluish}{\textcolor{white}{\tt Prog}} $\uparrow$13}
+    [.{\small Statements}
+        [.{1$\downarrow$ \colorbox{yellish}{\textcolor{black}{\tt LetS}} $\uparrow$12}
+            [.{\small Name}
+                [.{\colorbox{bluish}{\textcolor{black}{\tt Iden}}}
+                    [.{\small Value}
+                    \underline{\it string a }
+                    ]
+                ]
+            ]
+            [.{\small Value}
+                [.{2$\downarrow$ \colorbox{bluish}{\textcolor{black}{\tt InfE}} $\uparrow$11}
+                    [.{\small Left}
+                        [.{3$\downarrow$ \colorbox{bluish}{\textcolor{black}{\tt InfE}} $\uparrow$8}
+                            [.{\small Left}
+                                [.{4$\downarrow$ \colorbox{bluish}{\textcolor{black}{\tt IntL}} $\uparrow$5}
+                                    [.{\small Value}
+                                    \underline{\it int64 5 }
+                                    ]
+                                    \edge node[auto=left]{\tiny Val 5};                                      [.{\colorbox{black}{\textcolor{white}{\tt Intg}}}
+                                    [.{\small Value}
+                                    5
+                                    ]
+                                    ]
+                                ]
+                            ]
+                            [.{\small Operator}
+                            \underline{\it string $/$ }
+                            ]
+                            [.{\small Right}
+                                [.{6$\downarrow$ \colorbox{bluish}{\textcolor{black}{\tt IntL}} $\uparrow$7}
+                                    [.{\small Value}
+                                    \underline{\it int64 2 }
+                                    ]
+                                    \edge node[auto=left]{\tiny Val 7};                                      [.{\colorbox{black}{\textcolor{white}{\tt Intg}}}
+                                    [.{\small Value}
+                                    2
+                                    ]
+                                    ]
+                                ]
+                            ]
+                            \edge node[auto=left]{\tiny Val 8};                              [.{\colorbox{black}{\textcolor{white}{\tt Intg}}}
+                            [.{\small Value}
+                            2
+                            ]
+                            ]
+                        ]
+                    ]
+                    [.{\small Operator}
+                    \underline{\it string $$=$$=$$ }
+                    ]
+                    [.{\small Right}
+                        [.{9$\downarrow$ \colorbox{bluish}{\textcolor{black}{\tt IntL}} $\uparrow$10}
+                            [.{\small Value}
+                            \underline{\it int64 2 }
+                            ]
+                            \edge node[auto=left]{\tiny Val 10};                              [.{\colorbox{black}{\textcolor{white}{\tt Intg}}}
+                            [.{\small Value}
+                            2
+                            ]
+                            ]
+                        ]
+                    ]
+                    \edge node[auto=left]{\tiny Val 11};                      [.{\colorbox{black}{\textcolor{white}{\tt Bool}}}
+                    [.{\small Value}
+                    true
+                    ]
+                    ]
+                ]
+            ]
+            \edge node[auto=left]{\tiny Val 12};              [.{\colorbox{black}{\textcolor{white}{\tt nil}}}             ]
+        ]
+    ]
+    \edge node[auto=left]{\tiny Val 13};      [.{\colorbox{black}{\textcolor{white}{\tt nil}}}     ]
+]
+
+\end{document}
