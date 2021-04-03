@@ -1,7 +1,6 @@
 package visualizer
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"monkey/ast"
@@ -17,9 +16,9 @@ func Ast2pdf(node ast.Node, excltoken bool, filename string, path string) {
 	tex2pdf(document, filename, path)
 }
 
-func EvalTree2pdf(t *evaluator.Tracer, filename string, path string) {
+func EvalTree2pdf(t *evaluator.Tracer, filename string, path string, brevity int) {
 
-	evalqtreenode := QTreeEval(t)
+	evalqtreenode := QTreeEval(t, brevity)
 	document := makeTeX(evalqtreenode)
 	tex2pdf(document, filename, path)
 }
@@ -54,11 +53,23 @@ var document_prefix = `
 \begin{document}
 
 `
+
 var document_suffix = `
 \end{document}
 `
 
+var tikz_prefix = `
+\begin{tikzpicture}[
+   every tree node/.style={anchor=north},
+   every node/.append style={align=left}  
+]
+
+`
+
+var tikz_suffix = `
+\end{tikzpicture}
+`
+
 func makeTeX(qtreenode string) string {
-	fmt.Println(document_prefix + qtreenode + document_suffix)
-	return document_prefix + qtreenode + document_suffix
+	return document_prefix + tikz_prefix + qtreenode + tikz_suffix + document_suffix
 }

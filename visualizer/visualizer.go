@@ -47,11 +47,48 @@ func abbreviateObjectType(objecttype string) string {
 	case "ReturnValue":
 		return "RetV"
 	case "Error":
-		return "Errr"
+		return "Error"
 	case "Function":
 		return "Func"
 	default:
 		return objecttype
+	}
+}
+
+func abbreviateFieldName(fieldname string) string {
+	switch fieldname {
+	case "Statements":
+		return "Stmts"
+	case "Name":
+		return "Name"
+	case "Value":
+		return "Val"
+	case "ReturnValue":
+		return "RetV"
+	case "Expression":
+		return "Expr"
+	case "Operator":
+		return "Op"
+	case "Right":
+		return "Right"
+	case "Left":
+		return "Left"
+	case "Condition":
+		return "Cond"
+	case "Consequence":
+		return "Cons"
+	case "Alternative":
+		return "Altr"
+	case "Parameters":
+		return "Params"
+	case "Body":
+		return "Body"
+	case "Function":
+		return "Func"
+	case "Arguments":
+		return "Args"
+	default:
+		return fieldname[0:4]
 	}
 }
 

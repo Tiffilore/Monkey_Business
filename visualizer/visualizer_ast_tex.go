@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"monkey/ast"
-	"strings"
 )
 
 func QTree(node ast.Node, exclToken bool) string {
@@ -163,11 +162,4 @@ func childrenQTree(node ast.Node, thisIndent string, exclToken bool) string {
 
 func tokenleafQTree(value string) string {
 	return "{\\bf " + lateXify(value) + "}"
-}
-
-func leafQTree(value interface{}) string {
-	//return "\\underline{\\it " + value + "}"
-	var out bytes.Buffer
-	fmt.Fprintf(&out, "\\underline{\\it %T %+v }", value, value)
-	return strings.ReplaceAll(out.String(), "_", "\\_")
 }

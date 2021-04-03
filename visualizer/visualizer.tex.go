@@ -1,6 +1,8 @@
 package visualizer
 
 import (
+	"bytes"
+	"fmt"
 	"monkey/ast"
 	"monkey/object"
 	"reflect"
@@ -83,10 +85,44 @@ func objTypeQTree(o object.Object, brevity int) string {
 		objtype_str = abbreviateObjectType(objtype_str)
 
 	}
-	return "\\colorbox{" + "black" + "}{\\textcolor{" + "white" + "}{\\tt " + objtype_str + "}}"
-
+	//return "\\colorbox{black}{\\textcolor{white}{\\tt " + objtype_str + "}}"
+	return objtype_str
 }
 
-func fieldQTree(value string) string {
+func blacken(val string) string {
+	return fmt.Sprint(
+		"\\colorbox{black}{\\textcolor{white}{\\tt ",
+		val,
+		"}} ")
+}
+func fieldNameQTree(fieldname string, brevity int) string {
+
+	if brevity > 1 {
+		fieldname = abbreviateFieldName(fieldname)
+	}
+
+	return "{\\small " + fieldname + "}"
+}
+
+func fieldQTree(value string) string { // TODO: adapt ast as well; leave it for now
 	return "{\\small " + value + "}"
+}
+
+func leafValueQTree(value interface{}, brevity int) string { // TODO: adapt ast as well; leave it for now
+	var out bytes.Buffer
+
+	if brevity > 1 {
+		fmt.Fprintf(&out, "\\underline{\\it %+v}", value)
+
+	} else {
+		fmt.Fprintf(&out, "\\underline{\\it %T %+v}", value, value)
+	}
+	return strings.ReplaceAll(out.String(), "_", "\\_") // for functions
+}
+
+func leafQTree(value interface{}) string { // TODO: adapt ast as well; leave it for now
+	//return "\\underline{\\it " + value + "}"
+	var out bytes.Buffer
+	fmt.Fprintf(&out, "\\underline{\\it %T %+v }", value, value)
+	return strings.ReplaceAll(out.String(), "_", "\\_")
 }

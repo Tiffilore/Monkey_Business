@@ -752,7 +752,7 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	if s.logparse || process == ParseP {
 		fmt.Fprintln(s.out, node)
 		fmt.Fprintln(s.out, visualizer.RepresentNodeConsoleTree(node, "|   ", !s.incltoken))
-		fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
+		//fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
 		path, err := exec.LookPath("pdflatex")
 		if err != nil {
 			fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
@@ -791,13 +791,13 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	}
 
 	if s.logtrace {
-		//visualizer.RepresentEvalConsole(evaluator.T, s.out)
-		//fmt.Fprint(s.out, visualizer.QTreeEval(evaluator.T))
+		visualizer.RepresentEvalConsole(evaluator.T, s.out)
+		//fmt.Fprint(s.out, visualizer.QTreeEval(evaluator.T, 2))
 		path, err := exec.LookPath("pdflatex")
 		if err != nil {
 			fmt.Fprintln(s.out, "Displaying evaluation trees as pdfs is not available to you, since you have not installed pdflatex.")
 		} else {
-			visualizer.EvalTree2pdf(evaluator.T, s.evalfile, path)
+			visualizer.EvalTree2pdf(evaluator.T, s.evalfile, path, 2)
 		}
 
 	}
