@@ -1,12 +1,16 @@
 ## visualizing evaluation
 
 - goal: touch evaluator-code as little as possible
-- only works if the evaluator doesn't panic 
-- environments are not displyed so far
+- price: only works if the evaluator doesn't panic 
+- environments are not displayed so far
 - evaluation trees really are DAGs
   - possible steps:
     - step 1: display then several times
-    - step 2: display them separately
+    - step 2: display them once, give them a name and only display name from second usage on
+      - exception: Boolean + Null
+      - expls for step 2 are named "evalx.1"
+
+
 
 
 ### examples:
