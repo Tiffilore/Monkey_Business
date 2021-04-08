@@ -88,7 +88,8 @@ func abbreviateFieldName(fieldname string) string {
 	case "Arguments":
 		return "Args"
 	default:
-		return fieldname[0:4]
+		//return fieldname[0:4] //<-- make sure that length is sufficient
+		return fieldname
 	}
 }
 
