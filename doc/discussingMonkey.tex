@@ -1,0 +1,517 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+%\usepackage{listings}
+%\usepackage{listings-golang} % import this package after listings
+% 
+% \lstset{ % add your own preferences
+%     frame=single,
+%     basicstyle=\footnotesize,
+%     keywordstyle=\color{red},
+%    numbers=left,
+%     numbersep=5pt,
+%     showstringspaces=false, 
+%     stringstyle=\color{blue},
+%     tabsize=4,
+%     language=Golang % this is it !
+% }
+
+ \usepackage{subcaption}
+  \usepackage{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyvrb}
+\usepackage{xcolor}
+\usepackage{amssymb, wasysym}
+
+\usepackage{qtree}
+%opening
+\title{On ...}
+\author{Stefanie}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Some thoughts on the book \textit{Writing an Interpreter in Go} (Version 1.7) by Thorsten Ball, the Monkey Programming language and its implementation.
+So far, only the part of the interpreter implemented in chapter 3 is taken into account.
+\end{abstract}
+
+\tableofcontents
+
+\listoffigures
+
+\listoftables
+
+
+\newpage
+\Tree[.Parent daughter [.son grandchild1 grandchild2 ] ] 
+
+$$\forall x (x \in \mathbb{N} \rightarrow x\neq \{\emptyset, 0\})$$
+
+
+$$s(x) := \sum_{i=0}^y i$$
+
+\newpage
+
+\section{On Quality Assurance and Testing}
+\begin{itemize}
+ \item my first 2 tests are just minor stuff, but the nil-thing is important, since it pertains to the basics of the Monkey object system 
+ \begin{itemize}
+  \item proposal: test 2 possibilities
+  \begin{itemize}
+   \item just get rid of nil and use NULL instead 
+   \item go back to the idea of statements having no value, while expressions have
+   \\ typical repls: treat expressions differently from statements (ghci, for example)
+  \end{itemize}
+ \end{itemize}
+\item falsche Sicherheit
+\begin{itemize}
+ \item expl start of compiler book
+\end{itemize}
+
+\end{itemize}
+
+\section{On Evaluating to Unorthodox Values}
+
+\subsection{Statements vs Expressions}
+
+During the discussion of the parser, the author gives the following explanation for the difference between statements and expressions:
+
+\begin{quote} %p 33
+Expressions produce values, statements don’t.\footnote{Interpreter Book: 33}
+\end{quote}
+
+At least for the Monkey Programming language, this is not true, since there are statements in Monkey that produce values and expressions that don't:
+ 
+ 
+\begin{figure}[ht]
+\begin{subfigure}{.5\textwidth}
+\begin{tcolorbox}\small
+\begin{verbatim}
+1 + 2        // ExprS
+return 5     // RetS
+if(true){5}  // ExprS
+\end{verbatim}
+\end{tcolorbox}
+\caption{Statements that produce values}
+ % \label{fig:sub-first}
+\end{subfigure}
+\begin{subfigure}{.5\textwidth}
+\begin{tcolorbox}\small
+\begin{verbatim}
+let a = 5    // LetS
+f(){}()      // ExprS
+if(true){let a = 5} //ExprS
+\end{verbatim}
+\end{tcolorbox}  
+  \caption{Statements that don't produce values}
+ % \label{fig:sub-first}
+\end{subfigure}
+\vskip 15pt
+\begin{subfigure}{.5\textwidth}
+\begin{tcolorbox}\small
+\begin{verbatim}
+1 + 2        // InfixE
+if(true){5}  // IfE
+fn(x){x}(true) // CallE
+\end{verbatim}
+\end{tcolorbox} 
+  \caption{Expressions that produce values}
+ % \label{fig:sub-first}
+\end{subfigure}
+\begin{subfigure}{.5\textwidth}
+\begin{tcolorbox}\small
+\begin{verbatim}
+if(false){} else {} // IfE
+if(true){let a = 5} // IfE
+f(){}()      // CallE
+\end{verbatim}
+\end{tcolorbox}
+  \caption{Expressions that don't produce values}
+ % \label{fig:sub-first}
+\end{subfigure}
+
+\caption{Statements, expressions, values}
+ % \label{fig:sub-first}
+\end{figure}
+
+In addition, the same statement / expression can produce a value or not, depending on the bindings in the environment.
+
+Moreover, statements can get their values from expressions - take expression statements for example and expressions can get their values from statements - if expressions and function calls get it from block statements.
+
+\newpage
+\subsection{Monkey's Object System}
+
+After chapter 3, Monkey has the following types of objects:
+\begin{figure}[h]
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline 
+Monkey-Type & Go-Type \\\hline 
+\tt INTEGER & \tt object.Integer \\
+\tt BOOLEAN & \tt object.Boolean \\
+\tt RETURN\_VALUE & \tt object.ReturnValue \\
+\tt FUNCTION & \tt object.Function \\
+\tt NULL & \tt object.Null \\
+\tt ERROR & \tt object.Error 
+\\\hline
+\end{tabular}
+\end{center}
+\caption{Object types in Monkey}
+\end{figure}
+
+
+
+\subsection{{\tt nil} and {\tt NULL} and {\tt Error} objects}
+
+When describing the foundation of Monkey's object system, the author promises that
+
+\begin{quote}
+ we’re going to represent every value we encounter when evaluating Monkey source code as
+an {\tt Object}, an interface of our design. Every value will be wrapped inside a struct, which fulfills
+this Object interface.\footnote{Interpreter Book: 108}
+\end{quote}
+
+\subsubsection{\tt nil}
+
+He doesn't live up to that promise:
+
+\begin{figure}[h]
+\begin{tcolorbox}\small
+\begin{verbatim}
+func Eval(node ast.Node, env *object.Environment) object.Object {
+    switch node := node.(type) {
+	    ...
+    }
+
+    return nil
+}
+\end{verbatim}
+\end{tcolorbox}
+\caption{Closing return statement of Eval-function}
+\end{figure}
+
+In the closing return statement of the central evaluation function,
+{\tt nil} is returned if not specified differently in one of the cases of the switch-statement.
+The only case, where this closing return statement is used is with regard to let functions. 
+In addition, the special functions implementing the evaluation of programs and block statements return a nil value if they are empty (Figure \ref{evalstmts}). In both cases, a nil interface is returned, if the statement list is empty.
+
+
+\begin{figure}[h]
+\begin{subfigure}{\textwidth}
+\begin{tcolorbox}\small
+\begin{verbatim}
+func evalProgram(program *ast.Program, env *object.Environment) 
+object.Object {
+    var result object.Object
+
+    for _, statement := range program.Statements {
+        result = Eval(statement, env)
+
+        switch result := result.(type) {
+        case *object.ReturnValue:
+            return result.Value
+        case *object.Error:
+            return result
+        }
+    }
+    return result
+}
+\end{verbatim}
+\end{tcolorbox} 
+ % \label{fig:sub-first}
+\caption{evaluating programs}
+\end{subfigure}
+
+\begin{subfigure}{\textwidth}
+
+\begin{tcolorbox}\small
+\begin{verbatim}
+func evalBlockStatement(
+    block *ast.BlockStatement,
+    env *object.Environment,
+) object.Object {
+    var result object.Object
+
+    for _, statement := range block.Statements {
+        result = Eval(statement, env)
+
+        if result != nil {
+            rt := result.Type()
+            if rt == object.RETURN_VALUE_OBJ 
+                                 || rt == object.ERROR_OBJ {
+                return result
+            }
+        }
+    }
+    return result
+}
+
+\end{verbatim}
+\end{tcolorbox}
+\caption{evaluating programs}
+\end{subfigure}
+\caption{Evaluating programs and block statements}
+\label{evalstmts}
+\end{figure}
+
+\clearpage
+
+
+The author seems to be (somewhat) aware that nodes of the ast can evaluate to {\tt nil}, since at some places, he checks whether a value is {\tt nil} before using the {\tt Type()}-function that each {\tt Object} implements (at others, he doesn't, which leads to runtime errors for certain inputs) - not only in the evaluator-code, but also in the repl-code (Figure \ref{repl-nil}).
+
+\begin{figure}[h]
+\begin{tcolorbox}\small
+\begin{verbatim}
+...
+        evaluated := evaluator.Eval(program, env)
+        if evaluated != nil {
+            io.WriteString(out, evaluated.Inspect())
+            io.WriteString(out, "\n")
+        }
+...
+\end{verbatim}
+\end{tcolorbox}
+ \caption{Taking care of {\tt nil}-values in the repl}
+  \label{repl-nil}
+\end{figure}
+
+
+
+
+
+\subsubsection{\tt NULL}
+Relatively early, the author introduces {\tt NULL} values. Null values ``represent the absence of a value'', he says and warns that ``the language would
+be safer to use if it doesn’t allow null or null references'' and lets the reader know that the use of null values led to many ``crashes''.\footnote{Interpreter Book: 108}
+
+Unfortunately, with the introduction of {\tt NULL}, the possibility of nodes evaluating to {\tt nil} has not been abandoned. Moreover,
+I don't see that the evaluator ever crashes for using {\tt NULL}, it does so for using {\tt nil}.
+
+Although he still considers the possibility of nodes evaluating to {\tt nil} - as becomes apparent in questioning whether a value is {\tt nil}, he seems to not intend it. For if expressions, he explicitly states:
+
+\begin{quote}
+ When a conditional
+doesn’t evaluate to a value it’s supposed to return {\tt NULL}, e.g.:
+\verb+if (false) { 10 }+ \footnote{Interpreter Book: 125}
+\end{quote}
+
+In the case of a missing alternative, this suceeds, but not, if the condition is ``truthy'' and its condition is a block statement evaluating to {\tt nil} or if its condition is not truthy and 
+and its alternative  is a block statement evaluating to {\tt nil}.
+Figure \ref{if-nil} shows some (pretty minimal) examples.
+
+\begin{figure}[h]
+\begin{tcolorbox}\small
+\begin{verbatim}
+if (true) {}
+if (true) {} else {...}
+if (false) {...} else {}
+
+if (true) { let a = 5 }
+let a = fn(){}(); if (true) {a} 
+\end{verbatim}
+\end{tcolorbox}
+ \caption{If expressions evaluating to {\tt nil}}
+  \label{if-nil}
+\end{figure}
+
+So, now we have both options: nodes can evaluate to {\tt nil} as well as to {\tt NULL}. 
+
+
+%\clearpage
+
+
+\subsubsection{{\tt Error} objects}
+
+Error objects are introduced as a cure for the dilemma so far solved by returning {\tt NULL}s. 
+
+\begin{figure}[h]
+\begin{tcolorbox}\small
+\begin{verbatim}
+func newError(format string, a ...interface{}) *object.Error {
+    return &object.Error{Message: fmt.Sprintf(format, a...)}
+}
+\end{verbatim}
+\end{tcolorbox}
+ \caption{error}
+  \label{error-func}
+\end{figure}
+
+
+The author intruduces a function {\tt newError} that returns an error object (Figure \ref{error-func}) and 
+comments:
+
+\begin{quote}
+This newError function finds its use in every place where we didn’t know what to do before and
+returned NULL instead\footnote{Interpreter Book: 133}
+\end{quote}
+
+Yet, he does not give up {\tt NULL}-objects. An if expression with a non-truthy condition and non-existent alternative still evaluates to {\tt NULL} and can thus pass {\tt NULL}-values to many other expressions.
+
+\subsection{Conclusion}
+
+In Monkey, there are three ways to deal with situations where it is not so clear what a node is to evaluate to:
+
+\begin{enumerate}
+ \item return {\tt nil}
+ \item return {\tt NULL}
+ \item return an {\tt Error} object
+\end{enumerate}
+That's maybe a bit (too) much.
+
+{\tt NULL} values are given birth by if expressions and {\tt nil} values are given birth by programs, block statements and let statements. However, they can spread. Figure \ref{unorthodox} gives an overview over wich nodes can evaluate to which of our unorthodox values.
+\begin{figure}[h]
+ 
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|}\hline
+                        & {\tt nil}     & {\tt NULL}    & {\tt Error}   \\\hline\hline
+\tt Program             & \checkmark    & \checkmark    & \checkmark    \\\hline 
+\tt LetStatement        & \checkmark    & -             & \checkmark    \\
+\tt ReturnStatement     & -             & -             & \checkmark    \\
+\tt ExpressionStatement & \checkmark    & \checkmark    & \checkmark    \\
+\tt BlockStatement      & \checkmark    & \checkmark    & \checkmark    \\\hline
+\tt FunctionLiteral     & -             & -             & -             \\
+\tt Boolean             & -             & -             & -             \\
+\tt IntegerLiteral      & -             & -             & -             \\
+\tt PrefixExpression    & -             & -             & \checkmark    \\
+\tt InfixExpression     & -             & -             & \checkmark    \\
+\tt IfExpression        & \checkmark    & \checkmark    & \checkmark    \\
+\tt CallExpression      & \checkmark    & \checkmark    & \checkmark    \\
+\tt Identifier          & \checkmark    & \checkmark    & \checkmark    \\\hline
+\end{tabular}
+\end{center}
+\caption{Unorthodox values}
+\label{unorthodox}
+\end{figure}
+
+\clearpage
+\newpage
+\section{On Booleans [TODO]}
+
+
+\newpage
+\section{On Environments and Closures [TODO]}
+
+
+\newpage
+\section{On Function Calls}
+
+\begin{figure}[h]
+\begin{subfigure}{\textwidth}
+
+\begin{tcolorbox}\small
+\begin{verbatim}
+<call-expression>   ::= <identifier> LBRACE 
+                        <comma-separated-expressions> RBRACE 
+                    |   <function-literal> LBRACE 
+                        <comma-separated-expressions> RBRACE
+\end{verbatim}
+\end{tcolorbox}
+\caption{Rule described}
+\end{subfigure}
+\begin{subfigure}{\textwidth}
+
+\begin{tcolorbox}\small
+\begin{verbatim}
+<call-expression>   ::= <expression> LBRACE 
+                        [<comma-separated-expressions>] RBRACEs
+\end{verbatim}
+\end{tcolorbox}
+\caption{Rule implemented}
+\end{subfigure}
+ \caption{error}
+  \label{error-func}
+\end{figure}
+
+
+
+
+\begin{itemize}
+ \item he describes the grammar rule differently from what he implements
+ \item restricting the grammar would disable some nice usages
+\item where the function expression is restricted to expressions that are identifiers or function literals:
+\item *Function* can be can be any `Expression`; there are no restrictions;
+\item only parsed via `parseExpression`--> `parseCallExpression` 
+
+(whenever we have an expression not followed by an operator, but a left brace)
+
+\end{itemize}
+
+\begin{verbatim}
+
+```go
+type CallExpression struct {
+	Token     token.Token // The '(' token
+	Function  Expression  // Identifier or FunctionLiteral
+	Arguments []Expression
+}
+``` 
+\end{verbatim}
+
+There are several places where the author seems to make clear that he only wants to allow *identifiers* and *function literals* 
+in the function constituent of function calls. However, the way the parser is implemented any expression is allowed as this constituent.
+
+\subsection{Advantages}
+
+ Moreover, one could come up with perfectly reasonable Monkey code where it makes sense to have expressions besides *identifiers* and *function literals* 
+as function constituents of function calls:
+
+\begin{verbatim}
+ 
+
+\begin{lstlisting}
+let func1 = fn...
+let func2 = fn...
+if(...){func1} else {func2}(...)
+\end{lstlisting}
+\end{verbatim}
+
+\begin{verbatim}
+
+\begin{lstlisting}
+let func1 = fn...
+let func2 = fn...
+let choose_func = fn(x){if (x==1){return func1} if (x==2){return func2}}
+choose_func(1)(...)
+\end{lstlisting}
+\end{verbatim}
+
+
+Therefore, it is more reasonable to fix the evaluation of ast nodes.
+
+
+
+\subsection{Runtime Errors}
+And we have an obvious problem with function calls:
+\begin{verbatim}
+ 
+\begin{lstlisting}
+if (true){}()
+
+\end{lstlisting}
+\end{verbatim}
+causes a runtime error.
+
+So, one might want to correct the parser and implement it in such a way that it restricts the function constituent of function calls to *identifiers* and *function literals*.
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+\newpage 
+
+\section{Notes}
+\subsection{}
+? Expectation: eval(if(false){...}else{}) == eval(if(false){})
+
+
+
+
+\end{document}
