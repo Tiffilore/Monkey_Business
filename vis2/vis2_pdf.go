@@ -1,6 +1,7 @@
 package vis2
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"monkey/ast"
@@ -11,7 +12,7 @@ import (
 func Ast2pdf(node ast.Node, filename string, path string, verb Verbosity, exclToken bool) error {
 	vis := NewVisualizer("", "  ", verb, exclToken)
 	qtreenode := vis.VisualizeQTree(node)
-	//fmt.Println(qtreenode)
+	fmt.Println(qtreenode)
 	document := makeTeX(qtreenode)
 	return tex2pdf(document, filename, path)
 }

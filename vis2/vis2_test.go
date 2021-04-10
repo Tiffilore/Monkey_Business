@@ -14,6 +14,7 @@ import (
 //
 
 var inputs = []string{
+	"if(1){} if(2){}",
 	"if(1){}",
 	"",    //empty program
 	"@",   //nil
@@ -33,11 +34,14 @@ var inputs = []string{
 	"fn(+,-,!,/,*,==,=,!=,<,>){}", // test operator display as long as it is not fixed
 }
 
-func Test_cons(t *testing.T) {
+func _Test_cons(t *testing.T) {
 
 	exclToken := false
 
-	for _, input := range inputs {
+	for index, input := range inputs {
+		if index > 1 {
+			continue
+		}
 		levels := []string{"p", "s", "e"}
 
 		for _, level := range levels {
@@ -53,6 +57,9 @@ func Test_cons(t *testing.T) {
 			verbs := []Verbosity{V, VV, VVV}
 
 			for _, verb := range verbs {
+				if verb != V {
+					continue
+				}
 				vis := NewVisualizer("", "|   ", verb, exclToken)
 				//fmt.Println(vis.VisualizeConsTree(node))
 				vis.VisualizeConsTree(node)
@@ -61,11 +68,14 @@ func Test_cons(t *testing.T) {
 		}
 	}
 }
-func _Test_tex(t *testing.T) {
+func Test_tex(t *testing.T) {
 
 	exclToken := true
 
 	for index, input := range inputs {
+		if index > 0 {
+			continue
+		}
 		levels := []string{"p", "s", "e"}
 
 		for _, level := range levels {
