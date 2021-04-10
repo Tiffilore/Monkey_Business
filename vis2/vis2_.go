@@ -11,11 +11,12 @@ import (
 //   nodes are structs
 //   Tokens have fields Type and Literal
 func (v *Visualizer) VisualizeQTree(node ast.Node) string {
+	v.display = TEX
 
 	v.fillNodeMap(node)
 
+	v.mode = WRITE
 	visited = make(map[ast.Node]bool)
-	v.display = TEX
 	//v.visualizeNode(node)
 
 	v.visualizeFieldValue(node)
@@ -33,7 +34,7 @@ func (v *Visualizer) VisualizeConsTree(node ast.Node) string {
 func (v *Visualizer) fillNodeMap(node ast.Node) {
 	names = make(map[ast.Node]string)
 	visited = make(map[ast.Node]bool)
-	v.display = NONE
+	v.mode = COLLECT
 	//v.visualizeNode(node)
 	v.visualizeFieldValue(node)
 }
@@ -52,11 +53,12 @@ func (v *Visualizer) visualizeFieldValue(i interface{}) { //visualize field
 	// case slice
 	if reflect.TypeOf(i).Kind() == reflect.Slice {
 
-		v.beginList()
 		values := reflect.Indirect(reflect.ValueOf(i))
 
+		v.beginList(values.Len())
+
 		for i := 0; i < values.Len(); i++ {
-			if i > 0 || v.display == CONSOLE {
+			if v.display == CONSOLE {
 				v.printInd()
 			}
 			v.visualizeFieldValue(values.Index(i).Interface())
@@ -89,7 +91,7 @@ func (v *Visualizer) visualizeNode(node ast.Node) {
 	}
 
 	//if reflect.TypeOf(node).Kind() == reflect.Ptr { // && !reflect.ValueOf(node).IsNil() { // to avoid repetitions and circles
-	if _, ok := visited[node]; ok && v.display == NONE { // we do not need to ask whether it is a pointer
+	if _, ok := visited[node]; ok && v.mode == COLLECT { // we do not need to ask whether it is a pointer
 		v.createName(node)
 	}
 

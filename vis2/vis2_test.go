@@ -14,17 +14,17 @@ import (
 //
 
 var inputs = []string{
-	"if(1){} if(2){}",
-	"if(1){}",
-	"",    //empty program
-	"@",   //nil
-	"let", //nil value
+	"if(1){} if(2){} if(3){}", // 2 nil-Alternatives
+	"",                        //empty program
+	"@",                       //nil
+	"let",                     //nil value
 	"1",
 	"1 2",
 	"let a = 5",
 	"return true",
 	"{}", //empty BlkStmt (level s)
 	"if(true){}",
+	"if(1){} if(2){}", // 2 nil-Alternatives
 	"if(true){a}",
 	"!a",
 	"if(1){2+3}",
@@ -39,7 +39,7 @@ func _Test_cons(t *testing.T) {
 	exclToken := false
 
 	for index, input := range inputs {
-		if index > 1 {
+		if index > 0 {
 			continue
 		}
 		levels := []string{"p", "s", "e"}
@@ -61,8 +61,8 @@ func _Test_cons(t *testing.T) {
 					continue
 				}
 				vis := NewVisualizer("", "|   ", verb, exclToken)
-				//fmt.Println(vis.VisualizeConsTree(node))
-				vis.VisualizeConsTree(node)
+				fmt.Println(vis.VisualizeConsTree(node))
+				//vis.VisualizeConsTree(node)
 
 			}
 		}

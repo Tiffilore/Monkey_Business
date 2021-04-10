@@ -14,7 +14,13 @@ type Display int
 const (
 	TEX Display = iota
 	CONSOLE
-	NONE
+)
+
+type Mode int
+
+const (
+	COLLECT Mode = iota
+	WRITE
 )
 
 type Verbosity int
@@ -31,6 +37,7 @@ type Visualizer struct {
 	curIndent string
 	depth     int
 	display   Display
+	mode      Mode
 	verbosity Verbosity
 	exclToken bool
 	out       *bytes.Buffer
@@ -61,36 +68,38 @@ func NewVisualizer(
 }
 
 func (v *Visualizer) incrIndent() {
-	if v.display != NONE {
+	if v.mode != COLLECT {
 		v.depth++
 		v.curIndent = v.curIndent + v.indent
 	}
 }
 
 func (v *Visualizer) decrIndent() {
-	if v.display != NONE {
+	if v.mode != COLLECT {
 		v.depth--
 		v.curIndent = v.prefix + strings.Repeat(v.indent, v.depth)
 	}
 }
 
 func (v *Visualizer) printInd(a ...interface{}) {
-	if v.display != NONE {
+	if v.mode != COLLECT {
 		fmt.Fprint(v.out, "\n", v.curIndent)
 		fmt.Fprint(v.out, a...)
 	}
 }
 
 func (v *Visualizer) printW(a ...interface{}) {
-	if v.display != NONE {
+	if v.mode != COLLECT {
 		fmt.Fprint(v.out, a...)
 	}
 }
 
 func (v *Visualizer) beginNode(node ast.Node) {
-	switch v.display {
-	case NONE:
+	if v.mode == COLLECT {
 		return
+	}
+	switch v.display {
+
 	case TEX:
 		v.printW("[.", v.representNodeType(node))
 		v.incrIndent()
@@ -101,7 +110,7 @@ func (v *Visualizer) beginNode(node ast.Node) {
 }
 
 func (v *Visualizer) beginField(fieldname string) {
-	if v.display == NONE {
+	if v.mode == COLLECT {
 		return
 	}
 	str := v.representFieldName(fieldname)
@@ -110,6 +119,7 @@ func (v *Visualizer) beginField(fieldname string) {
 		//fmt.Fprint(v.out, "[.", str)
 		v.printInd("[.", str, " ")
 		v.incrIndent()
+		v.printInd()
 	case CONSOLE:
 		v.printInd(str, ": ")
 		//fmt.Fprint(v.out, str, ": ") //keine neue Zeile danach!
@@ -120,9 +130,15 @@ func (v *Visualizer) beginField(fieldname string) {
 	}
 }
 
-func (v *Visualizer) beginList() {
+func (v *Visualizer) beginList(len int) {
+	if v.mode == COLLECT {
+		return
+	}
 	switch v.display {
-	case TEX, NONE: //nix
+	case TEX:
+		if len == 0 {
+			v.printW("%") // empty lines are not allowed
+		}
 	case CONSOLE:
 		v.printW("[")
 		v.incrIndent()
@@ -130,8 +146,11 @@ func (v *Visualizer) beginList() {
 }
 
 func (v *Visualizer) endList() {
+	if v.mode == COLLECT {
+		return
+	}
 	switch v.display {
-	case TEX, NONE: //nix
+	case TEX: //nix
 	case CONSOLE:
 		v.decrIndent()
 		v.printInd("]")
@@ -139,16 +158,19 @@ func (v *Visualizer) endList() {
 }
 
 func (v *Visualizer) endField() {
+	if v.mode == COLLECT {
+		return
+	}
 	switch v.display {
 	case TEX:
 		v.decrIndent()
 		v.printInd("]")
-	case CONSOLE, NONE: //nix
+	case CONSOLE: //nix
 	}
 }
 
 func (v *Visualizer) endNode() {
-	if v.display == NONE {
+	if v.mode == COLLECT {
 		return
 	}
 	v.decrIndent()
@@ -161,14 +183,22 @@ func (v *Visualizer) endNode() {
 }
 
 func (v *Visualizer) createName(node ast.Node) {
-	names[node] = "NAME"
-}
-
-func (v *Visualizer) representNodeType(node ast.Node) string {
-	if v.display == NONE {
-		return ""
+	if _, ok := names[node]; ok {
+		return
 	}
 
+	switch v.display {
+	case CONSOLE:
+		names[node] = v.stringNodeType(node) + fmt.Sprint(len(names))
+	case TEX:
+		names[node] =
+			v.stringNodeType(node) +
+				fmt.Sprintf("$_{%v}$", len(names))
+
+	}
+}
+
+func (v *Visualizer) stringNodeType(node ast.Node) string {
 	var str_nodetype string
 	if name, ok := names[node]; ok {
 		str_nodetype = name
@@ -182,12 +212,19 @@ func (v *Visualizer) representNodeType(node ast.Node) string {
 			str_nodetype = abbreviateNodeType(str_nodetype)
 		}
 	}
+	return str_nodetype
+}
 
-	return v.colorNode(str_nodetype, node)
+func (v *Visualizer) representNodeType(node ast.Node) string {
+	if v.mode == COLLECT {
+		return ""
+	}
+
+	return v.colorNode(v.stringNodeType(node), node)
 }
 
 func (v *Visualizer) representFieldName(str_fieldname string) string {
-	if v.display == NONE {
+	if v.mode == COLLECT {
 		return ""
 	}
 	if v.verbosity < VV {
@@ -202,7 +239,7 @@ func (v *Visualizer) representFieldName(str_fieldname string) string {
 }
 
 func (v *Visualizer) visualizeNil() {
-	if v.display == NONE {
+	if v.mode == COLLECT {
 		return
 	}
 	// display ?
@@ -224,7 +261,7 @@ func (v *Visualizer) visualizeNil() {
 }
 
 func (v *Visualizer) visualizeNilValue() {
-	if v.display == NONE {
+	if v.mode == COLLECT {
 		return
 	}
 	switch v.display {
@@ -242,7 +279,7 @@ func (v *Visualizer) visualizeNilValue() {
 	}
 */
 func (v *Visualizer) visualizeToken(t token.Token) { //TODO: überarbeiten!
-	if v.display == NONE {
+	if v.mode == COLLECT {
 		return
 	}
 	// super-verbose:
@@ -277,7 +314,7 @@ func (v *Visualizer) visualizeToken(t token.Token) { //TODO: überarbeiten!
 }
 
 func (v *Visualizer) visualizeLeaf(i interface{}, roof bool) {
-	if v.display == NONE {
+	if v.mode == COLLECT {
 		return
 	}
 	// string - dependent on verbosity
@@ -307,7 +344,7 @@ func (v *Visualizer) visualizeLeaf(i interface{}, roof bool) {
 }
 
 func (v *Visualizer) colorNode(str string, node ast.Node) string {
-	if v.display == NONE {
+	if v.mode == COLLECT {
 		return ""
 	}
 	switch v.display {
