@@ -2,6 +2,8 @@ package vis2
 
 import (
 	"monkey/ast"
+	"monkey/evaluator"
+	"monkey/object"
 	"monkey/token"
 	"reflect"
 )
@@ -10,13 +12,15 @@ import (
 //   non-circular
 //   nodes are structs
 //   Tokens have fields Type and Literal
-func (v *Visualizer) VisualizeQTree(node ast.Node) string {
-	v.display = TEX
 
-	v.fillNodeMap(node)
+func (v *Visualizer) VisualizeQTree(node ast.Node, //, t evaluator.Tracer
+) string {
+	v.process = PARSE
+	v.display = TEX
+	v.fillMaps(node)
 
 	v.mode = WRITE
-	visited = make(map[ast.Node]bool)
+	visitedNodes = make(map[ast.Node]bool)
 	//v.visualizeNode(node)
 
 	v.visualizeFieldValue(node)
@@ -31,16 +35,43 @@ func (v *Visualizer) VisualizeConsTree(node ast.Node) string {
 	return v.prefix + v.out.String()
 }
 
-func (v *Visualizer) fillNodeMap(node ast.Node) {
-	names = make(map[ast.Node]string)
-	visited = make(map[ast.Node]bool)
-	v.mode = COLLECT
-	//v.visualizeNode(node)
-	v.visualizeFieldValue(node)
+var visitedNodes map[ast.Node]bool
+var visitedObjects map[object.Object]bool
+var visitedEnvs map[*object.Environment]bool
+var namesNodes map[string]map[ast.Node]string
+var namesObjects map[string]map[object.Object]string
+var namesEnvs map[*object.Environment]string
+
+func (v *Visualizer) VisualizeEvalQTree(t *evaluator.Tracer) string {
+	v.tracer = t
+	v.process = EVAL
+	v.display = TEX
+	node := t.GetRoot()
+
+	v.fillMaps(node)
+	v.mode = WRITE
+	visitedNodes = make(map[ast.Node]bool)
+	visitedObjects = make(map[object.Object]bool)
+	visitedEnvs = make(map[*object.Environment]bool)
+
+	v.visualizeNode(node)
+
+	return "\\Tree " + v.out.String()
 }
 
-var visited map[ast.Node]bool = make(map[ast.Node]bool)
-var names map[ast.Node]string = make(map[ast.Node]string)
+func (v *Visualizer) fillMaps(node ast.Node) {
+	visitedNodes = make(map[ast.Node]bool)
+	namesNodes = make(map[string]map[ast.Node]string)
+
+	if v.process == EVAL {
+		visitedObjects = make(map[object.Object]bool)
+		visitedEnvs = make(map[*object.Environment]bool)
+		namesObjects = make(map[string]map[object.Object]string)
+		namesEnvs = make(map[*object.Environment]string)
+	}
+	v.mode = COLLECT
+	v.visualizeNode(node)
+}
 
 func (v *Visualizer) visualizeFieldValue(i interface{}) { //visualize field
 
@@ -75,6 +106,9 @@ func (v *Visualizer) visualizeFieldValue(i interface{}) { //visualize field
 	case token.Token:
 		v.visualizeToken(i)
 		return
+	case *object.Environment:
+		v.visualizeEnv(i)
+		return
 	default:
 		v.visualizeLeaf(i, false)
 		return
@@ -91,43 +125,58 @@ func (v *Visualizer) visualizeNode(node ast.Node) {
 	}
 
 	//if reflect.TypeOf(node).Kind() == reflect.Ptr { // && !reflect.ValueOf(node).IsNil() { // to avoid repetitions and circles
-	if _, ok := visited[node]; ok && v.mode == COLLECT { // we do not need to ask whether it is a pointer
-		v.createName(node)
+	if _, ok := visitedNodes[node]; ok && v.mode == COLLECT { // we do not need to ask whether it is a pointer
+		v.createNodeName(node)
 	}
 
 	// label node
 	v.beginNode(node)
 
+	if reflect.ValueOf(node).IsNil() {
+		v.visualizeNilValue()
+		v.endNode()
+		return
+	}
+
 	// children
-	if _, ok := visited[node]; !ok { // we do not need to ask whether it is a pointer
-		visited[node] = true
+	if _, ok := visitedNodes[node]; !ok { // we do not need to ask whether it is a pointer
+		visitedNodes[node] = true
 		nodeContVal := reflect.ValueOf(node).Elem()
 		//if nodeContVal.Kind() != reflect.Struct {
 		//	v.printW(" NO STRUCT VALUE") // TODO: might be an err ? für Erweiterungen
 		//	return
 		//}
-		if reflect.ValueOf(node).IsNil() { // später hoch, jetzt zum testen
-			v.visualizeNilValue()
 
-		} else {
-			nodeContType := nodeContVal.Type()
+		nodeContType := nodeContVal.Type()
 
-			for i := 0; i < nodeContVal.NumField(); i++ {
-				f := nodeContVal.Field(i)
-				// label: fieldname
-				fieldname := nodeContType.Field(i).Name
-				if v.exclToken && fieldname == "Token" {
-					continue
-				}
+		for i := 0; i < nodeContVal.NumField(); i++ {
+			f := nodeContVal.Field(i)
+			// label: fieldname
+			fieldname := nodeContType.Field(i).Name
+			if v.exclToken && fieldname == "Token" {
+				continue
+			}
 
-				v.beginField(fieldname)
+			v.beginField(fieldname)
 
-				// field value
-				//fmt.Printf("%d: %s %s = %v\n", i,
-				//	nodeContType.Field(i).Name, f.Type(), f.Interface())
+			// field value
+			//fmt.Printf("%d: %s %s = %v\n", i,
+			//	nodeContType.Field(i).Name, f.Type(), f.Interface())
 
-				v.visualizeFieldValue(f.Interface())
-				v.endField()
+			v.visualizeFieldValue(f.Interface())
+			v.endField()
+
+		}
+
+		if v.process == EVAL {
+			//add objects
+
+			_, exits := v.getCallsAndExits(node)
+			for _, exit := range exits {
+				no := exit.No
+				v.beginVal(no)              // label
+				v.visualizeObject(exit.Val) // Name oder Darstellung
+				v.endVal()                  // Klammer zu
 
 			}
 		}
@@ -136,3 +185,70 @@ func (v *Visualizer) visualizeNode(node ast.Node) {
 	v.endNode()
 	//TODO error: any node should be either a Statement an Expression or a Program
 }
+
+func (v *Visualizer) visualizeObject(obj object.Object) {
+
+	// case nil
+	// if obj == nil {
+	// 	v.visualizeObjNil()
+	// 	return
+	// }
+
+	if obj == nil ||
+		obj == evaluator.FALSE ||
+		obj == evaluator.TRUE ||
+		obj == evaluator.NULL {
+		v.visualizeSimpleObj(obj)
+		return
+	}
+
+	if reflect.ValueOf(obj).IsNil() {
+		v.visualizeNilValue()
+		v.endObject()
+		return
+	}
+
+	if _, ok := visitedObjects[obj]; ok && v.mode == COLLECT { // we do not need to ask whether it is a pointer
+		v.createObjectName(obj)
+	} // TODO: evtl nach begin object verschieben?
+
+	// label node
+	v.beginObject(obj)
+
+	// children --> Nilvalue
+	if _, ok := visitedObjects[obj]; !ok { // we do not need to ask whether it is a pointer
+		visitedObjects[obj] = true
+
+		objContVal := reflect.ValueOf(obj).Elem()
+		//if nodeContVal.Kind() != reflect.Struct {
+		//	v.printW(" NO STRUCT VALUE") // TODO: might be an err ? für Erweiterungen
+		//	return
+		//}
+
+		nodeContType := objContVal.Type()
+
+		for i := 0; i < objContVal.NumField(); i++ {
+			f := objContVal.Field(i)
+			// label: fieldname
+			fieldname := nodeContType.Field(i).Name
+
+			if fieldname == "Ennv" {
+				continue
+			}
+
+			v.beginField(fieldname)
+			//v.printW("%")
+			v.visualizeFieldValue(f.Interface())
+			_ = f
+			v.endField()
+
+		}
+
+	}
+
+	v.endObject()
+}
+
+// TODO:
+
+// STUB: abbreviateObjectType

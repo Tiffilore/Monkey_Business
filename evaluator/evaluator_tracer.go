@@ -49,6 +49,13 @@ func NewTracer() *Tracer {
 	}
 }
 
+func (t Tracer) GetRoot() ast.Node {
+	if len(t.Calls) == 0 {
+		return nil
+	}
+	return t.Calls[0].Node
+}
+
 func (t Tracer) Steps() int {
 	return t.counter
 }

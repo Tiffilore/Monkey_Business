@@ -78,12 +78,25 @@ func abbreviateFieldName(fieldname string) string {
 	}
 }
 
+func abbreviateObjectType(objtype string) string {
+	switch objtype {
+	case "Integer":
+		return "Int"
+	case "Function":
+		return "Fun"
+
+	default:
+		return objtype
+	}
+}
+
 func roofify(str string) string {
 
 	return fmt.Sprint("\\edge[roof];{\\small", str, "}")
 
 }
 func teXify(input string) string {
+	input = strings.ReplaceAll(input, "&", "\\& ")
 	input = strings.ReplaceAll(input, "{", "\\{ ")
 	input = strings.ReplaceAll(input, "}", "\\} ")
 	input = strings.ReplaceAll(input, "<", "$<$ ")

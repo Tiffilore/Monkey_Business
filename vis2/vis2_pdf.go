@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"log"
 	"monkey/ast"
+	"monkey/evaluator"
+	"monkey/object"
 
 	"github.com/rwestlund/gotex"
 )
@@ -12,6 +14,20 @@ func Ast2pdf(node ast.Node, filename string, path string, verb Verbosity, exclTo
 	vis := NewVisualizer("", "  ", verb, exclToken)
 	qtreenode := vis.VisualizeQTree(node)
 	//fmt.Println(qtreenode)
+	document := makeTeX(qtreenode)
+	return tex2pdf(document, filename, path)
+}
+
+func Eval2pdf(node ast.Node, filename string, path string, verb Verbosity, exclToken bool) error {
+	vis := NewVisualizer("", "  ", verb, exclToken)
+	env := object.NewEnvironment()
+	evaluator.StartTracer()
+	evaluator.Eval(node, env)
+	evaluator.StopTracer()
+
+	qtreenode := vis.VisualizeEvalQTree(evaluator.T)
+
+	//fmt.Println("hier:\n", qtreenode)
 	document := makeTeX(qtreenode)
 	return tex2pdf(document, filename, path)
 }

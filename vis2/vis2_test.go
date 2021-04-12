@@ -13,17 +13,16 @@ import (
 // teste ob alles bisher implementiert
 //
 
-var inputs = []string{
-	"if(1){} if(2){} if(3){}", // 2 nil-Alternatives
-	"",                        //empty program
-	"@",                       //nil
-	"let",                     //nil value
+var inputs = []string{ // for parsing
+	"",    //empty program
+	"@",   //nil
+	"let", //nil value
 	"1",
 	"1 2",
 	"let a = 5",
 	"return true",
 	"{}", //empty BlkStmt (level s)
-	"if(true){}",
+	"if(false){}",
 	"if(1){} if(2){}", // 2 nil-Alternatives
 	"if(true){a}",
 	"!a",
@@ -34,7 +33,67 @@ var inputs = []string{
 	"fn(+,-,!,/,*,==,=,!=,<,>){}", // test operator display as long as it is not fixed
 }
 
-func _Test_cons(t *testing.T) {
+var inputs_objects = []string{
+	"1",            //int
+	"true",         //TRUE
+	"false",        //FALSE
+	"fn(){}",       //function
+	"if(1){}",      //nil
+	"if(!1){}",     //NULL
+	"return 1",     //return
+	"1+true",       //error
+	"true + false", //error
+	"id(2)",        //error
+	//...
+}
+
+var inputs_closures = []string{
+	"let cl_m = fn(x){fn(y){x+y}}",
+	"let cl_m = fn(x){fn(y){x+y}}; let cl = cl_m(2)",
+	"let cl_m = fn(x){fn(y){x+y}}; let cl = cl_m(2); cl(3)",
+	"let cl_m = fn(x){fn(y){x+y}}; let cl = cl_m(2); let cl_ = cl_m(2), cl(3)+cl_(4)",
+}
+
+func Test_eval_tex(t *testing.T) {
+	exclToken := true
+	// exclEnv
+
+	for index, input := range inputs_closures { //inputs_objects {
+		if index > 30 {
+			continue
+		}
+		for _, level := range []string{"p", "s", "e"} {
+			if level != "p" {
+				continue
+			}
+			l := lexer.New(input)
+			p := parser.New(l)
+
+			node := parse_level(p, level)
+			for _, err := range p.Errors() {
+				t.Error(err)
+			}
+
+			for _, verb := range []Verbosity{V, VV, VVV} {
+				if verb != V {
+					continue
+				}
+
+				path := "/usr/bin/pdflatex"
+				file := "test/test" + fmt.Sprint(index) + level + fmt.Sprint(verb) + ".pdf"
+				err := Eval2pdf(node, file, path, verb, exclToken)
+				if err != nil {
+					t.Errorf("Problem for %v level %v", input, level)
+				} else {
+					t.Errorf("a")
+				}
+
+			}
+		}
+	}
+}
+
+func _Test_ast_cons(t *testing.T) {
 
 	exclToken := false
 
@@ -68,7 +127,8 @@ func _Test_cons(t *testing.T) {
 		}
 	}
 }
-func Test_tex(t *testing.T) {
+
+func _Test_ast_tex(t *testing.T) {
 
 	exclToken := true
 
@@ -103,38 +163,7 @@ func Test_tex(t *testing.T) {
 		}
 	}
 }
-func _Test_vis2(t *testing.T) {
 
-	inputs := []string{
-		" ",
-		"@",
-		"let",
-		"1",
-		"1 2",
-		"let a = 5",
-		"return true",
-		"{}",
-		"if(true){}",
-		"if(true){a}",
-		"!a",
-		"if(1){2+3}",
-		"fn(){}",
-		"fn(1,2){}",
-		"id()",
-	}
-	_ = inputs
-	inputs2 := []string{
-		"1+1",
-	}
-
-	verb := VV
-	for _, input := range inputs2 {
-		test_level(input, t, "e", verb)
-		//test_level(input, t, "s", verb)
-		//test_level(input, t, "p", verb)
-	}
-
-}
 func prettyPrint(i interface{}) string {
 	s, _ := json.MarshalIndent(i, " ", " ")
 	return string(s)
