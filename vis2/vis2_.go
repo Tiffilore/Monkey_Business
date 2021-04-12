@@ -141,9 +141,18 @@ func (v *Visualizer) visualizeNode(node ast.Node) {
 		return
 	}
 
+	if node, ok := node.(*ast.Identifier); ok && v.verbosity < VVV { // also if it has already been displayed!
+		v.visualizeRoofed(node.String())
+	}
+
 	// children
 	if _, ok := visitedNodes[node]; !ok { // we do not need to ask whether it is a pointer
 		visitedNodes[node] = true
+
+		if _, ok := node.(*ast.Identifier); ok && v.verbosity < VVV { // also if it has already been displayed!
+			v.endNode()
+			return
+		}
 		nodeContVal := reflect.ValueOf(node).Elem()
 		//if nodeContVal.Kind() != reflect.Struct {
 		//	v.printW(" NO STRUCT VALUE") // TODO: might be an err ? für Erweiterungen
@@ -219,9 +228,17 @@ func (v *Visualizer) visualizeObject(obj object.Object) {
 	// label node
 	v.beginObject(obj)
 
+	if obj, ok := obj.(*object.Integer); ok && v.verbosity < VVV { // also if it has already been displayed!
+		v.visualizeRoofed(obj.Inspect())
+	}
+
 	// children --> Nilvalue
 	if _, ok := visitedObjects[obj]; !ok { // we do not need to ask whether it is a pointer
 		visitedObjects[obj] = true
+		if _, ok := obj.(*object.Integer); ok && v.verbosity < VVV {
+			v.endObject()
+			return
+		}
 
 		if obj, ok := obj.(*object.Error); ok && v.verbosity < VVV {
 			v.visualizeErrorMsgShort(obj)
@@ -258,7 +275,3 @@ func (v *Visualizer) visualizeObject(obj object.Object) {
 
 	v.endObject()
 }
-
-// TODO:
-
-// STUB: abbreviateObjectType

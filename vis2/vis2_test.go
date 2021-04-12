@@ -34,21 +34,22 @@ var inputs = []string{ // for parsing
 }
 
 var inputs_objects = []string{
-	// "1",               //int
+	"1", //int
 	// "true",            //TRUE
 	// "false",           //FALSE
 	// "fn(){}",          //function
-	// "if(1){}",         //nil
+	"if(1){}", //nil
 	// "if(!1){}",        //NULL
 	// "return 1",        //return int
 	// "return true",     //return TRUE
 	// "return fn(){}",   //return function
 	// "return if(1){}",  //return nil
 	// "return if(!1){}", //return NULL
-	"1+true",       //error
-	"true + false", //error
-	"id(2)",        //error
-	"1(1)",         //error
+
+	// "1+true",       //error
+	// "true + false", //error
+	// "id(2)",        //error
+	// "1(1)",         //error
 	//...
 }
 
@@ -56,14 +57,14 @@ var inputs_closures = []string{
 	"let cl_m = fn(x){fn(y){x+y}}",
 	"let cl_m = fn(x){fn(y){x+y}}; let cl = cl_m(2)",
 	"let cl_m = fn(x){fn(y){x+y}}; let cl = cl_m(2); cl(3)",
-	"let cl_m = fn(x){fn(y){x+y}}; let cl = cl_m(2); let cl_ = cl_m(2), cl(3)+cl_(4)",
+	"let cl_m = fn(x){fn(y){x+y}}; let cl = cl_m(2); let cl_ = cl_m(2); cl(3)+cl_(4)",
 }
 
 func Test_eval_tex(t *testing.T) {
 	exclToken := true
 	// exclEnv
 
-	for index, input := range inputs_objects { //inputs_closures { //
+	for index, input := range inputs_closures { //inputs_objects { //
 		// if index != 0 {
 		// 	continue
 		// }
@@ -80,9 +81,9 @@ func Test_eval_tex(t *testing.T) {
 			}
 
 			for _, verb := range []Verbosity{V, VV, VVV} {
-				// if verb == VVV {
-				// 	continue
-				// }
+				if verb != V {
+					continue
+				}
 
 				path := "/usr/bin/pdflatex"
 				file := "test/test" + fmt.Sprint(index) + level + fmt.Sprint(verb) + ".pdf"

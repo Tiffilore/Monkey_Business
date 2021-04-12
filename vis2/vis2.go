@@ -529,6 +529,22 @@ func (v *Visualizer) visualizeErrorMsgShort(obj *object.Error) {
 
 }
 
+func (v *Visualizer) visualizeRoofed(str string) {
+	if v.mode == COLLECT {
+		return
+	}
+	switch v.display {
+	case TEX:
+		texStr := fmt.Sprintf("\\small\\it %v", teXify(str))
+		v.printInd(roofify(texStr))
+
+	case CONSOLE: //TODO
+		v.printW(strings.ToUpper(str))
+
+	}
+
+}
+
 func (v *Visualizer) visualizeSimpleObj(obj object.Object) {
 	if v.mode == COLLECT {
 		return

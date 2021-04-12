@@ -27,7 +27,7 @@ func abbreviateNodeType(nodetype string) string {
 	case "CallExpression":
 		return "CalE"
 	case "Identifier":
-		return "Iden"
+		return "Id"
 	case "Boolean":
 		return "Bool"
 	case "IntegerLiteral":
@@ -112,7 +112,7 @@ func teXify(input string) string {
 	input = strings.ReplaceAll(input, "-", "$-$ ")
 	input = strings.ReplaceAll(input, "*", "$*$ ")
 	input = strings.ReplaceAll(input, "/", "$/$ ")
-	input = strings.ReplaceAll(input, "_", "\\_ ")
+	input = strings.ReplaceAll(input, "_", "\\_")
 
 	return strings.Trim(input, " ")
 }
