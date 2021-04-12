@@ -109,6 +109,9 @@ func (v *Visualizer) visualizeFieldValue(i interface{}) { //visualize field
 	case *object.Environment:
 		v.visualizeEnv(i)
 		return
+	case object.Object:
+		v.visualizeObject(i)
+		return
 	default:
 		v.visualizeLeaf(i, false)
 		return
@@ -119,7 +122,7 @@ func (v *Visualizer) visualizeFieldValue(i interface{}) { //visualize field
 func (v *Visualizer) visualizeNode(node ast.Node) {
 
 	// case nil
-	if node == nil { // unnötig, wenn wir mit visualizeFieldValue starten!
+	if node == nil {
 		v.visualizeNil()
 		return
 	}
@@ -189,17 +192,18 @@ func (v *Visualizer) visualizeNode(node ast.Node) {
 func (v *Visualizer) visualizeObject(obj object.Object) {
 
 	// case nil
-	// if obj == nil {
-	// 	v.visualizeObjNil()
-	// 	return
-	// }
+	if obj == nil {
+		v.visualizeNil()
+		return
+	}
 
-	if obj == nil ||
-		obj == evaluator.FALSE ||
-		obj == evaluator.TRUE ||
-		obj == evaluator.NULL {
+	if v.verbosity < VVV &&
+		(obj == evaluator.FALSE ||
+			obj == evaluator.TRUE ||
+			obj == evaluator.NULL) {
 		v.visualizeSimpleObj(obj)
 		return
+
 	}
 
 	if reflect.ValueOf(obj).IsNil() {
@@ -218,6 +222,12 @@ func (v *Visualizer) visualizeObject(obj object.Object) {
 	// children --> Nilvalue
 	if _, ok := visitedObjects[obj]; !ok { // we do not need to ask whether it is a pointer
 		visitedObjects[obj] = true
+
+		if obj, ok := obj.(*object.Error); ok && v.verbosity < VVV {
+			v.visualizeErrorMsgShort(obj)
+			v.endObject()
+			return
+		}
 
 		objContVal := reflect.ValueOf(obj).Elem()
 		//if nodeContVal.Kind() != reflect.Struct {

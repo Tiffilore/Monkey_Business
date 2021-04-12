@@ -84,7 +84,10 @@ func abbreviateObjectType(objtype string) string {
 		return "Int"
 	case "Function":
 		return "Fun"
-
+	case "Error":
+		return "Err"
+	case "ReturnValue":
+		return "RetV"
 	default:
 		return objtype
 	}
@@ -92,7 +95,7 @@ func abbreviateObjectType(objtype string) string {
 
 func roofify(str string) string {
 
-	return fmt.Sprint("\\edge[roof];{\\small", str, "}")
+	return fmt.Sprint("\\edge[roof];{", str, "}")
 
 }
 func teXify(input string) string {

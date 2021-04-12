@@ -1,6 +1,7 @@
 package vis2
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"monkey/ast"
@@ -27,7 +28,7 @@ func Eval2pdf(node ast.Node, filename string, path string, verb Verbosity, exclT
 
 	qtreenode := vis.VisualizeEvalQTree(evaluator.T)
 
-	//fmt.Println("hier:\n", qtreenode)
+	fmt.Println("hier:\n", qtreenode)
 	document := makeTeX(qtreenode)
 	return tex2pdf(document, filename, path)
 }

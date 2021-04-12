@@ -34,16 +34,21 @@ var inputs = []string{ // for parsing
 }
 
 var inputs_objects = []string{
-	"1",            //int
-	"true",         //TRUE
-	"false",        //FALSE
-	"fn(){}",       //function
-	"if(1){}",      //nil
-	"if(!1){}",     //NULL
-	"return 1",     //return
+	// "1",               //int
+	// "true",            //TRUE
+	// "false",           //FALSE
+	// "fn(){}",          //function
+	// "if(1){}",         //nil
+	// "if(!1){}",        //NULL
+	// "return 1",        //return int
+	// "return true",     //return TRUE
+	// "return fn(){}",   //return function
+	// "return if(1){}",  //return nil
+	// "return if(!1){}", //return NULL
 	"1+true",       //error
 	"true + false", //error
 	"id(2)",        //error
+	"1(1)",         //error
 	//...
 }
 
@@ -58,10 +63,10 @@ func Test_eval_tex(t *testing.T) {
 	exclToken := true
 	// exclEnv
 
-	for index, input := range inputs_closures { //inputs_objects {
-		if index > 30 {
-			continue
-		}
+	for index, input := range inputs_objects { //inputs_closures { //
+		// if index != 0 {
+		// 	continue
+		// }
 		for _, level := range []string{"p", "s", "e"} {
 			if level != "p" {
 				continue
@@ -75,9 +80,9 @@ func Test_eval_tex(t *testing.T) {
 			}
 
 			for _, verb := range []Verbosity{V, VV, VVV} {
-				if verb != V {
-					continue
-				}
+				// if verb == VVV {
+				// 	continue
+				// }
 
 				path := "/usr/bin/pdflatex"
 				file := "test/test" + fmt.Sprint(index) + level + fmt.Sprint(verb) + ".pdf"

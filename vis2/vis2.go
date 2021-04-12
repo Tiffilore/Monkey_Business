@@ -346,12 +346,9 @@ func (v *Visualizer) createEnvName(env *object.Environment) {
 }
 
 func (v *Visualizer) createObjectName(obj object.Object) {
-	if obj == nil ||
-		obj == evaluator.NULL ||
-		obj == evaluator.FALSE ||
-		obj == evaluator.TRUE {
+	if obj == nil {
 		return
-	}
+	} // should not happen
 
 	if _, ok := v.getObjectName(obj); ok {
 		return
@@ -510,18 +507,30 @@ func (v *Visualizer) visualizeNil() {
 	}
 }
 
-func (v *Visualizer) visualizeSimpleObj(obj object.Object) {
+func (v *Visualizer) visualizeErrorMsgShort(obj *object.Error) {
 	if v.mode == COLLECT {
 		return
 	}
-
-	if obj == nil {
-		switch v.display {
-		case TEX:
-			v.printW("[.", texColorize("nil", "black", "red"), " ]")
-		case CONSOLE:
-			v.printW(consColorize("nil", Red)) //TODO
+	switch v.display {
+	case TEX:
+		message := obj.Message
+		message = strings.ReplaceAll(message, ":", ":\\\\\\small\\it")
+		if v.verbosity < VV {
+			message = strings.ReplaceAll(message, "INTEGER", "INT")
+			message = strings.ReplaceAll(message, "BOOLEAN", "BOOL")
 		}
+		texStr := fmt.Sprintf("\\small\\it %v", message)
+		v.printInd(roofify(texStr))
+
+	case CONSOLE: //TODO
+		v.printW(v.colorObj(strings.ToUpper(obj.Inspect())))
+
+	}
+
+}
+
+func (v *Visualizer) visualizeSimpleObj(obj object.Object) {
+	if v.mode == COLLECT {
 		return
 	}
 	v.printW(v.colorObj(strings.ToUpper(obj.Inspect())))
