@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"monkey/ast"
+	"monkey/evaluator"
 	"monkey/lexer"
+	"monkey/object"
 	"monkey/parser"
 	"testing"
 )
@@ -60,14 +62,57 @@ var inputs_closures = []string{
 	"let cl_m = fn(x){fn(y){x+y}}; let cl = cl_m(2); let cl_ = cl_m(2); cl(3)+cl_(4)",
 }
 
-func Test_eval_tex(t *testing.T) {
+func Test_eval_cons(t *testing.T) {
 	exclToken := true
 	// exclEnv
 
 	for index, input := range inputs_closures { //inputs_objects { //
-		// if index != 0 {
-		// 	continue
-		// }
+		if index != 3 {
+			continue
+		}
+		//	input = "let a = 5" //let id = fn(x){x};id(1);id(2)"
+		for _, level := range []string{"p", "s", "e"} {
+			if level != "p" {
+				continue
+			}
+			l := lexer.New(input)
+			p := parser.New(l)
+
+			node := parse_level(p, level)
+			for _, err := range p.Errors() {
+				t.Error(err)
+			}
+
+			for _, verb := range []Verbosity{V, VV, VVV} {
+				if verb != V {
+					continue
+				}
+				vis := NewVisualizer("", "|  ", verb, exclToken)
+				env := object.NewEnvironment()
+				evaluator.StartTracer()
+				evaluator.Eval(node, env)
+				evaluator.StopTracer()
+
+				qtreenode := vis.VisualizeEvalQTree(evaluator.T, CONSOLE)
+				fmt.Println(qtreenode)
+				envs := vis.VisualizeEnvironments(evaluator.T, CONSOLE)
+				fmt.Println(envs)
+				t.Errorf("a")
+
+			}
+		}
+	}
+}
+
+func _Test_eval_tex(t *testing.T) {
+	exclToken := true
+	// exclEnv
+
+	for index, input := range inputs_closures { //inputs_objects { //
+		if index != 0 {
+			continue
+		}
+		input = "1"
 		for _, level := range []string{"p", "s", "e"} {
 			if level != "p" {
 				continue

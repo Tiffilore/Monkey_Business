@@ -26,10 +26,14 @@ func Eval2pdf(node ast.Node, filename string, path string, verb Verbosity, exclT
 	evaluator.Eval(node, env)
 	evaluator.StopTracer()
 
-	qtreenode := vis.VisualizeEvalQTree(evaluator.T)
+	qtreenode := vis.VisualizeEvalQTree(evaluator.T, TEX)
 
-	fmt.Println("hier:\n", qtreenode)
-	document := makeTeX(qtreenode)
+	//fmt.Println("hier:\n", qtreenode)
+	envs := "" //vis.VisualizeEnvironments(evaluator.T)
+
+	document := makeStandalone(makeTikz(qtreenode) + envs)
+
+	fmt.Println(document)
 	return tex2pdf(document, filename, path)
 }
 
@@ -98,4 +102,12 @@ var tikz_suffix = `
 
 func makeTeX(qtreenode string) string {
 	return document_prefix + tikz_prefix + qtreenode + tikz_suffix + document_suffix
+}
+
+func makeTikz(qtreenode string) string {
+	return tikz_prefix + qtreenode + tikz_suffix
+}
+
+func makeStandalone(qtreenode string) string {
+	return document_prefix + qtreenode + document_suffix
 }

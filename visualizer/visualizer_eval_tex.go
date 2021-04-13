@@ -27,16 +27,24 @@ func evalNodeQtree(node ast.Node, thisIndent string, t *evaluator.Tracer, brevit
 
 	left := ""
 	right := ""
-	for _, call := range t.Calls {
-		if call.Node == node {
-			left = left + fmt.Sprint(call.No) + "$\\downarrow$ "
+	for i := 0; i < t.Steps(); i++ {
+
+		if call, ok := t.Calls[i]; ok {
+			if call.Node == node {
+				env_id := envId(call.Env, t)
+				left = left + fmt.Sprint(call.No) + ",e$_" + fmt.Sprint(env_id) + "\\downarrow$ "
+			}
+		}
+		if exit, ok := t.Exits[i]; ok {
+			if exit.Node == node {
+				//right = right + " $\\uparrow$" + fmt.Sprint(exit.No)
+				env_id := envId(exit.Env, t)
+				right = right + " $\\uparrow$" + fmt.Sprint(exit.No) + ",e$_" + fmt.Sprint(env_id) + "$"
+
+			}
 		}
 	}
-	for _, exit := range t.Exits {
-		if exit.Node == node {
-			right = right + " $\\uparrow$" + fmt.Sprint(exit.No)
-		}
-	}
+
 	typestr := nodeTypeQTree(node, brevity)
 
 	var out bytes.Buffer
@@ -58,16 +66,19 @@ func evalNodeQtree(node ast.Node, thisIndent string, t *evaluator.Tracer, brevit
 	fmt.Fprint(&out, evalChildrenQTree(node, nextIndent, t, brevity))
 
 	// add return values
+	for i := 0; i < t.Steps(); i++ {
 
-	for _, exit := range t.Exits {
-		if exit.Node == node {
-			fmt.Fprintf(&out, "\n%v\\edge node[auto=%v]{\\tiny %v};  ",
-				nextIndent,
-				"left",
-				fmt.Sprintf("Val %v", exit.No),
-			)
-			fmt.Fprint(&out, evalObjQTree(exit.Val, nextIndent, t, brevity))
+		if exit, ok := t.Exits[i]; ok {
+			if exit.Node == node {
+				fmt.Fprintf(&out, "\n%v\\edge node[auto=%v]{\\tiny %v};  ",
+					nextIndent,
+					"left",
+					fmt.Sprintf("Val %v", exit.No),
+				)
+				fmt.Fprint(&out, evalObjQTree(exit.Val, nextIndent, t, brevity))
+			}
 		}
+
 	}
 
 	fmt.Fprint(&out, "\n", thisIndent, "]")
@@ -219,13 +230,23 @@ func evalObjQTree(obj object.Object, thisIndent string, t *evaluator.Tracer, bre
 				if exit.Val == obj {
 					used++
 				}
+				if occursIn(exit.Env, obj) {
+					used++
+				}
 			}
-			if used > 1 {
+			if used > 1 { //then it gets a name
 				// check whether already used
 				for id, o := range objects {
 					if o == obj {
 						// just print out id
-						return fmt.Sprint(thisIndent, blacken(typestr+fmt.Sprintf("$_%v$", id)))
+						typestr = typestr + fmt.Sprintf("$_%v$", id)
+						if obj, ok := obj.(*object.Integer); ok {
+							fmt.Fprint(&out, "[.{", blacken(typestr), "} \\edge[roof];{\\small")
+							fmt.Fprint(&out, "\n", thisIndent, obj.Value, "} ]")
+							return out.String()
+						} else {
+							return fmt.Sprint(blacken(typestr))
+						}
 					}
 				}
 				// not already used
@@ -295,13 +316,71 @@ func evalObjQTree(obj object.Object, thisIndent string, t *evaluator.Tracer, bre
 		fmt.Fprint(&out, "\n", evalNodeQtree(obj.Body, nextIndent, t, brevity))
 		fmt.Fprint(&out, "\n", thisIndent, "]")
 		//Env        *Environment
-	//	fmt.Fprint(&out, "\n", thisIndent, "[.", fieldNameQTree("Environment"))
-	//	fmt.Fprint(&out, "\n", "--")
-	//	fmt.Fprint(&out, "\n", thisIndent, "]")
+	// /	fmt.Fprint(&out, "\n", thisIndent, "[.", fieldNameQTree("Env", brevity))
+	//fmt.Fprint(&out, "\n", thisIndent, blacken("e$_"+fmt.Sprint(envId(obj.Env, t))+"$"))
+	// /	fmt.Fprint(&out, "\n", thisIndent, fmt.Sprint(evalEnv(obj.Env, nextIndent, t, brevity)))
+	//fmt.Fprint(&out, "\n", nextIndent, "[.", fieldNameQTree("$\\rightarrow$", brevity))
+	//fmt.Fprint(&out, "\n", nextIndent, blacken("e$_{"+fmt.Sprint(envId(obj.Env.Outer, t))+"}$"))
+	//fmt.Fprint(&out, "\n", nextIndent, "]")
+	// /	fmt.Fprint(&out, "\n", thisIndent, "]")
 	default:
 		fmt.Fprint(&out, "\n", thisIndent, " TODO")
 
 	}
+	fmt.Fprint(&out, "\n", thisIndent, "]")
+
+	return out.String()
+}
+
+func occursIn(env *object.Environment, obj object.Object) bool {
+	if env == nil {
+		return false
+	}
+	if hasNilValue(env) {
+		return false
+	}
+	for _, val := range env.Store {
+		if val == obj {
+			return true
+		}
+	}
+
+	return occursIn(env.Outer, obj)
+}
+
+func envId(env *object.Environment, t *evaluator.Tracer) int {
+	for index, e := range t.Environments {
+		if e == env {
+			return index
+		}
+	}
+	return -1
+}
+
+func evalEnv(env *object.Environment, thisIndent string, t *evaluator.Tracer, brevity int) string {
+	var out bytes.Buffer
+
+	if env == nil {
+		return "nil "
+	}
+	if hasNilValue(env) {
+		return "$\\emptyset$ "
+	}
+	nextIndent := thisIndent + indent
+	fmt.Fprint(&out, thisIndent, "[.{", blacken("Env"), "}")
+	//
+	// Store
+	for name, val := range env.Store {
+		fmt.Fprint(&out, "\n", thisIndent, "[.", fieldNameQTree(name, brevity))
+		fmt.Fprint(&out, "\n", nextIndent, evalObjQTree(val, thisIndent+indent, t, brevity))
+		fmt.Fprint(&out, "\n", thisIndent, "]")
+		_ = val
+	}
+	// Outer
+	fmt.Fprint(&out, "\n", thisIndent, "[.", fieldNameQTree("Env", brevity))
+	fmt.Fprint(&out, "\n", evalEnv(env.Outer, nextIndent, t, brevity))
+	fmt.Fprint(&out, "\n", thisIndent, "]")
+	//
 	fmt.Fprint(&out, "\n", thisIndent, "]")
 
 	return out.String()

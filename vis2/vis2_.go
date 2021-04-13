@@ -1,11 +1,16 @@
 package vis2
 
 import (
+	"bytes"
 	"monkey/ast"
 	"monkey/evaluator"
 	"monkey/object"
 	"monkey/token"
 	"reflect"
+	"sort"
+	"strings"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 // preconditions:
@@ -41,22 +46,105 @@ var visitedEnvs map[*object.Environment]bool
 var namesNodes map[string]map[ast.Node]string
 var namesObjects map[string]map[object.Object]string
 var namesEnvs map[*object.Environment]string
+var envsOrdered []*object.Environment
 
-func (v *Visualizer) VisualizeEvalQTree(t *evaluator.Tracer) string {
+func (v *Visualizer) setupEval(t *evaluator.Tracer) ast.Node {
 	v.tracer = t
 	v.process = EVAL
-	v.display = TEX
 	node := t.GetRoot()
-
 	v.fillMaps(node)
 	v.mode = WRITE
 	visitedNodes = make(map[ast.Node]bool)
 	visitedObjects = make(map[object.Object]bool)
 	visitedEnvs = make(map[*object.Environment]bool)
+	v.out.Reset()
+	return node
+}
 
+func (v *Visualizer) VisualizeEvalQTree(t *evaluator.Tracer, display Display) string {
+	v.display = display
+	node := v.setupEval(t)
 	v.visualizeNode(node)
+	if v.display == TEX {
+		return "\\Tree " + v.out.String()
+	}
+	return v.out.String()
+}
 
-	return "\\Tree " + v.out.String()
+func (v *Visualizer) VisualizeEnvironments(t *evaluator.Tracer, display Display) string {
+	v.display = display
+	v.setupEval(t)
+
+	for _, env := range envsOrdered {
+		v.printInd()
+		v.printInd()
+		envName, _ := v.getEnvName(env)
+
+		v.printInd(v.strEnvDep(env))
+		v.printInd()
+		envSnapsIntervals := v.getEnvSteps(env, t) //
+
+		v.incrIndent()
+		for _, e := range envSnapsIntervals {
+			v.printInd(envName, " (", e.fromStep, " - ", e.toStep, "):")
+			v.printInd()
+			v.visualizeEnvTable(e.envSnap)
+			v.printInd()
+
+		}
+		v.decrIndent()
+
+	}
+
+	return v.out.String()
+}
+
+type EnvSnapAt struct {
+	envSnap *object.Environment
+	step    int
+}
+
+type EnvSnapInterval struct {
+	envSnap  *object.Environment
+	fromStep int
+	toStep   int
+}
+
+func (v *Visualizer) getEnvSteps(env *object.Environment, t *evaluator.Tracer) []*EnvSnapInterval {
+	//TODO later maybe: also look at envs pointed to!!
+	envSnaps := make([]EnvSnapAt, 0)
+	envSnapsIntervals := make([]*EnvSnapInterval, 0)
+
+	for i := 0; i < t.Steps(); i++ {
+		if call, ok := t.Calls[i]; ok {
+			if call.Env == env {
+				envSnaps = append(envSnaps, EnvSnapAt{call.EnvSnap, call.No})
+			}
+		} else if exit, ok := t.Exits[i]; ok {
+			if exit.Env == env {
+				envSnaps = append(envSnaps, EnvSnapAt{exit.EnvSnap, exit.No})
+			}
+		}
+	}
+
+	if len(envSnaps) == 0 { //right now impossible
+		return envSnapsIntervals
+	}
+
+	first := envSnaps[0]
+	curInterval := &EnvSnapInterval{first.envSnap, first.step, first.step}
+	envSnapsIntervals = append(envSnapsIntervals, curInterval)
+
+	for _, e := range envSnaps {
+		if reflect.DeepEqual(e.envSnap, curInterval.envSnap) {
+			curInterval.toStep = e.step
+		} else {
+			curInterval = &EnvSnapInterval{e.envSnap, e.step, e.step}
+			envSnapsIntervals = append(envSnapsIntervals, curInterval)
+		}
+
+	}
+	return envSnapsIntervals
 }
 
 func (v *Visualizer) fillMaps(node ast.Node) {
@@ -64,6 +152,7 @@ func (v *Visualizer) fillMaps(node ast.Node) {
 	namesNodes = make(map[string]map[ast.Node]string)
 
 	if v.process == EVAL {
+		envsOrdered = make([]*object.Environment, 0)
 		visitedObjects = make(map[object.Object]bool)
 		visitedEnvs = make(map[*object.Environment]bool)
 		namesObjects = make(map[string]map[object.Object]string)
@@ -121,6 +210,8 @@ func (v *Visualizer) visualizeFieldValue(i interface{}) { //visualize field
 
 func (v *Visualizer) visualizeNode(node ast.Node) {
 
+	_, visited := visitedNodes[node]
+
 	// case nil
 	if node == nil {
 		v.visualizeNil()
@@ -133,15 +224,15 @@ func (v *Visualizer) visualizeNode(node ast.Node) {
 	}
 
 	// label node
-	v.beginNode(node)
+	v.beginNode(node, visited) // case CONS: with objects!
 
 	if reflect.ValueOf(node).IsNil() {
 		v.visualizeNilValue()
-		v.endNode()
+		v.endNode(visited)
 		return
 	}
 
-	if node, ok := node.(*ast.Identifier); ok && v.verbosity < VVV { // also if it has already been displayed!
+	if node, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
 		v.visualizeRoofed(node.String())
 	}
 
@@ -149,8 +240,8 @@ func (v *Visualizer) visualizeNode(node ast.Node) {
 	if _, ok := visitedNodes[node]; !ok { // we do not need to ask whether it is a pointer
 		visitedNodes[node] = true
 
-		if _, ok := node.(*ast.Identifier); ok && v.verbosity < VVV { // also if it has already been displayed!
-			v.endNode()
+		if _, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
+			v.endNode(visited)
 			return
 		}
 		nodeContVal := reflect.ValueOf(node).Elem()
@@ -180,7 +271,7 @@ func (v *Visualizer) visualizeNode(node ast.Node) {
 
 		}
 
-		if v.process == EVAL {
+		if v.process == EVAL && v.display == TEX {
 			//add objects
 
 			_, exits := v.getCallsAndExits(node)
@@ -194,7 +285,7 @@ func (v *Visualizer) visualizeNode(node ast.Node) {
 		}
 	}
 
-	v.endNode()
+	v.endNode(visited)
 	//TODO error: any node should be either a Statement an Expression or a Program
 }
 
@@ -215,7 +306,7 @@ func (v *Visualizer) visualizeObject(obj object.Object) {
 
 	}
 
-	if reflect.ValueOf(obj).IsNil() {
+	if reflect.ValueOf(obj).IsNil() { // so far never happens
 		v.visualizeNilValue()
 		v.endObject()
 		return
@@ -230,6 +321,10 @@ func (v *Visualizer) visualizeObject(obj object.Object) {
 
 	if obj, ok := obj.(*object.Integer); ok && v.verbosity < VVV { // also if it has already been displayed!
 		v.visualizeRoofed(obj.Inspect())
+
+	}
+	if obj, ok := obj.(*object.Error); ok && v.verbosity < VVV && v.display == CONSOLE { // also if it has already been displayed!
+		v.visualizeRoofed(obj.Inspect())
 	}
 
 	// children --> Nilvalue
@@ -239,11 +334,19 @@ func (v *Visualizer) visualizeObject(obj object.Object) {
 			v.endObject()
 			return
 		}
+		if _, ok := obj.(*object.Error); ok && v.verbosity < VVV && v.display == CONSOLE {
+			v.endObject()
+			return
+		}
 
-		if obj, ok := obj.(*object.Error); ok && v.verbosity < VVV {
+		if obj, ok := obj.(*object.Error); ok && v.verbosity < VVV && v.display == TEX {
 			v.visualizeErrorMsgShort(obj)
 			v.endObject()
 			return
+		}
+
+		if v.display == CONSOLE {
+			v.printW(consColorize("{", Green))
 		}
 
 		objContVal := reflect.ValueOf(obj).Elem()
@@ -271,7 +374,69 @@ func (v *Visualizer) visualizeObject(obj object.Object) {
 
 		}
 
+		if v.display == CONSOLE {
+			v.printInd(consColorize("}", Green))
+		}
+
 	}
 
 	v.endObject()
+}
+
+func (v *Visualizer) visualizeEnvTable(env *object.Environment) { // reusable by step-by-step-tracer?
+
+	// case nil
+	if env == nil {
+		v.visualizeNil()
+		return
+	}
+
+	v.printInd()
+
+	table := getStoreTable(env)
+	lines := strings.Split(table, "\n")
+	for _, line := range lines {
+		v.printInd(line)
+	}
+
+	v.printW("--> outer: ")
+
+	v.incrIndent()
+	v.visualizeEnvTable(env.Outer)
+	v.decrIndent()
+}
+
+func getStoreTable(env *object.Environment) string {
+
+	var temp_out bytes.Buffer
+	store := env.Store
+
+	//sort alphabetically
+	keys := make([]string, 0, len(store))
+	for k := range store {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	t := table.NewWriter()
+	t.SetOutputMirror(&temp_out)
+	t.AppendHeader(table.Row{"Identifier", "Type", "Value"})
+	t.AppendSeparator()
+
+	for _, key := range keys {
+		object := store[key]
+		nodetype := reflect.TypeOf(object)
+		var value string
+		if object == nil {
+			value = "nil"
+		} else {
+			value = object.Inspect() //strings.ReplaceAll(object.Inspect(), "\n", "\n\t  ")
+		}
+		t.AppendRow([]interface{}{key, nodetype, value})
+	}
+	// //t.AppendFooter(table.Row{"", "", "Total", 10000})
+	// //t.SetStyle(table.StyleColoredBright)
+	t.Render()
+	return temp_out.String()
 }

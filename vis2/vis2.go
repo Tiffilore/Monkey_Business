@@ -132,48 +132,82 @@ func (v *Visualizer) getCallsAndExits(node ast.Node) ([]evaluator.Call, []evalua
 	return calls, exits
 
 }
-func (v *Visualizer) beginNode(node ast.Node) {
-	left, right := "", ""
-	if _, ok := visitedNodes[node]; v.process == EVAL && !ok {
-		calls, exits := v.getCallsAndExits(node)
-		switch v.mode {
-		case COLLECT:
-			// visit environments
-			// only calls relevant
-			for _, call := range calls {
-				env := call.Env
-				// if not visited env, give it a name [if not nil]
-				if _, ok := visitedEnvs[env]; !ok {
-					v.createEnvName(env)
-					visitedEnvs[env] = true
-				}
-			}
-			return
-		case WRITE:
-			for _, call := range calls { //TODO: different approach for console
-				eName, _ := v.getEnvName(call.Env)
-				left = left + fmt.Sprintf("%v,%v$\\downarrow$ ", call.No, eName)
-			}
-			for _, exit := range exits { //TODO: different approach for console
-				eName, _ := v.getEnvName(exit.Env)
-				right = right + fmt.Sprintf(" $\\uparrow$%v,%v ", exit.No, eName)
+func (v *Visualizer) beginNode(node ast.Node, visited bool) {
+	if _, ok := visitedNodes[node]; !ok &&
+		v.process == EVAL &&
+		v.mode == COLLECT {
+		calls, _ := v.getCallsAndExits(node)
+		for _, call := range calls {
+			env := call.Env
+			// if not visited env, give it a name [if not nil]
+			if _, ok := visitedEnvs[env]; !ok {
+				v.createEnvName(env)
+				visitedEnvs[env] = true
 			}
 		}
 	}
+	switch v.display {
+	case TEX:
+		v.beginNodeTEX(node)
+	case CONSOLE:
+		v.beginNodeCONSOLE(node, visited)
+	}
+}
 
-	if v.mode == COLLECT {
+// only to be called if v.display == CONSOLE
+func (v *Visualizer) beginNodeCONSOLE(node ast.Node, visited bool) {
+
+	v.printW(v.representNodeType(node))
+	v.incrIndent()
+
+	if visited {
 		return
 	}
 
-	switch v.display {
-	case TEX:
-		v.printW("[.{{\\small ", left, "}", v.representNodeType(node), " {\\small ", right, "}}")
-		//	NodeLabel
-		v.incrIndent()
-	case CONSOLE:
-		v.printW(left, v.representNodeType(node), right, " {") //TODO, exp. uparrow!!
-		v.incrIndent()
+	v.printW(" {")
+	//represent evaluation - steps + objects!
+	if _, ok := visitedNodes[node]; !ok &&
+		v.process == EVAL {
+		calls, exits := v.getCallsAndExits(node)
+		for _, call := range calls {
+			for _, exit := range exits {
+				if exit.Id == call.Id {
+					eName, _ := v.getEnvName(call.Env)
+					v.printInd(fmt.Sprintf("[\u2193%v\u2191%v],%v: ", call.No, exit.No, eName))
+					v.visualizeObject(exit.Val)
+				}
+
+			}
+		}
+
 	}
+
+}
+
+// only to be called if v.display == TEX
+func (v *Visualizer) beginNodeTEX(node ast.Node) {
+	if v.mode == COLLECT {
+		return
+	}
+	//display eval-calls and exits only for first occurence
+	if _, ok := visitedNodes[node]; v.process == EVAL && !ok {
+		left, right := "", ""
+
+		calls, exits := v.getCallsAndExits(node)
+		for _, call := range calls {
+			eName, _ := v.getEnvName(call.Env)
+			left = left + fmt.Sprintf("%v,%v$\\downarrow$ ", call.No, eName)
+		}
+		for _, exit := range exits {
+			eName, _ := v.getEnvName(exit.Env)
+			right = right + fmt.Sprintf(" $\\uparrow$%v,%v ", exit.No, eName)
+		}
+		v.printW("[.{{\\small ", left, "}", v.representNodeType(node), " {\\small ", right, "}}")
+
+	} else {
+		v.printW("[.{", v.representNodeType(node), "}")
+	}
+	v.incrIndent()
 }
 
 func (v *Visualizer) beginObject(obj object.Object) {
@@ -184,11 +218,11 @@ func (v *Visualizer) beginObject(obj object.Object) {
 	switch v.display {
 	case TEX:
 		v.printW("[.", v.representObjectType(obj))
-		v.incrIndent()
 	case CONSOLE:
-		v.printW(v.representObjectType(obj), " {")
-		v.incrIndent()
+		v.printW(v.representObjectType(obj))
 	}
+	v.incrIndent()
+
 }
 
 func (v *Visualizer) beginField(fieldname string) {
@@ -219,7 +253,7 @@ func (v *Visualizer) beginVal(no int) {
 
 	switch v.display {
 	case TEX:
-		v.incrIndent()
+		//v.incrIndent()
 		v.printInd("\\edge node[auto=left]{\\tiny ", no, "};  ")
 	case CONSOLE:
 		v.printInd("val ", no, ": ") //TODO
@@ -261,9 +295,7 @@ func (v *Visualizer) endVal() {
 	}
 
 	switch v.display {
-	case TEX:
-		v.decrIndent()
-	//	v.printInd("]")
+	case TEX: //nix
 	case CONSOLE: //nix
 	}
 
@@ -281,7 +313,7 @@ func (v *Visualizer) endField() {
 	}
 }
 
-func (v *Visualizer) endNode() {
+func (v *Visualizer) endNode(visited bool) {
 	if v.mode == COLLECT {
 		return
 	}
@@ -290,7 +322,9 @@ func (v *Visualizer) endNode() {
 	case TEX:
 		v.printInd("]")
 	case CONSOLE:
-		v.printInd("}")
+		if !visited {
+			v.printInd("}")
+		}
 	}
 }
 
@@ -302,8 +336,7 @@ func (v *Visualizer) endObject() { // == endNode
 	switch v.display {
 	case TEX:
 		v.printInd("]")
-	case CONSOLE:
-		v.printInd("}")
+	case CONSOLE: //nix
 	}
 }
 
@@ -343,6 +376,8 @@ func (v *Visualizer) createEnvName(env *object.Environment) {
 	case TEX:
 		namesEnvs[env] = fmt.Sprintf("e$_{%v}$", len(namesEnvs))
 	}
+	envsOrdered = append(envsOrdered, env)
+
 }
 
 func (v *Visualizer) createObjectName(obj object.Object) {
@@ -493,17 +528,8 @@ func (v *Visualizer) visualizeNil() {
 	switch v.display {
 	case TEX:
 		v.printW("[.", texColorize("nil", "red", "black"), " ]")
-		//fmt.Fprint(v.out, "\n", v.curIndent)
-		//fmt.Fprint(v.out, texColorize("black", "red", "nil"))
 	case CONSOLE:
 		v.printW(consColorize("nil", Red))
-
-		//fmt.Fprint(v.out, consColorize("nil", Red))
-		// default:
-		// 	fmt.Fprint(v.out, "\n", v.curIndent)
-
-		// 	v.print("nil")
-
 	}
 }
 
@@ -529,7 +555,7 @@ func (v *Visualizer) visualizeErrorMsgShort(obj *object.Error) {
 
 }
 
-func (v *Visualizer) visualizeRoofed(str string) {
+func (v *Visualizer) visualizeRoofed(str string) { // if CONSOLE: use it only for objects, please!
 	if v.mode == COLLECT {
 		return
 	}
@@ -539,7 +565,7 @@ func (v *Visualizer) visualizeRoofed(str string) {
 		v.printInd(roofify(texStr))
 
 	case CONSOLE: //TODO
-		v.printW(strings.ToUpper(str))
+		v.printW(consColorize(" { "+str+" }", Green))
 
 	}
 
@@ -678,4 +704,19 @@ func (v *Visualizer) colorObj(str string) string {
 	default:
 		return str
 	}
+}
+
+//only for CONS
+func (v *Visualizer) strEnvDep(env *object.Environment) string {
+	envName, ok := v.getEnvName(env)
+	if !ok {
+		return "???"
+	}
+
+	if env == nil {
+		return envName
+	}
+
+	return envName + " --> " + v.strEnvDep(env.Outer)
+
 }

@@ -46,9 +46,15 @@ var document_prefix = `
 \usepackage{tikz}
 \usepackage{tikz-qtree}
 
-\definecolor{yellish}{HTML}{E0EBF5}
-\definecolor{bluish}{HTML}{FFFFA8}
+\definecolor{bluish}{HTML}{E0EBF5}
+\definecolor{yellish}{HTML}{FFFFA8}
 \definecolor{dbluish}{HTML}{375EAB}
+\definecolor{brownish}{HTML}{BC8C64}
+\definecolor{darkish}{HTML}{6F6B69}
+\definecolor{darkish2}{HTML}{848475}
+
+%047C9C dark go-blue
+
 
 \begin{document}
 
