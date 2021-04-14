@@ -1,10 +1,11 @@
 # Extending the interpreter and its interactive environment
 
 _The purpose of the Monkey Programming Language is to learn different aspects of implementing a language. It was invented by Thorsten Ball, who offers an implementation in his book [Writing An Interpreter In Go](https://interpreterbook.com/).
-The main purpose of this repo is to extend the possibilities to explore this language by the help of various visualizations of the chosen abstract syntax tree (ast) and the steps of interpretation. These visualizations can be requested by an extended interactive environment that offers a set of multidimensional options and tools for convenience.
-Since Monkey is a language intended for learning purposes, the implementations are designed in such a way that it is open for changes and additions to the parser and evaluator. There is also a set of tests that may give rise to changes in the implementation, because they document certain problems within the interpreter in the state described in the book._
+The main purpose of this repo is to extend the possibilities to explore this language by the help of various visualizations of the chosen abstract syntax tree (ast) and the steps of evaluation. These visualizations can be requested by an extended interactive environment that offers a set of multidimensional options and tools for convenience.
+Since Monkey is a language intended for learning purposes, the implementations are designed in such a way that they are open for changes and additions to the parser and evaluator. There is also a set of tests that may give rise to changes in the implementation, because they document certain problems within the interpreter in the state described in the book._
 
 
+**Currently, this repo is still very much work in progress. This README so far documents important steps in the development. Once the overall functionality is finally determined, there is a restructuring of the documentation intended.**
 
 
 ## Step 5: Add representations of evaluation
