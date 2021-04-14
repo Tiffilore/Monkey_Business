@@ -15,7 +15,7 @@ Since Monkey is a language intended for learning purposes, the implementations a
 
 The command `trace` now provides possibilities for displaying environments
 
-- for each evaluation step, it displays a short name - e.g. `e0` - of the environment used in the this step.
+- for each evaluation step, it displays a short name - e.g. `e0` - of the environment used in this step.
 - if the user hits `e`, it displays the current state of this environment.
 - if the the current environment changes, this is indicated by printing the environment in red.
   - changes can either be:
@@ -209,8 +209,8 @@ The full instruction set is now:
 
 ## Step 1: Write Tests for bugs in parser and evaluator
 
-- `parser/parser_add_test.go`
-- `evaluator/evaluator_add_test.go`
+- [Parser Tests](parser/README.md)
+- [Evaluator Tests](evaluator/README.md)
 
 ## Step 0: Starting Point: Copy the Code
 
