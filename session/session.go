@@ -441,36 +441,14 @@ func (s *Session) exec_clear() {
 }
 
 func (s *Session) exec_list() {
-	store := s.environment.Store()
 
-	//sort alphabetically
-	keys := make([]string, 0, len(store))
-	for k := range store {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-
-	t := table.NewWriter()
-	t.SetOutputMirror(s.out)
-	t.AppendHeader(table.Row{"Identifier", "Type", "Value"})
-	t.AppendSeparator()
-
-	for _, key := range keys {
-		object := store[key]
-		nodetype := reflect.TypeOf(object)
-		var value string
-		if object == nil {
-			value = "nil"
-		} else {
-
-			value = object.Inspect() //strings.ReplaceAll(object.Inspect(), "\n", "\n\t  ")
+	table := visualizer.GetStoreTable(s.environment)
+	lines := strings.Split(table, "\n")
+	for _, line := range lines {
+		if line != "" {
+			fmt.Fprintln(s.out, line)
 		}
-		t.AppendRow([]interface{}{key, nodetype, value})
 	}
-	//t.AppendFooter(table.Row{"", "", "Total", 10000})
-	//t.SetStyle(table.StyleColoredBright)
-	t.Render()
 }
 
 // commands
