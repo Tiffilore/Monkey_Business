@@ -221,6 +221,7 @@ func (s *Session) init() { // to avoid cycle
 	c_paste := &command{
 		name:     "paste",
 		with_arg: s.exec_paste,
+		single:   s.exec_paste_empty_arg,
 		usage: []struct {
 			args string
 			msg  string
@@ -679,6 +680,10 @@ func (s *Session) exec_set(input string) {
 // input processing
 func (s *Session) exec_process(line string) {
 	s.process_input_dim(s.paste, s.level, s.process, false, line)
+}
+
+func (s *Session) exec_paste_empty_arg() {
+	s.process_input_dim(true, s.level, s.process, false, "")
 }
 
 func (s *Session) exec_paste(line string) {
