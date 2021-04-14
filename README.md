@@ -1,11 +1,35 @@
 # Extending the interpreter and its interactive environment
 
-_The purpose of the Monkey Programming Language is to learn different aspects of implementing a language. The main purpose of this repo is for me to learn go by fooling around. In addition, it serves the purpose of plunging into the business of interpreting Monkey PL more systematically. It reveals bugs in the original software by adding tests and offers fixes for these bugs. Moreover, it extends the interactive environment such that a use can gain more insight into the structure of the chosen abstract syntax tree (ast) and the steps of interpretation. At least, that's the plan..._
+_The purpose of the Monkey Programming Language is to learn different aspects of implementing a language. The main purpose of this repo is for me to learn go by fooling around. In addition, it serves the purpose of plunging into the business of interpreting Monkey PL more systematically. It reveals bugs in the original software by adding tests and offers fixes for these bugs. Moreover, it extends the interactive environment such that a user can gain more insight into the structure of the chosen abstract syntax tree (ast) and the steps of interpretation. At least, that's the plan..._
 
+
+Monkey PL is a language that allows one to learn how a language is implemented. The intent of this repo is mainly to give a learner (me in the first place) the possibility to visualize certain aspects of it - mostly the ast and the evaluation process. It this provides many tools (...)
+In addition, there is an interactive environment with commands calling these tools and some for convenience (like paste).
+
+Since Monkey is a language intended for learning purposes, the implementations are designed in such a way that it is open for changes and additions.
+
+The interpreter described in the book has some problems. Some of these are documented in additional tests. The effect of changes in the implementation can be visualized and watched by the interactive environment.
+
+
+
+ _to be continued..._
 
 ## Step 5: Add representations of evaluation
 
- _to be continued..._
+The command `trace` now provides possibilities for displaying environments
+
+- for each evaluation step, it displays a short name - e.g. `e0` - of the environment used in the this step.
+- if the user hits `e`, it displays the current state of this environment.
+- if the the current environment changes, this is indicated by printing the environment in red.
+  - changes can either be:
+    - the evaluation switches to another environment
+    - the current environment has been changed
+
+### An example
+![shot](assets/images/shot_tracer_env.png)
+
+### A demo
+![Demo11](assets/demos/demo11.gif)
 
 ### As pdf
 
