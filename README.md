@@ -1,20 +1,17 @@
 # Extending the interpreter and its interactive environment
 
-_The purpose of the Monkey Programming Language is to learn different aspects of implementing a language. The main purpose of this repo is for me to learn go by fooling around. In addition, it serves the purpose of plunging into the business of interpreting Monkey PL more systematically. It reveals bugs in the original software by adding tests and offers fixes for these bugs. Moreover, it extends the interactive environment such that a user can gain more insight into the structure of the chosen abstract syntax tree (ast) and the steps of interpretation. At least, that's the plan..._
+_The purpose of the Monkey Programming Language is to learn different aspects of implementing a language. It was invented by Thorsten Ball, who offers an implementation in his book [Writing An Interpreter In Go](https://interpreterbook.com/).
+The main purpose of this repo is to extend the possibilities to explore this language by the help of various visualizations of the chosen abstract syntax tree (ast) and the steps of interpretation. These visualizations can be requested by an extended interactive environment that offers a set of multidimensional options and tools for convenience.
+Since Monkey is a language intended for learning purposes, the implementations are designed in such a way that it is open for changes and additions to the parser and evaluator. There is also a set of tests that may give rise to changes in the implementation, because they document certain problems within the interpreter in the state described in the book._
 
 
-Monkey PL is a language that allows one to learn how a language is implemented. The intent of this repo is mainly to give a learner (me in the first place) the possibility to visualize certain aspects of it - mostly the ast and the evaluation process. It this provides many tools (...)
-In addition, there is an interactive environment with commands calling these tools and some for convenience (like paste).
-
-Since Monkey is a language intended for learning purposes, the implementations are designed in such a way that it is open for changes and additions.
-
-The interpreter described in the book has some problems. Some of these are documented in additional tests. The effect of changes in the implementation can be visualized and watched by the interactive environment.
 
 
+## Step 5: Add representations of evaluation
 
  _to be continued..._
 
-## Step 5: Add representations of evaluation
+### Add representations of environments to command `trace`
 
 The command `trace` now provides possibilities for displaying environments
 
@@ -25,10 +22,10 @@ The command `trace` now provides possibilities for displaying environments
     - the evaluation switches to another environment
     - the current environment has been changed
 
-### An example
+#### An example
 ![shot](assets/images/shot_tracer_env.png)
 
-### A demo
+#### A demo
 ![Demo11](assets/demos/demo11.gif)
 
 ### As pdf
