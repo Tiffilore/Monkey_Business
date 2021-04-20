@@ -8,6 +8,8 @@ Since Monkey is a language intended for learning purposes, the implementations a
 
 **Currently, this repo is still very much work in progress. This README so far documents important steps in the development. Once the overall functionality is finally determined, there is a restructuring of the documentation intended.**
 
+TODO - link to changelog!
+
 ## The New Interactive Environment
 
 - implemented in monkey/session
@@ -16,15 +18,18 @@ Since Monkey is a language intended for learning purposes, the implementations a
 
 ### Run
 
-#### Prerequisites
+#### Prerequisites [not tested yet, TODO]
 
-In addition to go,  the command `pdflatex` needs to be installed for creating pdfs. For Ubuntu, this can be done by:
+In addition to go,  the command `pdflatex` needs to be installed for creating pdfs. 
+You can check whether `pdflatex` is installed by `which pdflatex`.
+
+
+For Ubuntu, the installation can be done by:
 
 ```sh
 sudo apt-get install texlive-base texlive-latex-extra
 ```
 
-You can check whether `pdflatex` is installed by `which pdflatex`.
 
 #### Run locally
 
@@ -33,6 +38,12 @@ Cou can use the interactive environment locally by cloning this repo, moving int
 ```sh
 go run main.go
 ```
+
+The interpreter code (i.e. the modules monkey/{token,lexer,ast,parser,object,evaluator}) is the original code from the interpreter book (Version 1.7) with only very few alterations described here (TODO).
+
+You can alter the code or add to it and visualize the differences in the interactive environment.
+
+A starting points for altering might be the additional tests
 
 ### How-To Use: TODO 
 
@@ -171,102 +182,3 @@ If the setting `logtype` is set or the command `parse` is used, the output so fa
 Expression nodes are colored in yellow, statement nodes in blue and program nodes in a darker blue. The colors don't work for windows users.
 
 ![Demo7](assets/demos/demo7.gif)
-
-## Step 3: Add dimensions: settings `level <l>` and `process <p>`
-
-![Demo6](assets/demos/demo6.gif)
-
-
-#### `(set|reset) level (program|statement|expression)`
-
-Every ast node is either a program, a statement or an expression. Until now, we treat each input as a program, which means, we can also only evaluate a program and show the type for the evaluation result of a program.
-In this step, we implement another setting that chooses to parse and thus further evaluate the input as either program,statement or expression.
-In addition, the commands `expr[ession]`, `stmt|statement` and `prog[ram]` are implemented.
-
-#### `(set|reset) process (parse|eval|type)`
-
-Furthermore, we implement settings for the way the input is to be processed: it can either be only parsed (`parse`) and output the ast, which implements the Stringer interface, or evaluated and output, which type the value is (`type`) or the value of the object via the `Inspect()`-method of objects (`eval`). The commands `type`, `eval` and `parse` behave exactly as if `process (parse|eval|type)` were set for a single command. Since, `type` and `eval` are already implemented, only `parse` is added.
-
-Logging can be extended by the setting `logparse`, which additionally outputs the ast as string.
-
-The full instruction set is now:
-
-| NAME           |                   | USAGE                                                    |
---- | --- | --- |
-| clear          | ~                 | clear the environment                                    |
-| e[val]         | ~ `<input>`         | print out value of object `<input>` evaluates to           |
-| expr[ession]   | ~ `<input>`         | expect `<input>` to be an expression                       |
-| h[elp]         | ~                 | list all commands with usage                             |
-|                | ~ `<cmd>`           | print usage command `<cmd>`                                |
-| l[ist]         | ~                 | list all identifiers in the environment alphabetically   |
-|                |                   |      with types and values                               |
-| p[arse]        | ~ `<input>`         | parse `<input>`                                            |
-| paste          | ~ `<input>`         | evaluate multiline `<input>` (terminated by blank line)    |
-| prog[ram]      | ~ `<input>`         | expect `<input>` to be a program                           |
-| q[uit]         | ~                 | quit the session                                         |
-| reset          | ~ process         | set process to default                                   |
-|                | ~ level           | set level to default                                     |
-|                | ~ logparse        | set logparse to default                                  |
-|                | ~ logtype         | set logtype to default                                   |
-|                | ~ paste           | set multiline support to default                         |
-|                | ~ prompt          | set prompt to default                                    |
-| set            | ~ process `<p>`     | `<p>` must be: [e]val, [p]arse, [t]ype                     |
-|                | ~ level `<l>`       | `<l>` must be: [p]rogram, [s]tatement, [e]xpression        |
-|                | ~ logparse        | additionally output ast-string                           |
-|                | ~ logtype         | additionally output objecttype                           |
-|                | ~ paste           | enable multiline support                                 |
-|                | ~ prompt `<prompt>` | set prompt string to `<prompt>`                            |
-| settings       | ~                 | list all settings with their current values and defaults |
-| stmt|statement | ~ `<input>`         | expect `<input>` to be a statement                         |
-| t[ype]         | ~ `<input>`         | show objecttype `<input>` evaluates to                     |
-| unset          | ~ logparse        | don't additionally output ast-string                     |
-|                | ~ logtype         | don't additionally output objecttype                     |
-|                | ~ paste           | disable multiline support                                |
-
-
-## Step 2: Implement a small initial instruction set for the interactive environment
-
-- new interactive environment in directory `session`
-    - inspo from [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-commands) and [gore](https://github.com/motemen/gore) 
-
-![Demo5](assets/demos/demo5.gif)
-
-
-| NAME   |                   | USAGE                                                   |
-|--------|-------------------|---------------------------------------------------------|
-| clear    | ~                 | clear the environment                                    |
-| e[val]   | ~ `<input>`         | print out value of object `<input>` evaluates to           |
-| h[elp]   | ~                 | list all commands with usage                             |
-|          | ~ `<cmd> `          | print usage command `<cmd>`                                |
-| l[ist]   | ~                 | list all identifiers in the environment alphabetically   |
-|          |                   |      with types and values                               |
-| paste    | ~ `<input>`         | evaluate multiline `<input>` (terminated by blank line)    |
-| q[uit]   | ~                 | quit the session                                         |
-| reset    | ~ logtype         | set logtype to default                                   |
-|          | ~ paste           | set multiline support to default                         |
-|          | ~ prompt          | set prompt to default                                    |
-| set      | ~ logtype         | when eval, additionally output objecttype                |
-|          | ~ paste           | enable multiline support                                 |
-|          | ~ prompt `<prompt>` | set prompt string to `<prompt> `                           |
-| settings | ~                 | list all settings with their current values and defaults |
-| t[ype]   | ~ `<input>`         | show objecttype `<input>` evaluates to                     |
-| unset    | ~ logtype         | when eval, don't additionally output objecttype          |
-|          | ~ paste           | disable multiline support                                |
-
-
-- if `input` is not prefixed by `:<cmd>`, it is equivalent to `:eval input`
-
-
-## Step 1: Write Tests for bugs in parser and evaluator
-
-- [Parser Tests](parser/README.md)
-- [Evaluator Tests](evaluator/README.md)
-
-## Step 0: Starting Point: Copy the Code
-
-- unaltered code from the book [_Writing an Interpreter in Go_](https://interpreterbook.com/), Version 1.7
-
-
-
-
-
