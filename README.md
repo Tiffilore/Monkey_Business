@@ -6,9 +6,23 @@ Since Monkey is a language intended for learning purposes, the implementations a
 
 ## Project Status
 
-**Currently, this repo is still very much work in progress. This README so far documents important steps in the development. Once the overall functionality is finally determined, there is a restructuring of the documentation intended.**
+**Currently, this repo is still very much work in progress.**
 
-TODO - link to changelog!
+What has been done: [changelog](changelog.md)
+
+Next planned steps:
+
+- [ ] decide on "final" instruction set
+  - what is a setting? what is a command?
+  - when should pdfs be created?
+- [ ] change session.go accordingly
+- [ ] decide package structure
+- [ ] implement all commands
+- [ ] write user manual
+- [ ] add workflow 
+    - mainly to check installation requirements
+- [ ] write discussion doc 
+- [ ] add tests for ast: String-methods
 
 ## The New Interactive Environment
 
@@ -65,120 +79,3 @@ A starting points for altering might be the additional tests
 
 [MIT LICENSE](LICENSE)
 
-
----
-
-## Step 5: Add representations of evaluation
-
- _to be continued..._
-
-### Add representations of environments to command `trace`
-
-The command `trace` now provides possibilities for displaying environments
-
-- for each evaluation step, it displays a short name - e.g. `e0` - of the environment used in this step.
-- if the user hits `e`, it displays the current state of this environment.
-- if the the current environment changes, this is indicated by printing the environment in red.
-  - changes can either be:
-    - the evaluation switches to another environment
-    - the current environment has been changed
-
-#### An example
-![shot](assets/images/shot_tracer_env.png)
-
-#### A demo
-![Demo11](assets/demos/demo11.gif)
-
-### As pdf
-
-- version 0 - dags are represented by node duplication
-- new setting: `evalfile`
-
-| NAME           |                   | USAGE                                                    |
---- | --- | --- |
-| (set)          | ~ evalfile `<f>`   | set file that outputs  eval-pdfs to `<f>`                        |
-
-
-
-- expl for evaluation of the program `if(true){}`:
-
-![expl](visualizer/images/eval1.png)
-
-
-
-### In the console - version 2
-
-- TODO: _add verbosity by displaying info on environment_
-
-### In the console - version 1
-inspo from [swipl](https://www.swi-prolog.org/)
-
-If the setting `logtrace` is set, the evaluation trace is still output in a table.
-
-If the command `trace` is used, the evaluation trace is output step by step - this can be interrupted by typing `a`.
-
-![Demo10](assets/demos/demo10.gif)
-
-#### New instructions
-
-| NAME           |                   | USAGE                                                    |
---- | --- | --- |
-| trace          | ~ `<input>`         | show evaluation trace step by step                       |
-| (set)          | ~ logtrace        | additionally output evaluation trace                     |
-
-
-### In the console - version 0
-If the setting `logtrace` is set or the command `trace` is used, the evaluation trace is output.
-
-
-![Demo9](assets/demos/demo9.gif)
-
-
-## Step 4: Add representations of asts 
-
-![Demo8](assets/demos/demo8.gif)
-
-- new instruction set: 
-
-| NAME           |                   | USAGE                                                    |
---- | --- | --- |
-| cl[earscreen]  | ~                 | clear the terminal screen                                |
-| clear          | ~                 | clear the environment                                    |
-| e[val]         | ~ `<input>`         | print out value of object `<input>` evaluates to           |
-| expr[ession]   | ~ `<input>`         | expect `<input>` to be an expression                       |
-| h[elp]         | ~                 | list all commands with usage                             |
-|                | ~ `<cmd>`           | print usage command `<cmd>`                                |
-| l[ist]         | ~                 | list all identifiers in the environment alphabetically   |
-|                |                   |      with types and values                               |
-| p[arse]        | ~ `<input>`         | parse `<input>`                                            |
-| paste          | ~ `<input>`         | evaluate multiline `<input>` (terminated by blank line)    |
-| prog[ram]      | ~ `<input>`         | expect `<input>` to be a program                           |
-| q[uit]         | ~                 | quit the session                                         |
-| reset          | ~ `<setting>`       | set `<setting>` to default                                 |
-|                |                   |      for an overview consult :settings and/or :h set     |
-| set            | ~ process `<p>`     | `<p>` must be: [e]val, [p]arse, [t]ype                     |
-|                | ~ level `<l>`       | `<l>` must be: [p]rogram, [s]tatement, [e]xpression        |
-|                | ~ logparse        | additionally output ast-string                           |
-|                | ~ logtype         | additionally output objecttype                           |
-|                | ~ incltoken       | include tokens in representations of asts                |
-|                | ~ paste           | enable multiline support                                 |
-|                | ~ prompt `<prompt>` | set prompt string to `<prompt>`                            |
-|                | ~ treefile `<f>`    | set file that outputs pdfs to `<f>`                        |
-| settings       | ~                 | list all settings with their current values and defaults |
-| stmt|statement | ~ `<input>`         | expect `<input>` to be a statement                         |
-| t[ype]         | ~ `<input>`         | show objecttype `<input>` evaluates to                     |
-| unset          | ~ `<setting>`       | set boolean `<setting>` to false                           |
-|                |                   |      for an overview consult :settings and/or :h set     |
-
-#### As pdf
-
-
-![some tree](assets/images/show.png)
-
-
-#### In the console
-If the setting `logtype` is set or the command `parse` is used, the output so far was just the output of the `String()`-method that nodes provide. Now, there is a more detailed representation provided.
-
-Expression nodes are colored in yellow, statement nodes in blue and program nodes in a darker blue. The colors don't work for windows users.
-
-![Demo7](assets/demos/demo7.gif)
