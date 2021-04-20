@@ -7,6 +7,36 @@ Since Monkey is a language intended for learning purposes, the implementations a
 
 **Currently, this repo is still very much work in progress. This README so far documents important steps in the development. Once the overall functionality is finally determined, there is a restructuring of the documentation intended.**
 
+## Run
+
+### Prerequisites
+
+In addition to go,  the command `pdflatex` needs to be installed for creating pdfs. For Ubuntu, this can be done by:
+
+```sh
+sudo apt-get install texlive-base texlive-latex-extra
+```
+
+You can check whether `pdflatex` is installed by `which pdflatex`.
+
+### Run locally
+
+Cou can use the interactive environment locally by cloning this repo, moving into it and then execute
+
+```sh
+go run main.go
+```
+
+## How-To Use 
+
+## Credits 
+- interpreter book
+- swipl
+- ghci 
+- gore
+
+## License
+
 
 ## Step 5: Add representations of evaluation
 
