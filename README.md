@@ -8,9 +8,10 @@ Since Monkey is a language intended for learning purposes, the implementations a
 
 **Currently, this repo is still very much work in progress.**
 
-What has been done: [changelog](changelog.md)
+### What has been done: 
+[changelog](changelog.md)
 
-Next planned steps:
+### Next planned steps:
 
 - [ ] decide on "final" instruction set
   - what is a setting? what is a command?
