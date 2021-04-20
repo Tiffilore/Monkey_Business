@@ -4,12 +4,19 @@ _The purpose of the Monkey Programming Language is to learn different aspects of
 The main purpose of this repo is to extend the possibilities to explore this language by the help of various visualizations of the chosen abstract syntax tree (ast) and the steps of evaluation. These visualizations can be requested by an extended interactive environment that offers a set of multidimensional options and tools for convenience.
 Since Monkey is a language intended for learning purposes, the implementations are designed in such a way that they are open for changes and additions to the parser and evaluator. There is also a set of tests that may give rise to changes in the implementation, because they document certain problems within the interpreter in the state described in the book._
 
+## Project Status
 
 **Currently, this repo is still very much work in progress. This README so far documents important steps in the development. Once the overall functionality is finally determined, there is a restructuring of the documentation intended.**
 
-## Run
+## The New Interactive Environment
 
-### Prerequisites
+- implemented in monkey/session
+- replaces monkey/repl
+- still called in main.go
+
+### Run
+
+#### Prerequisites
 
 In addition to go,  the command `pdflatex` needs to be installed for creating pdfs. For Ubuntu, this can be done by:
 
@@ -19,7 +26,7 @@ sudo apt-get install texlive-base texlive-latex-extra
 
 You can check whether `pdflatex` is installed by `which pdflatex`.
 
-### Run locally
+#### Run locally
 
 Cou can use the interactive environment locally by cloning this repo, moving into it and then execute
 
@@ -27,16 +34,28 @@ Cou can use the interactive environment locally by cloning this repo, moving int
 go run main.go
 ```
 
-## How-To Use 
+### How-To Use: TODO 
+
+- [ ] see (yet non-existent) User Manual
+- [ ] maybe small demo
+
+## Discussion of the Interpreter: TODO 
+- [ ] see (yet non-existent)doc-discussion
+- [ ] see tests + their doc (add links)
 
 ## Credits 
-- interpreter book
-- swipl
-- ghci 
-- gore
+- original interpreter code: [Writing An Interpreter In Go](https://interpreterbook.com/)
+- inspiration for command sets in interactive environments: 
+ [swipl](https://www.swi-prolog.org/) and
+ [ghci](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-commands) 
+- inspiration for implementing an interactive environment in go: [gore](https://github.com/motemen/gore) 
 
 ## License
 
+[MIT LICENSE](LICENSE)
+
+
+---
 
 ## Step 5: Add representations of evaluation
 
