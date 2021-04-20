@@ -6,6 +6,10 @@ Started late: on 2021-04-20
 
 ### 2021-04-20
 
+- reorganize documentation
+  - add changelog
+  - restructure main README
+
 
 ## [Summary of what happened before 2021-04-20]
 
