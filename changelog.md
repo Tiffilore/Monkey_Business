@@ -10,6 +10,11 @@ Started late: on 2021-04-20
   - add changelog
   - restructure main README
 
+### 2021-04-22
+
+- reorganize instruction set
+  - add c[lear]
+
 
 ## [Summary of what happened before 2021-04-20]
 

@@ -190,7 +190,8 @@ func (s *Session) init() { // to avoid cycle
 			{"~", "clear the environment"},
 		},
 	}
-	commands["clear"] = *c_clear
+	commands["c[lear]"] = *c_clear
+	commands["c"] = commands["clear"]
 
 	c_clearscreen := &command{
 		name:   "cl[earscreen]",
