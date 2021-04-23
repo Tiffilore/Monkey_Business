@@ -172,9 +172,10 @@ func (s *Session) init() { // to avoid cycle
 	commands.register("q", c_quit)
 
 	// clearscreen
+
 	c_clearscreen := &command{
 		name:   "cl[earscreen]",
-		single: s.exec_clearscreen,
+		single: s.exec_clearscreen(),
 		usage: []struct {
 			args string
 			msg  string
@@ -293,7 +294,7 @@ func (s *Session) init() { // to avoid cycle
 	// process: parsetree: TODO
 	c_parsetree := &command{
 		name:     "p[arse]tree",
-		with_arg: s.exec_parse, //TODO
+		with_arg: s.exec_parsetree,
 		usage: []struct {
 			args string
 			msg  string
@@ -351,7 +352,7 @@ func (s *Session) init() { // to avoid cycle
 	// process: evaltree TODO
 	c_evaltree := &command{
 		name:     "e[val]tree",
-		with_arg: s.exec_eval, //TODO
+		with_arg: s.exec_evaltree,
 		usage: []struct {
 			args string
 			msg  string

@@ -37,6 +37,27 @@ func Start(in io.Reader, out io.Writer) {
 	}
 }
 
+// TODO: type Settings
+
+type Session struct {
+	scanner       *bufio.Scanner
+	out           io.Writer
+	environment   *object.Environment
+	path_pdflatex string
+	//
+	prompt string
+	//
+	process InputProcess
+	level   InputLevel
+	paste   bool
+	// levels of verbosity / amount of logging:
+	logparse  bool
+	logtype   bool
+	logtrace  bool
+	incltoken bool
+	treefile  string
+	evalfile  string
+}
 type InputLevel int
 
 const (
@@ -79,24 +100,6 @@ func (i InputProcess) String() string {
 	}
 }
 
-type Session struct {
-	scanner     *bufio.Scanner
-	out         io.Writer
-	environment *object.Environment
-	prompt      string
-	//
-	process InputProcess
-	level   InputLevel
-	paste   bool
-	// levels of verbosity / amount of logging:
-	logparse  bool
-	logtype   bool
-	logtrace  bool
-	incltoken bool
-	treefile  string
-	evalfile  string
-}
-
 const ( //default settings
 	prompt_default       = ">> "
 	treefile_default     = "tree.pdf"
@@ -115,20 +118,26 @@ const ( //default settings
 // NewSession creates a new Session.
 func NewSession(in io.Reader, out io.Writer) *Session {
 
+	path, err := exec.LookPath("pdflatex")
+	if err != nil {
+		path = ""
+	}
+
 	s := &Session{
-		scanner:     bufio.NewScanner(in),
-		out:         out,
-		prompt:      prompt_default,
-		environment: object.NewEnvironment(),
-		level:       inputLevel_default,
-		process:     inputProcess_default,
-		logtype:     logtype_default,
-		logtrace:    logtrace_default,
-		logparse:    logparse_default,
-		paste:       paste_default,
-		incltoken:   incltoken_default,
-		treefile:    treefile_default,
-		evalfile:    evalfile_default,
+		scanner:       bufio.NewScanner(in),
+		out:           out,
+		prompt:        prompt_default,
+		environment:   object.NewEnvironment(),
+		path_pdflatex: path,
+		level:         inputLevel_default,
+		process:       inputProcess_default,
+		logtype:       logtype_default,
+		logtrace:      logtrace_default,
+		logparse:      logparse_default,
+		paste:         paste_default,
+		incltoken:     incltoken_default,
+		treefile:      treefile_default,
+		evalfile:      evalfile_default,
 	}
 
 	s.init()
@@ -167,18 +176,21 @@ func (s *Session) exec_quit() {
 }
 
 // clear the screen
-func (s *Session) exec_clearscreen() {
 
-	_, err := exec.LookPath("clear")
-	if err != nil {
-		fmt.Fprintln(s.out, "command clearscreen is not available to you")
-	}
-
-	cmd := exec.Command("clear")
-	cmd.Stdout = s.out
-	err = cmd.Run()
-	if err != nil {
-		log.Fatal(err)
+func (s *Session) exec_clearscreen() func() {
+	if _, err := exec.LookPath("clear"); err != nil {
+		return func() {
+			fmt.Fprintln(s.out, "command clearscreen is not available for you")
+		}
+	} else {
+		cmd := exec.Command("clear")
+		cmd.Stdout = s.out
+		return func() {
+			err := cmd.Run()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 	}
 }
 
@@ -364,6 +376,15 @@ func (s *Session) exec_set(input string) {
 }
 
 // input processing
+
+func (s *Session) exec_parsetree(line string) {
+	fmt.Fprint(s.out, "not yet implemented!\n")
+}
+
+func (s *Session) exec_evaltree(line string) {
+	fmt.Fprint(s.out, "not yet implemented!\n")
+}
+
 func (s *Session) exec_process(line string) {
 	s.process_input_dim(s.paste, s.level, s.process, false, line)
 }

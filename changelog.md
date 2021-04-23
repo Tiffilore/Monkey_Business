@@ -15,6 +15,7 @@ Started late: on 2021-04-20
 - reorganize instruction set
   - add c[lear]
   - choose order of commands in menu
+  - choose function for command "clearpage" when session is constructed
 
 ## [Summary of what happened before 2021-04-20]
 
