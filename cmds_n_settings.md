@@ -26,11 +26,10 @@
 +----------------+-------------------+----------------------------------------------------------+
 
 GENERAL:
-| cl[earscreen]  | ~                 | clear the terminal screen                                |
 | h[elp]         | ~                 | list all commands with usage                             |
 |                | ~ <cmd>           | print usage command <cmd>                                |
 | q[uit]         | ~                 | quit the session                                         |
-
+| cl[earscreen]  | ~                 | clear the terminal screen                                |
 
 ENVIRONMENT:
 | c[lear]        | ~                 | clear the environment                                    | # c added
