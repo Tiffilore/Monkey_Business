@@ -181,7 +181,7 @@ func (s *Session) init() { // to avoid cycle
 	commands["settings"] = *c_settings
 
 	c_clear := &command{
-		name:   "clear",
+		name:   "c[lear]",
 		single: s.exec_clear,
 		usage: []struct {
 			args string
@@ -190,7 +190,7 @@ func (s *Session) init() { // to avoid cycle
 			{"~", "clear the environment"},
 		},
 	}
-	commands["c[lear]"] = *c_clear
+	commands["clear"] = *c_clear
 	commands["c"] = commands["clear"]
 
 	c_clearscreen := &command{
@@ -736,7 +736,7 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	if s.logparse || process == ParseP {
 		fmt.Fprintln(s.out, node)
 		fmt.Fprintln(s.out, visualizer.RepresentNodeConsoleTree(node, "|   ", !s.incltoken))
-		fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
+		//	fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
 		path, err := exec.LookPath("pdflatex")
 		if err != nil {
 			fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
@@ -775,7 +775,7 @@ func (s *Session) process_input_dim(paste bool, level InputLevel, process InputP
 	}
 
 	if s.logtrace {
-		//visualizer.RepresentEvalConsole(evaluator.T, s.out)
+		visualizer.RepresentEvalConsole(evaluator.T, s.out)
 		//fmt.Fprint(s.out, visualizer.QTreeEval(evaluator.T))
 		path, err := exec.LookPath("pdflatex")
 		if err != nil {

@@ -1,7 +1,6 @@
 package visualizer
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"monkey/ast"
@@ -59,6 +58,6 @@ var document_suffix = `
 `
 
 func makeTeX(qtreenode string) string {
-	fmt.Println(document_prefix + qtreenode + document_suffix)
+	//	fmt.Println(document_prefix + qtreenode + document_suffix)
 	return document_prefix + qtreenode + document_suffix
 }
