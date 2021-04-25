@@ -13,10 +13,10 @@ Since Monkey is a language intended for learning purposes, the implementations a
 
 ### Next planned steps:
 
-- [ ] decide on "final" instruction set
+- [X] decide on "final" instruction set
   - what is a setting? what is a command?
   - when should pdfs be created?
-- [ ] change session.go accordingly
+- [X] change session.go accordingly
 - [ ] decide package structure
 - [ ] implement all commands
 - [ ] write user manual
