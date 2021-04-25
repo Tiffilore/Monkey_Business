@@ -1,7 +1,5 @@
 # Commands and Settings 
 
-- path pdflatex --> set at init
-- ask for file if not there?
 
 
 ## Ch-ch-ch-changes
@@ -10,11 +8,13 @@
 - [X] re-arrange commands in help menu
   - before: in alphabetical order 
   - now: in order of registration
+- [X] check paths for "clear" and "pdflatex" at beginning
+- ask for file if not there?
 
 - write top-level user manual
 
 
-## new Commands:
+## Commands new:
 
 ```
 +----------------+-------------------+----------------------------------------------------------+
@@ -59,7 +59,7 @@ SETTINGS:
 
 ```
 
-## new Settings:
+## Settings new:
 
 ```
 +-----------+---------------+---------------+

@@ -2,7 +2,7 @@ package session
 
 import (
 	"bytes"
-	"fmt"
+	"errors"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 )
@@ -22,23 +22,22 @@ type commandSet struct {
 	l []*command
 }
 
-func (c *commandSet) register(cmd_string string, cmd *command) {
+func (c *commandSet) register(cmd_string string, cmd *command) error {
 	_, ok := c.m[cmd_string]
 	if ok {
-		fmt.Printf("warning: command %v has already been defined!\n", cmd_string)
-		return
+		return errors.New("command " + cmd_string + " has already been defined!\n")
 	}
 
 	c.m[cmd_string] = cmd
 
 	for _, command := range c.l {
 		if command == cmd {
-			return
+			return nil
 		}
 	}
 
 	c.l = append(c.l, cmd)
-
+	return nil
 }
 
 // func (c commandSet) has_command(cmd_string string) bool {
@@ -135,7 +134,7 @@ func newCommandSet() *commandSet {
 
 var commands *commandSet
 
-func (s *Session) init() { // to avoid cycle
+func (s *Session) init_commands() error {
 
 	commands = newCommandSet()
 
@@ -153,8 +152,12 @@ func (s *Session) init() { // to avoid cycle
 		},
 	}
 
-	commands.register("help", c_help)
-	commands.register("h", c_help)
+	if err := commands.register("help", c_help); err != nil {
+		return err
+	}
+	if err := commands.register("h", c_help); err != nil {
+		return err
+	}
 
 	//quit
 	c_quit := &command{
@@ -168,8 +171,12 @@ func (s *Session) init() { // to avoid cycle
 		},
 	}
 
-	commands.register("quit", c_quit)
-	commands.register("q", c_quit)
+	if err := commands.register("quit", c_quit); err != nil {
+		return err
+	}
+	if err := commands.register("q", c_quit); err != nil {
+		return err
+	}
 
 	// clearscreen
 
@@ -183,9 +190,12 @@ func (s *Session) init() { // to avoid cycle
 			{"~", "clear the terminal screen"},
 		},
 	}
-
-	commands.register("clearscreen", c_clearscreen)
-	commands.register("cl", c_clearscreen)
+	if err := commands.register("clearscreen", c_clearscreen); err != nil {
+		return err
+	}
+	if err := commands.register("cl", c_clearscreen); err != nil {
+		return err
+	}
 
 	// environment: list
 	c_list := &command{
@@ -198,9 +208,12 @@ func (s *Session) init() { // to avoid cycle
 			{"~", "list all identifiers in the environment alphabetically \n\t with types and values"},
 		},
 	}
-
-	commands.register("list", c_list)
-	commands.register("l", c_list)
+	if err := commands.register("list", c_list); err != nil {
+		return err
+	}
+	if err := commands.register("l", c_list); err != nil {
+		return err
+	}
 
 	// environment: clear
 	c_clear := &command{
@@ -214,8 +227,12 @@ func (s *Session) init() { // to avoid cycle
 		},
 	}
 
-	commands.register("clear", c_clear)
-	commands.register("c", c_clear)
+	if err := commands.register("clear", c_clear); err != nil {
+		return err
+	}
+	if err := commands.register("c", c_clear); err != nil {
+		return err
+	}
 
 	// paste
 	c_paste := &command{
@@ -243,9 +260,12 @@ func (s *Session) init() { // to avoid cycle
 		},
 	}
 
-	commands.register("expression", c_expr)
-	commands.register("expr", c_expr)
-
+	if err := commands.register("expression", c_expr); err != nil {
+		return err
+	}
+	if err := commands.register("expr", c_expr); err != nil {
+		return err
+	}
 	// level: statement
 	c_stmt := &command{
 		name:     "stmt|statement",
@@ -257,9 +277,12 @@ func (s *Session) init() { // to avoid cycle
 			{"~ <input>", "expect <input> to be a statement"},
 		},
 	}
-
-	commands.register("statement", c_stmt)
-	commands.register("stmt", c_stmt)
+	if err := commands.register("statement", c_stmt); err != nil {
+		return err
+	}
+	if err := commands.register("stmt", c_stmt); err != nil {
+		return err
+	}
 
 	// level: program
 	c_prog := &command{
@@ -273,8 +296,12 @@ func (s *Session) init() { // to avoid cycle
 		},
 	}
 
-	commands.register("program", c_prog)
-	commands.register("prog", c_prog)
+	if err := commands.register("program", c_prog); err != nil {
+		return err
+	}
+	if err := commands.register("prog", c_prog); err != nil {
+		return err
+	}
 
 	// process: parse
 	c_parse := &command{
@@ -288,8 +315,12 @@ func (s *Session) init() { // to avoid cycle
 		},
 	}
 
-	commands.register("parse", c_parse)
-	commands.register("p", c_parse)
+	if err := commands.register("parse", c_parse); err != nil {
+		return err
+	}
+	if err := commands.register("p", c_parse); err != nil {
+		return err
+	}
 
 	// process: parsetree: TODO
 	c_parsetree := &command{
@@ -303,8 +334,12 @@ func (s *Session) init() { // to avoid cycle
 		},
 	}
 
-	commands.register("parsetree", c_parsetree)
-	commands.register("ptree", c_parsetree)
+	if err := commands.register("parsetree", c_parsetree); err != nil {
+		return err
+	}
+	if err := commands.register("ptree", c_parsetree); err != nil {
+		return err
+	}
 
 	// process: eval
 	c_eval := &command{
@@ -317,9 +352,12 @@ func (s *Session) init() { // to avoid cycle
 			{"~ <input>", "print out value of object <input> evaluates to"},
 		},
 	}
-
-	commands.register("eval", c_eval)
-	commands.register("e", c_eval)
+	if err := commands.register("eval", c_eval); err != nil {
+		return err
+	}
+	if err := commands.register("e", c_eval); err != nil {
+		return err
+	}
 
 	// process: type
 	c_type := &command{
@@ -332,9 +370,12 @@ func (s *Session) init() { // to avoid cycle
 			{"~ <input>", "show objecttype <input> evaluates to"},
 		},
 	}
-
-	commands.register("type", c_type)
-	commands.register("t", c_type)
+	if err := commands.register("type", c_type); err != nil {
+		return err
+	}
+	if err := commands.register("t", c_type); err != nil {
+		return err
+	}
 
 	// process: trace
 	c_trace := &command{
@@ -347,7 +388,9 @@ func (s *Session) init() { // to avoid cycle
 			{"~ <input>", "show evaluation trace step by step"},
 		},
 	}
-	commands.register("trace", c_trace)
+	if err := commands.register("trace", c_trace); err != nil {
+		return err
+	}
 
 	// process: evaltree TODO
 	c_evaltree := &command{
@@ -360,9 +403,12 @@ func (s *Session) init() { // to avoid cycle
 			{"~ <input>", "print out value of object <input> evaluates to"}, //TODO
 		},
 	}
-
-	commands.register("evaltree", c_evaltree)
-	commands.register("etree", c_evaltree)
+	if err := commands.register("evaltree", c_evaltree); err != nil {
+		return err
+	}
+	if err := commands.register("etree", c_evaltree); err != nil {
+		return err
+	}
 
 	// settings: settings
 	c_settings := &command{
@@ -375,7 +421,9 @@ func (s *Session) init() { // to avoid cycle
 			{"~", "list all settings with their current values and defaults"},
 		},
 	}
-	commands.register("settings", c_settings)
+	if err := commands.register("settings", c_settings); err != nil {
+		return err
+	}
 
 	// settings: set
 	c_set := &command{
@@ -397,7 +445,9 @@ func (s *Session) init() { // to avoid cycle
 			{"~ evalfile <f>", "set file that outputs eval-pdfs to <f>"},
 		},
 	}
-	commands.register("set", c_set)
+	if err := commands.register("set", c_set); err != nil {
+		return err
+	}
 
 	// settings: reset
 	c_reset := &command{
@@ -410,7 +460,9 @@ func (s *Session) init() { // to avoid cycle
 			{"~ <setting>", "set <setting> to default\n\t for an overview consult :settings and/or :h set"},
 		},
 	}
-	commands.register("reset", c_reset)
+	if err := commands.register("reset", c_reset); err != nil {
+		return err
+	}
 
 	// settings: unset
 	c_unset := &command{
@@ -427,5 +479,8 @@ func (s *Session) init() { // to avoid cycle
 			//incltoken logtrace
 		},
 	}
-	commands.register("unset", c_unset)
+	if err := commands.register("unset", c_unset); err != nil {
+		return err
+	}
+	return nil
 }
