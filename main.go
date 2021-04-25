@@ -15,5 +15,8 @@ func main() {
 	fmt.Printf("Hello %s! This is the Monkey programming language!\n",
 		user.Username)
 	fmt.Printf("Feel free to type in commands\n")
-	session.Start(os.Stdin, os.Stdout)
+	err = session.Start(os.Stdin, os.Stdout)
+	if err != nil {
+		panic(err)
+	}
 }
