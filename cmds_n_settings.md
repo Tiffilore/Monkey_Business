@@ -1,4 +1,4 @@
-# Commands and Settings 
+# Commands and Settings
 
 
 
@@ -6,7 +6,7 @@
 
 - [X] add c[lear], tr[ace]
 - [X] re-arrange commands in help menu
-  - before: in alphabetical order 
+  - before: in alphabetical order
   - now: in order of registration
 - [X] check paths for "clear" and "pdflatex" at beginning
 - [ ] decide which setting types are public and which are not !!!
@@ -82,43 +82,40 @@
 +-----------+---------------+---------------+
 ```
 
-## flow 
+## flow
 
 ![Flow](assets/images/flow.png)
 
 
+## check implementations:
 
-
-
-
-
-
-
-
-
-paste          | ~ <input>         | evaluate multiline <input> (terminated by blank line)    |
-| expr[ession]   | ~ <input>         | expect <input> to be an expression                       |
-| stmt|statement | ~ <input>         | expect <input> to be a statement                         |
-| prog[ram]      | ~ <input>         | expect <input> to be a program                           |
-| p[arse]        | ~ <input>         | parse <input>                                            |
-| p[arse]tree    | ~ <input>         | parse <input>                                            |
-| e[val]         | ~ <input>         | print out value of object <input> evaluates to           |
-| t[ype]         | ~ <input>         | show objecttype <input> evaluates to                     |
-| tr[ace]          | ~ <input>         | show evaluation trace step by step                       |
-| e[val]tree     | ~ <input>         | print out value of object <input> evaluates to           |
-| settings       | ~                 | list all settings with their current values and defaults |
-| set            | ~ process <p>     | <p> must be: [e]val, [p]arse, [t]ype                     |
-|                | ~ level <l>       | <l> must be: [p]rogram, [s]tatement, [e]xpression        |
-|                | ~ logparse        | additionally output ast-string                           |
-|                | ~ logtype         | additionally output objecttype                           |
-|                | ~ logtrace        | additionally output evaluation trace                     |
-|                | ~ incltoken       | include tokens in representations of asts                |
-|                | ~ paste           | enable multiline support                                 |
-|                | ~ prompt <prompt> | set prompt string to <prompt>                            |
-|                | ~ treefile <f>    | set file that outputs ast-pdfs to <f>                    |
-|                | ~ evalfile <f>    | set file that outputs eval-pdfs to <f>                   |
-| reset          | ~ <setting>       | set <setting> to default                                 |
-|                |                   |      for an overview consult :settings and/or :h set     |
-| unset          | ~ <setting>       | set boolean <setting> to false                           |
-|                |                   |      for an overview consult :settings and/or :h set     |
-+-----------
+- [X] h[elp]
+  - session.go: [session.]exec_help     --> commands.go: [commands.]usage(s(string) (string, bool)
+  - session.go: [session.]exec_help_all --> commands.go: [commands.]menu() string
+- [X] q[uit]
+  - session.go: [session.]exec_quit
+- [X] cl[earscreen]
+  - session.go: returned by f_exec_clearscreen at init
+- [-] l[ist]
+  - session.go: [session.]exec_list --> visualizer.GetStoreTable(object.env)
+- [X] c[lear]
+  - session.go: [session.]exec_clear
+- [ ] paste
+- [ ] expr[ession]
+- [ ] stmt|statement
+- [ ] prog[ram]
+- [ ] p[arse]
+- [ ] p[arse]tree
+- [ ] e[val]
+- [ ] t[ype]
+- [ ] tr[ace]
+- [ ] e[val]tree
+- [X] settings
+  - settings.go: [session.]exec_settings --> settings.go: menuSettings() string
+- [X] set
+  - settings.go: [session.]exec_set --> settings.go: set(string) bool
+- [X] reset
+  - settings.go: [session.]exec_reset --> settings.go: reset(string) bool
+  - settings.go: [session.]exec_reset_all 
+- [X] unset
+  - settings.go: [session.]exec_unset --> settings.go: unset(string) bool
