@@ -99,9 +99,13 @@
   - session.go: [session.]exec_list --> visualizer.GetStoreTable(object.env)
 - [X] c[lear]
   - session.go: [session.]exec_clear
+<<<<<<< HEAD
 - [X] paste
   - session.go: [session.]exec_paste 
   + revise [session.]exec_cmd for commands that take argument
+=======
+- [ ] paste
+>>>>>>> 7f9bb427fb102452adbca5c6692355e30a36484f
 - [ ] expr[ession]
 - [ ] stmt|statement
 - [ ] prog[ram]

@@ -328,17 +328,35 @@ func setDisplays(current visDisplays, arg string) bool {
 		}
 		arg = arg[1:]
 		switch arg {
+<<<<<<< HEAD
 		case "c", "cons", "console":
 			current[ConsD] = val
 		case "p", "pdf":
 			current[PdfD] = val
+=======
+		case "+c", "+cons", "+console":
+			current[ConsD] = true
+			return true
+		case "-c", "-cons", "-console":
+			current[ConsD] = false
+			return true
+		case "+p", "+pdf":
+			current[PdfD] = true
+			return true
+		case "-p", "-pdf":
+			current[PdfD] = false
+			return true
+>>>>>>> 7f9bb427fb102452adbca5c6692355e30a36484f
 		default:
 			return false
 		}
 
 	}
+<<<<<<< HEAD
 	return true
 
+=======
+>>>>>>> 7f9bb427fb102452adbca5c6692355e30a36484f
 }
 
 type logs map[inputProcess]bool
