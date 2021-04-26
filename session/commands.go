@@ -40,11 +40,6 @@ func (c *commandSet) register(cmd_string string, cmd *command) error {
 	return nil
 }
 
-// func (c commandSet) has_command(cmd_string string) bool {
-// 	_, ok := c.m[cmd_string]
-// 	return ok
-// }
-
 func (c commandSet) get_exec_single(cmd_string string) (func(), bool) {
 	cmd, ok := c.m[cmd_string]
 	if !ok {
@@ -239,7 +234,7 @@ func (s *Session) init_commands() error {
 	c_paste := &command{
 		name:     "paste",
 		with_arg: s.exec_paste,
-		single:   s.exec_paste_empty_arg,
+		//	single:   s.exec_paste_empty_arg,
 		usage: []struct {
 			args string
 			msg  string
@@ -441,7 +436,7 @@ func (s *Session) init_commands() error {
 			{"~ level <l>", "<l> must be: p[rogram], s[tatement], e[xpression]"},
 			{"~ process <p>", "<p> must be: p[arse], p[arse]tree, e[val], e[val]tree,\n\t [t]ype, [tr]ace"},
 			{"~ logs <+|-l_0...+|-l_n>", "<l_i> must be: p[arse]tree, e[val]tree, [t]ype, [tr]ace"},
-			{"~ displays <+|-l_0...+|-l_n>", "<l_i> must be: p[arse]tree, e[val]tree, [t]ype, [tr]ace"},
+			{"~ displays <+|-d_0...+|-d_n>", "<d_i> must be: c[ons[ole]], p[df]"},
 			{"~ verbosity <v>", "<v> must be 0, 1, 2"},
 			{"~ inclToken", "include tokens in representations of asts"},
 			{"~ inclEnv", "include environments in representations of asts"},

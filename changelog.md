@@ -56,7 +56,7 @@ Started late: on 2021-04-20
 |                | ~ process <p>                | <p> must be: p[arse], p[arse]tree, e[val], e[val]tree,  |
 |                |                              |      [t]ype, [tr]ace                                    |
 |                | ~ logs <+|-l_0...+|-l_n>     | <l_i> must be: p[arse]tree, e[val]tree, [t]ype, [tr]ace |
-|                | ~ displays <+|-l_0...+|-l_n> | <l_i> must be: p[arse]tree, e[val]tree, [t]ype, [tr]ace |
+|                | ~ displays <+|-d_0...+|-d_n> | <d_i> must be: c[ons[ole]], p[df]                       |
 |                | ~ verbosity <v>              | <v> must be 0, 1, 2                                     |
 |                | ~ inclToken                  | include tokens in representations of asts               |
 |                | ~ inclEnv                    | include environments in representations of asts         |

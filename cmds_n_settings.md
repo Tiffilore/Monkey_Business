@@ -48,7 +48,7 @@
 |                | ~ process <p>                | <p> must be: p[arse], p[arse]tree, e[val], e[val]tree,  |
 |                |                              |      [t]ype, [tr]ace                                    |
 |                | ~ logs <+|-l_0...+|-l_n>     | <l_i> must be: p[arse]tree, e[val]tree, [t]ype, [tr]ace |
-|                | ~ displays <+|-l_0...+|-l_n> | <l_i> must be: p[arse]tree, e[val]tree, [t]ype, [tr]ace |
+|                | ~ displays <+|-d_0...+|-d_n> | <d_i> must be: c[ons[ole]], p[df]                       |
 |                | ~ verbosity <v>              | <v> must be 0, 1, 2                                     |
 |                | ~ inclToken                  | include tokens in representations of asts               |
 |                | ~ inclEnv                    | include environments in representations of asts         |
@@ -99,7 +99,9 @@
   - session.go: [session.]exec_list --> visualizer.GetStoreTable(object.env)
 - [X] c[lear]
   - session.go: [session.]exec_clear
-- [ ] paste
+- [X] paste
+  - session.go: [session.]exec_paste 
+  + revise [session.]exec_cmd for commands that take argument
 - [ ] expr[ession]
 - [ ] stmt|statement
 - [ ] prog[ram]

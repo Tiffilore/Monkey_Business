@@ -76,19 +76,21 @@ func (s *Session) exec_cmd(line string) {
 	slice := strings.SplitN(line, " ", 2)
 
 	cmd := slice[0]
+	var arg string
 	if len(slice) == 1 {
 		if exec, ok := commands.get_exec_single(cmd); ok {
 			exec()
 			return
+		} else {
+			arg = ""
 		}
 	} else {
-		arg := slice[1]
-		if exec, ok := commands.get_exec_with_arg(cmd); ok {
-			exec(arg)
-			return
-		}
+		arg = slice[1]
 	}
-
+	if exec, ok := commands.get_exec_with_arg(cmd); ok {
+		exec(arg)
+		return
+	}
 	s.exec_help(cmd)
 }
 
@@ -189,9 +191,9 @@ func (s *Session) exec_process(line string) {
 	s.process_input_dim(currentSettings.paste, currentSettings.level, currentSettings.process, false, line)
 }
 
-func (s *Session) exec_paste_empty_arg() {
-	s.process_input_dim(true, currentSettings.level, currentSettings.process, false, "")
-}
+// func (s *Session) exec_paste_empty_arg() {
+// 	s.process_input_dim(true, currentSettings.level, currentSettings.process, false, "")
+// }
 
 func (s *Session) exec_paste(line string) {
 	s.process_input_dim(true, currentSettings.level, currentSettings.process, false, line)

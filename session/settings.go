@@ -104,8 +104,7 @@ func set(input string) bool {
 	splits := strings.SplitN(strings.Trim(input, " "), " ", 2)
 	setting := splits[0]
 
-	if len(splits) == 0 {
-
+	if len(splits) == 1 {
 		switch setting {
 		case "paste":
 			currentSettings.paste = true
@@ -117,6 +116,7 @@ func set(input string) bool {
 			currentSettings.inclEnv = true
 			return true
 		}
+
 	} else {
 		arg := splits[1]
 		switch setting {
@@ -316,24 +316,29 @@ func setDisplays(current visDisplays, arg string) bool {
 	args := strings.Split(strings.Trim(arg, " "), " ")
 
 	for _, arg := range args {
+		op := arg[0]
+		var val bool
+		switch op {
+		case '+':
+			val = true
+		case '-':
+			val = false
+		default:
+			return false
+		}
+		arg = arg[1:]
 		switch arg {
-		case "+c", "+cons", "+console":
-			current[ConsD] = true
-			return true
-		case "-c", "-cons", "-console":
-			current[ConsD] = false
-			return true
-		case "+p", "+pdf":
-			current[PdfD] = true
-			return true
-		case "-p", "-pdf":
-			current[PdfD] = false
-			return true
+		case "c", "cons", "console":
+			current[ConsD] = val
+		case "p", "pdf":
+			current[PdfD] = val
 		default:
 			return false
 		}
 
 	}
+	return true
+
 }
 
 type logs map[inputProcess]bool
@@ -355,27 +360,30 @@ func setLogs(current logs, arg string) bool {
 	args := strings.Split(strings.Trim(arg, " "), " ")
 
 	for _, arg := range args {
-		switch arg {
-		case "+type":
-			current[TypeP] = true
-		case "-type":
-			current[TypeP] = false
-		case "+evaltree":
-			current[EvalTreeP] = true
-		case "-evaltree":
-			current[EvalTreeP] = false
-		case "+parsetree":
-			current[ParseTreeP] = true
-		case "-parsetree":
-			current[ParseTreeP] = false
-		case "+trace":
-			current[TraceP] = true
-		case "-trace":
-			current[TraceP] = false
+
+		op := arg[0]
+		var val bool
+		switch op {
+		case '+':
+			val = true
+		case '-':
+			val = false
 		default:
 			return false
 		}
-
+		arg = arg[1:]
+		switch arg {
+		case "ptree", "parsetree":
+			current[ParseTreeP] = val
+		case "etree", "evaltree":
+			current[EvalTreeP] = val
+		case "t", "type":
+			current[TypeP] = val
+		case "tr", "trace":
+			current[TraceP] = val
+		default:
+			return false
+		}
 	}
 	return true
 }
