@@ -69,7 +69,7 @@ func NewSession(in io.Reader, out io.Writer) (*Session, error) {
 // decide which function
 func (s *Session) exec_cmd(line string) {
 	if !strings.HasPrefix(line, ":") {
-		s.exec_process(line)
+		s.exec_process(line) //default
 		return
 	}
 	line = strings.TrimPrefix(line, ":")
@@ -179,79 +179,108 @@ func (s *Session) exec_unset(input string) {
 
 // input processing
 
-func (s *Session) exec_parsetree(line string) {
-	fmt.Fprint(s.out, "not yet implemented!\n")
+func (s *Session) exec_process(line string) { // if no command is used
+	s.process_input_dim(currentSettings.paste, currentSettings.level, currentSettings.process, line)
 }
 
-func (s *Session) exec_evaltree(line string) {
-	fmt.Fprint(s.out, "not yet implemented!\n")
-}
-
-func (s *Session) exec_process(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, currentSettings.process, false, line)
-}
-
-// func (s *Session) exec_paste_empty_arg() {
-// 	s.process_input_dim(true, currentSettings.level, currentSettings.process, false, "")
-// }
-
+// PASTE
 func (s *Session) exec_paste(line string) {
-	s.process_input_dim(true, currentSettings.level, currentSettings.process, false, line)
+	s.process_input_dim(true, currentSettings.level, currentSettings.process, line)
 }
 
+// LEVEL
 func (s *Session) exec_expression(line string) {
-	s.process_input_dim(currentSettings.paste, ExpressionL, currentSettings.process, false, line)
+	s.process_input_dim(currentSettings.paste, ExpressionL, currentSettings.process, line)
 }
 
 func (s *Session) exec_statement(line string) {
-	s.process_input_dim(currentSettings.paste, StatementL, currentSettings.process, false, line)
+	s.process_input_dim(currentSettings.paste, StatementL, currentSettings.process, line)
 }
 
 func (s *Session) exec_program(line string) {
-	s.process_input_dim(currentSettings.paste, ProgramL, currentSettings.process, false, line)
+	s.process_input_dim(currentSettings.paste, ProgramL, currentSettings.process, line)
+}
+
+// PROCESS
+
+func (s *Session) exec_parse(line string) {
+	s.process_input_dim(currentSettings.paste, currentSettings.level, ParseP, line)
+}
+
+func (s *Session) exec_parsetree(line string) {
+	s.process_input_dim(currentSettings.paste, currentSettings.level, ParseTreeP, line)
 }
 
 func (s *Session) exec_eval(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, EvalP, false, line)
+	s.process_input_dim(currentSettings.paste, currentSettings.level, EvalP, line)
 }
 
 func (s *Session) exec_type(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, TypeP, false, line)
+	s.process_input_dim(currentSettings.paste, currentSettings.level, TypeP, line)
 }
 
 func (s *Session) exec_trace(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, EvalP, true, line)
+	s.process_input_dim(currentSettings.paste, currentSettings.level, TraceP, line)
 }
 
-func (s *Session) exec_parse(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, ParseP, false, line)
+func (s *Session) exec_evaltree(line string) {
+	s.process_input_dim(currentSettings.paste, currentSettings.level, EvalTreeP, line)
 }
 
-func (s *Session) process_input_dim(paste bool, level inputLevel, process inputProcess, trace bool, input string) {
+// input processing
+func (s *Session) process_input_dim(paste bool, level inputLevel, process inputProcess, input string) {
 
+	// get input dependent on PASTE
 	if paste {
 		input = s.multiline_input(input)
 	}
 
+	// determine what needs to be logged
+	logPtree := false
+	logType := false
+	logTrace := false
+	logEtree := false
+
+	if process == ParseP {
+		logPtree = currentSettings.logs[ParseTreeP]
+	}
+	if process == EvalP {
+		logType = currentSettings.logs[TypeP]
+		logTrace = currentSettings.logs[TraceP]
+		logPtree = currentSettings.logs[ParseTreeP]
+		logEtree = currentSettings.logs[EvalTreeP]
+		if logEtree {
+			logPtree = false
+		}
+	}
+
+	// parse input dependent on LEVEL
 	l := lexer.New(input)
 	p := parser.New(l)
 
 	node := parse_level(p, level)
 
-	if process == ParseP { // TODO: + log
-		fmt.Fprintln(s.out, node)
+	// PROCESS / [ LOGs ]
+
+	if process == ParseTreeP || logPtree {
+		if currentSettings.displays[ConsD] {
+			if process != ParseTreeP {
+				fmt.Fprint(s.out, "log parsetree:\t")
+			}
+			fmt.Fprintln(s.out, "display ptree in console")
+		}
+		if currentSettings.displays[PdfD] {
+			if !s.supportsPdflatex() {
+				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
+			} else {
+				visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, s.path_pdflatex)
+				fmt.Fprintln(s.out, "print ptree in file ", currentSettings.file)
+			}
+		}
 	}
 
-	if currentSettings.logs[ParseTreeP] {
-		fmt.Fprint(s.out, "log ast:\t")
-		fmt.Fprintln(s.out, visualizer.RepresentNodeConsoleTree(node, "|   ", !currentSettings.inclToken))
-		//	fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
-		path, err := exec.LookPath("pdflatex")
-		if err != nil {
-			fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
-		} else {
-			visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, path)
-		}
+	if process == ParseP {
+		fmt.Fprintln(s.out, node) // Stringer method
 	}
 
 	if len(p.Errors()) != 0 {
@@ -259,63 +288,74 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 		return
 	}
 
-	if process == ParseP {
+	if process == ParseP || process == ParseTreeP { // in these cases, we do not care about logging related to evaluation
 		return
 	}
 
-	if trace || currentSettings.logs[TraceP] {
-		evaluator.StartTracer()
+	// evaluate ast - trace dependent on process + DISPLAYED logs
+
+	trace_required := false
+	if process == TraceP || process == EvalTreeP || logTrace || logEtree {
+		trace_required = true
 	}
 
-	evaluated := evaluator.Eval(node, s.environment)
+	obj, trace := s.eval_process(node, trace_required)
 
-	if trace || currentSettings.logs[TraceP] {
-		evaluator.StopTracer()
-	}
-
-	if currentSettings.logs[TypeP] {
-		fmt.Fprint(s.out, "log type:\t")
-	}
-	if currentSettings.logs[TypeP] || process == TypeP {
-		fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
-	}
-	if process == TypeP {
-		return
+	if process == TraceP { // no evaluation logging
+		visualizer.TraceEvalConsole(trace, s.out, s.scanner)
 	}
 
-	if currentSettings.logs[TraceP] {
-		visualizer.RepresentEvalConsole(evaluator.T, s.out)
-		//fmt.Fprint(s.out, visualizer.QTreeEval(evaluator.T))
-		path, err := exec.LookPath("pdflatex")
-		if err != nil {
-			fmt.Fprintln(s.out, "Displaying evaluation trees as pdfs is not available to you, since you have not installed pdflatex.")
-		} else {
-			visualizer.EvalTree2pdf(evaluator.T, currentSettings.file, path)
+	if logTrace {
+		visualizer.RepresentEvalTraceConsole(trace, s.out)
+	}
+
+	if process == TypeP || logType {
+		if process != TypeP {
+			fmt.Fprint(s.out, "log type:\t")
 		}
-
-	}
-
-	if trace {
-		visualizer.TraceEvalConsole(evaluator.T, s.out, s.scanner)
+		fmt.Fprint(s.out, reflect.TypeOf(obj), "\t")
+		if obj != nil {
+			fmt.Fprintln(s.out, obj.Type())
+		} else {
+			fmt.Fprintln(s.out, "nil")
+		}
 		return
 	}
 
-	if evaluated != nil { // TODO: Umgang mit nil würdig?
-		fmt.Fprintln(s.out, evaluated.Inspect())
+	if process == EvalTreeP || logEtree {
+
+		if currentSettings.displays[ConsD] {
+			if process != EvalTreeP {
+				fmt.Fprint(s.out, "log evaltree:\t")
+			}
+			fmt.Fprintln(s.out, "display ptree in console")
+		}
+		if currentSettings.displays[PdfD] {
+			if !s.supportsPdflatex() {
+				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
+			} else {
+				fmt.Fprintln(s.out, "print etree in file ", currentSettings.file)
+			}
+		}
+		// 			visualizer.EvalTree2pdf(evaluator.T, currentSettings.file, path)
+		//visualizer.RepresentEvalConsole(evaluator.T, s.out)
+		// //fmt.Fprint(s.out, visualizer.QTreeEval(evaluator.T))
+
+		return
 	}
 
-	//	} else {
-	//		fmt.Fprintln(s.out, nil)
-	//	}
-	/*
-		io.WriteString vs fmt.Fprint ?????
-			The difference is that fmt.Fprint is formatting the arguments provided first in a buffer before calling w.Write.
-			And io.WriteString is checking if w provides the StringWriter interface and calls that instead.
-	*/
+	if process == EvalP {
+		if obj != nil { // TODO: Umgang mit nil würdig?
+			fmt.Fprintln(s.out, obj.Inspect())
+		}
+		// } else {
+		// 	fmt.Fprintln(s.out, nil)
+		// }
+	}
+
 }
 
 func parse_level(p *parser.Parser, level inputLevel) ast.Node {
-
 	switch level {
 	case ExpressionL:
 		return p.ParseExpression()
@@ -328,11 +368,30 @@ func parse_level(p *parser.Parser, level inputLevel) ast.Node {
 	}
 }
 
+func (s *Session) eval_process(node ast.Node, trace_required bool) (object.Object, *evaluator.Tracer) {
+
+	if trace_required {
+		evaluator.StartTracer()
+	}
+
+	obj := evaluator.Eval(node, s.environment)
+
+	if trace_required {
+		evaluator.StopTracer()
+		return obj, evaluator.T
+	}
+	return obj, nil
+}
+
+func (s *Session) supportsPdflatex() bool {
+	return s.path_pdflatex != ""
+}
+
 func (s *Session) multiline_input(input string) string {
 	for {
 		scanned := s.scanner.Scan()
 		if !scanned {
-			return input //TODO!!
+			return input //TODO!! when can that happen anyway?
 		}
 		line := s.scanner.Text()
 		if line == "" {
@@ -341,6 +400,7 @@ func (s *Session) multiline_input(input string) string {
 		input += " " + line
 	}
 }
+
 func (s *Session) printParserErrors(errors []string, level inputLevel) {
 
 	fmt.Fprintf(s.out, "... cannot be parsed as %v\n", level)
