@@ -89,6 +89,10 @@ Started late: on 2021-04-20
 +-----------+---------------+---------------+
 ```
 
+### 2021-04-25
+
+- revise implementations of commands
+
 ## [Summary of what happened before 2021-04-20]
 
 ### Step 0: Starting Point: Copy the Code

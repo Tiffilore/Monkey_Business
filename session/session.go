@@ -99,7 +99,7 @@ func (s *Session) exec_quit() {
 
 // clear the screen
 
-func (s *Session) exec_clearscreen() func() {
+func (s *Session) f_exec_clearscreen() func() {
 	if _, err := exec.LookPath("clear"); err != nil {
 		return func() {
 			fmt.Fprintln(s.out, "command clearscreen is not available for you")
@@ -145,6 +145,34 @@ func (s *Session) exec_help(cmd string) {
 
 func (s *Session) exec_help_all() {
 	fmt.Fprint(s.out, commands.menu())
+}
+
+// settings
+
+func (s *Session) exec_settings() {
+	fmt.Fprint(s.out, menuSettings())
+}
+
+func (s *Session) exec_reset_all() {
+	currentSettings = newSettings()
+}
+
+func (s *Session) exec_reset(input string) {
+	if ok := reset(input); !ok {
+		s.exec_help("reset")
+	}
+}
+
+func (s *Session) exec_set(input string) {
+	if ok := set(input); !ok {
+		s.exec_help("set")
+	}
+}
+
+func (s *Session) exec_unset(input string) {
+	if ok := unset(input); !ok {
+		s.exec_help("unset")
+	}
 }
 
 // input processing

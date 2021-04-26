@@ -180,10 +180,10 @@ func (s *Session) init_commands() error {
 
 	// clearscreen
 
-	cl_func := s.exec_clearscreen()
+	exec_clearscreen := s.f_exec_clearscreen()
 	c_clearscreen := &command{
 		name:   "cl[earscreen]",
-		single: cl_func,
+		single: exec_clearscreen,
 		usage: []struct {
 			args string
 			msg  string
