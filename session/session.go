@@ -149,7 +149,6 @@ func (s *Session) exec_help_all() {
 	fmt.Fprint(s.out, commands.menu())
 }
 
-<<<<<<< HEAD
 // settings
 
 func (s *Session) exec_settings() {
@@ -178,8 +177,6 @@ func (s *Session) exec_unset(input string) {
 	}
 }
 
-=======
->>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 // input processing
 
 func (s *Session) exec_process(line string) { // if no command is used
@@ -191,7 +188,6 @@ func (s *Session) exec_paste(line string) {
 	s.process_input_dim(true, currentSettings.level, currentSettings.process, line)
 }
 
-<<<<<<< HEAD
 // LEVEL
 func (s *Session) exec_expression(line string) {
 	s.process_input_dim(currentSettings.paste, ExpressionL, currentSettings.process, line)
@@ -229,46 +225,6 @@ func (s *Session) exec_trace(line string) {
 
 func (s *Session) exec_evaltree(line string) {
 	s.process_input_dim(currentSettings.paste, currentSettings.level, EvalTreeP, line)
-=======
-func (s *Session) exec_process(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, currentSettings.process, false, line)
-}
-
-func (s *Session) exec_paste_empty_arg() {
-	s.process_input_dim(true, currentSettings.level, currentSettings.process, false, "")
-}
-
-func (s *Session) exec_paste(line string) {
-	s.process_input_dim(true, currentSettings.level, currentSettings.process, false, line)
-}
-
-func (s *Session) exec_expression(line string) {
-	s.process_input_dim(currentSettings.paste, ExpressionL, currentSettings.process, false, line)
-}
-
-func (s *Session) exec_statement(line string) {
-	s.process_input_dim(currentSettings.paste, StatementL, currentSettings.process, false, line)
-}
-
-func (s *Session) exec_program(line string) {
-	s.process_input_dim(currentSettings.paste, ProgramL, currentSettings.process, false, line)
-}
-
-func (s *Session) exec_eval(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, EvalP, false, line)
-}
-
-func (s *Session) exec_type(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, TypeP, false, line)
-}
-
-func (s *Session) exec_trace(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, EvalP, true, line)
-}
-
-func (s *Session) exec_parse(line string) {
-	s.process_input_dim(currentSettings.paste, currentSettings.level, ParseP, false, line)
->>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 }
 
 // input processing
@@ -304,7 +260,6 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 
 	node := parse_level(p, level)
 
-<<<<<<< HEAD
 	// PROCESS / [ LOGs ]
 
 	if process == ParseTreeP || logPtree {
@@ -321,20 +276,6 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, s.path_pdflatex)
 				fmt.Fprintln(s.out, "print ptree in file ", currentSettings.file)
 			}
-=======
-	if currentSettings.logtree {
-		fmt.Fprint(s.out, "log ast:\t")
-	}
-	if currentSettings.logtree || process == ParseP {
-		fmt.Fprintln(s.out, node)
-		fmt.Fprintln(s.out, visualizer.RepresentNodeConsoleTree(node, "|   ", !currentSettings.inclToken))
-		//	fmt.Fprintln(s.out, visualizer.QTree(node, !s.incltoken))
-		path, err := exec.LookPath("pdflatex")
-		if err != nil {
-			fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
-		} else {
-			visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, path)
->>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 		}
 	}
 
@@ -351,21 +292,15 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 		return
 	}
 
-<<<<<<< HEAD
 	// evaluate ast - trace dependent on process + DISPLAYED logs
 
 	trace_required := false
 	if process == TraceP || process == EvalTreeP || logTrace || logEtree {
 		trace_required = true
-=======
-	if trace || currentSettings.logtrace {
-		evaluator.StartTracer()
->>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 	}
 
 	obj, trace := s.eval_process(node, trace_required)
 
-<<<<<<< HEAD
 	if process == TraceP { // no evaluation logging
 		visualizer.TraceEvalConsole(trace, s.out, s.scanner)
 	}
@@ -383,30 +318,6 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 			fmt.Fprintln(s.out, obj.Type())
 		} else {
 			fmt.Fprintln(s.out, "nil")
-=======
-	if trace || currentSettings.logtrace {
-		evaluator.StopTracer()
-	}
-
-	if currentSettings.logtype {
-		fmt.Fprint(s.out, "log type:\t")
-	}
-	if currentSettings.logtype || process == TypeP {
-		fmt.Fprintln(s.out, reflect.TypeOf(evaluated))
-	}
-	if process == TypeP {
-		return
-	}
-
-	if currentSettings.logtrace {
-		visualizer.RepresentEvalConsole(evaluator.T, s.out)
-		//fmt.Fprint(s.out, visualizer.QTreeEval(evaluator.T))
-		path, err := exec.LookPath("pdflatex")
-		if err != nil {
-			fmt.Fprintln(s.out, "Displaying evaluation trees as pdfs is not available to you, since you have not installed pdflatex.")
-		} else {
-			visualizer.EvalTree2pdf(evaluator.T, currentSettings.file, path)
->>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 		}
 		return
 	}

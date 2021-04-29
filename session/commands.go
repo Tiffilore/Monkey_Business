@@ -387,15 +387,10 @@ func (s *Session) init_commands() error {
 	if err := commands.register("trace", c_trace); err != nil {
 		return err
 	}
-<<<<<<< HEAD
 	if err := commands.register("tr", c_trace); err != nil {
 		return err
 	}
 	// process: evaltree
-=======
-
-	// process: evaltree TODO
->>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 	c_evaltree := &command{
 		name:     "e[val]tree",
 		with_arg: s.exec_evaltree,
