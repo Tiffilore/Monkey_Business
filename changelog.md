@@ -22,7 +22,7 @@ Started late: on 2021-04-20
   - choose function for command "clearpage" when session is constructed
 - reorganize settings
 
-see: [Commands and Settings](doc/sketch/commands_n_settings.md)
+see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
 
 ### 2021-04-25
 
