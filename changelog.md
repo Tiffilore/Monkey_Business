@@ -22,7 +22,6 @@ Started late: on 2021-04-20
   - choose function for command "clearpage" when session is constructed
 - reorganize settings
 
-<<<<<<< HEAD
 see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
 
 ### 2021-04-25
@@ -32,8 +31,6 @@ see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
 ### 2021-04-29
 
 - revise instruction set again
-=======
->>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 
 ## [Summary of what happened before 2021-04-20]
 
