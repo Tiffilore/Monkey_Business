@@ -1,6 +1,9 @@
 # Commands and Settings
 
+## TODO 
 
+- set displays => check whether command pdflatex available!
+- set filenames => what if we have both, log etree and log ptree?
 
 ## Ch-ch-ch-changes
 

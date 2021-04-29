@@ -22,76 +22,15 @@ Started late: on 2021-04-20
   - choose function for command "clearpage" when session is constructed
 - reorganize settings
 
-#### Commands new:
-
-```
-+----------------+------------------------------+---------------------------------------------------------+
-| NAME           |                              | USAGE                                                   |
-+----------------+------------------------------+---------------------------------------------------------+
-| h[elp]         | ~                            | list all commands with usage                            |
-|                | ~ <cmd>                      | print usage command <cmd>                               |
-| q[uit]         | ~                            | quit the session                                        |
-| cl[earscreen]  | ~                            | clear the terminal screen                               |
-| l[ist]         | ~                            | list all identifiers in the environment alphabetically  |
-|                |                              |      with types and values                              |
-| c[lear]        | ~                            | clear the environment                                   |
-| paste          | ~ <input>                    | evaluate multiline <input> (terminated by blank line)   |
-| expr[ession]   | ~ <input>                    | expect <input> to be an expression                      |
-| stmt|statement | ~ <input>                    | expect <input> to be a statement                        |
-| prog[ram]      | ~ <input>                    | expect <input> to be a program                          |
-| p[arse]        | ~ <input>                    | print string representation of ast <input> is parsed to |
-|                |                              |      --> Node-method: String() string                   |
-| p[arse]tree    | ~ <input>                    | print tree representation of <input>' ast               |
-|                |                              |      to all set displays                                |
-| e[val]         | ~ <input>                    | print value of object <input> evaluates to              |
-|                |                              |      --> Object-method: Inspect() string                |
-| t[ype]         | ~ <input>                    | show objecttype <input> evaluates to                    |
-| tr[ace]        | ~ <input>                    | show evaluation trace interactively step by step        |
-| e[val]tree     | ~ <input>                    | print annotated tree representation of <input>'s ast    |
-|                |                              |      to all set displays                                |
-| settings       | ~                            | list all settings with their current and default values |
-| set            | ~ prompt <prompt>            | set prompt string to <prompt>                           |
-|                | ~ paste                      | enable multiline support                                |
-|                | ~ level <l>                  | <l> must be: p[rogram], s[tatement], e[xpression]       |
-|                | ~ process <p>                | <p> must be: p[arse], p[arse]tree, e[val], e[val]tree,  |
-|                |                              |      [t]ype, [tr]ace                                    |
-|                | ~ logs <+|-l_0...+|-l_n>     | <l_i> must be: p[arse]tree, e[val]tree, [t]ype, [tr]ace |
-|                | ~ displays <+|-d_0...+|-d_n> | <d_i> must be: c[ons[ole]], p[df]                       |
-|                | ~ verbosity <v>              | <v> must be 0, 1, 2                                     |
-|                | ~ inclToken                  | include tokens in representations of asts               |
-|                | ~ inclEnv                    | include environments in representations of asts         |
-|                | ~ file <f>                   | set file for pdfs to <f>                                |
-| reset          | ~                            | reset all settings                                      |
-|                | ~ <setting>                  | set <setting> to default value                          |
-|                |                              |      for an overview consult :settings and/or :h set    |
-| unset          | ~ <setting>                  | set boolean <setting> to false                          |
-|                |                              |      for an overview consult :settings and/or :h set    |
-+----------------+------------------------------+---------------------------------------------------------+               |                   |      for an overview consult :settings and/or :h set     |
-
-```
-
-#### Settings new:
-
-```
-+-----------+---------------+---------------+
-| SETTING   | CURRENT VALUE | DEFAULT VALUE |
-+-----------+---------------+---------------+
-| prompt    | >>            | >>            |
-| paste     | false         | false         |
-| level     | program       | program       |
-| process   | eval          | eval          |
-| logs      | []            | []            |
-| displays  | [console]     | [console]     |
-| verbosity | 0             | 0             |
-| inclToken | false         | false         |
-| inclEnv   | false         | false         |
-| file      | tree.pdf      | tree.pdf      |
-+-----------+---------------+---------------+
-```
+see: [Commands and Settings](doc/sketch/commands_n_settings.md)
 
 ### 2021-04-25
 
 - revise implementations of commands
+
+### 2021-04-29
+
+- revise instruction set again
 
 ## [Summary of what happened before 2021-04-20]
 
