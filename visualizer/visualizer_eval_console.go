@@ -15,8 +15,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-// TODO: environment, side-effects ?
-func RepresentEvalConsole(t *evaluator.Tracer, out io.Writer) {
+func RepresentEvalTraceConsole(t *evaluator.Tracer, out io.Writer) {
 	tab := table.NewWriter()
 	tab.SetOutputMirror(out)
 	tab.AppendHeader(table.Row{"", "Nodetype", "Node", "Valuetype", "Value"})
@@ -190,8 +189,7 @@ func GetStoreTable(env *object.Environment) string {
 		}
 		t.AppendRow([]interface{}{key, nodetype, value})
 	}
-	// //t.AppendFooter(table.Row{"", "", "Total", 10000})
-	// //t.SetStyle(table.StyleColoredBright)
+
 	t.Render()
 	return temp_out.String()
 }

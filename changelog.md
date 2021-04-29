@@ -13,12 +13,27 @@ Started late: on 2021-04-20
 ### 2021-04-25
 
 - reorganize instruction set
-  - add c[lear]
+  - add "c" for command "c[lear]"
+  - add "tr" for command "tr[ace]"
+  - add single command "reset" -> reset all settings
+  - add commands "p[arse]tree" and "e[val]tree"
   - choose order of commands in menu
 - check paths for "clear" and "pdflatex" at beginning
   - choose function for command "clearpage" when session is constructed
 - reorganize settings
 
+<<<<<<< HEAD
+see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
+
+### 2021-04-25
+
+- revise implementations of commands
+
+### 2021-04-29
+
+- revise instruction set again
+=======
+>>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 
 ## [Summary of what happened before 2021-04-20]
 
