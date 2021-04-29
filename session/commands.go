@@ -40,11 +40,6 @@ func (c *commandSet) register(cmd_string string, cmd *command) error {
 	return nil
 }
 
-// func (c commandSet) has_command(cmd_string string) bool {
-// 	_, ok := c.m[cmd_string]
-// 	return ok
-// }
-
 func (c commandSet) get_exec_single(cmd_string string) (func(), bool) {
 	cmd, ok := c.m[cmd_string]
 	if !ok {
@@ -180,9 +175,10 @@ func (s *Session) init_commands() error {
 
 	// clearscreen
 
+	exec_clearscreen := s.f_exec_clearscreen()
 	c_clearscreen := &command{
 		name:   "cl[earscreen]",
-		single: s.exec_clearscreen(),
+		single: exec_clearscreen,
 		usage: []struct {
 			args string
 			msg  string
@@ -205,7 +201,7 @@ func (s *Session) init_commands() error {
 			args string
 			msg  string
 		}{
-			{"~", "list all identifiers in the environment alphabetically \n\t with types and values"},
+			{"~", "list all identifiers in the environment alphabetically\n\t with types and values"},
 		},
 	}
 	if err := commands.register("list", c_list); err != nil {
@@ -238,7 +234,7 @@ func (s *Session) init_commands() error {
 	c_paste := &command{
 		name:     "paste",
 		with_arg: s.exec_paste,
-		single:   s.exec_paste_empty_arg,
+		//	single:   s.exec_paste_empty_arg,
 		usage: []struct {
 			args string
 			msg  string
@@ -311,7 +307,7 @@ func (s *Session) init_commands() error {
 			args string
 			msg  string
 		}{
-			{"~ <input>", "parse <input>"},
+			{"~ <input>", "print string representation of ast <input> is parsed to\n\t --> Node-method: String() string"},
 		},
 	}
 
@@ -330,7 +326,7 @@ func (s *Session) init_commands() error {
 			args string
 			msg  string
 		}{
-			{"~ <input>", "parse <input>"}, //TODO
+			{"~ <input>", "print tree representation of <input>' ast\n\t to all set displays "},
 		},
 	}
 
@@ -349,7 +345,7 @@ func (s *Session) init_commands() error {
 			args string
 			msg  string
 		}{
-			{"~ <input>", "print out value of object <input> evaluates to"},
+			{"~ <input>", "print value of object <input> evaluates to\n\t --> Object-method: Inspect() string"},
 		},
 	}
 	if err := commands.register("eval", c_eval); err != nil {
@@ -379,20 +375,27 @@ func (s *Session) init_commands() error {
 
 	// process: trace
 	c_trace := &command{
-		name:     "trace",
+		name:     "tr[ace]",
 		with_arg: s.exec_trace,
 		usage: []struct {
 			args string
 			msg  string
 		}{
-			{"~ <input>", "show evaluation trace step by step"},
+			{"~ <input>", "show evaluation trace interactively step by step"},
 		},
 	}
 	if err := commands.register("trace", c_trace); err != nil {
 		return err
 	}
+<<<<<<< HEAD
+	if err := commands.register("tr", c_trace); err != nil {
+		return err
+	}
+	// process: evaltree
+=======
 
 	// process: evaltree TODO
+>>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 	c_evaltree := &command{
 		name:     "e[val]tree",
 		with_arg: s.exec_evaltree,
@@ -400,7 +403,7 @@ func (s *Session) init_commands() error {
 			args string
 			msg  string
 		}{
-			{"~ <input>", "print out value of object <input> evaluates to"}, //TODO
+			{"~ <input>", "print annotated tree representation of <input>'s ast\n\t to all set displays "},
 		},
 	}
 	if err := commands.register("evaltree", c_evaltree); err != nil {
@@ -418,7 +421,7 @@ func (s *Session) init_commands() error {
 			args string
 			msg  string
 		}{
-			{"~", "list all settings with their current values and defaults"},
+			{"~", "list all settings with their current and default values"},
 		},
 	}
 	if err := commands.register("settings", c_settings); err != nil {
@@ -433,16 +436,16 @@ func (s *Session) init_commands() error {
 			args string
 			msg  string
 		}{
-			{"~ process <p>", "<p> must be: [e]val, [p]arse, [t]ype"},
-			{"~ level <l>", "<l> must be: [p]rogram, [s]tatement, [e]xpression"},
-			{"~ logparse", "additionally output ast-string"},
-			{"~ logtype", "additionally output objecttype"},
-			{"~ logtrace", "additionally output evaluation trace"},
-			{"~ incltoken", "include tokens in representations of asts"},
-			{"~ paste", "enable multiline support"},
 			{"~ prompt <prompt>", "set prompt string to <prompt>"},
-			{"~ treefile <f>", "set file that outputs ast-pdfs to <f>"},
-			{"~ evalfile <f>", "set file that outputs eval-pdfs to <f>"},
+			{"~ paste", "enable multiline support"},
+			{"~ level <l>", "<l> must be: p[rogram], s[tatement], e[xpression]"},
+			{"~ process <p>", "<p> must be: p[arse], p[arse]tree, e[val], e[val]tree,\n\t [t]ype, [tr]ace"},
+			{"~ logs <+|-l_0...+|-l_n>", "<l_i> must be: p[arse]tree, e[val]tree, [t]ype, [tr]ace"},
+			{"~ displays <+|-d_0...+|-d_n>", "<d_i> must be: c[ons[ole]], p[df]"},
+			{"~ verbosity <v>", "<v> must be 0, 1, 2"},
+			{"~ inclToken", "include tokens in representations of asts"},
+			{"~ inclEnv", "include environments in representations of asts"},
+			{"~ file <f>", "set file for pdfs to <f>"},
 		},
 	}
 	if err := commands.register("set", c_set); err != nil {
@@ -452,12 +455,14 @@ func (s *Session) init_commands() error {
 	// settings: reset
 	c_reset := &command{
 		name:     "reset",
+		single:   s.exec_reset_all,
 		with_arg: s.exec_reset,
 		usage: []struct {
 			args string
 			msg  string
 		}{
-			{"~ <setting>", "set <setting> to default\n\t for an overview consult :settings and/or :h set"},
+			{"~", "reset all settings"},
+			{"~ <setting>", "set <setting> to default value\n\t for an overview consult :settings and/or :h set"},
 		},
 	}
 	if err := commands.register("reset", c_reset); err != nil {

@@ -13,10 +13,17 @@ Since Monkey is a language intended for learning purposes, the implementations a
 
 ### Next planned steps:
 
+<<<<<<< HEAD
+- [X] decide on "final" instruction set
+  - what is a setting? what is a command?
+  - when should pdfs be created?
+- [X] change session.go accordingly
+=======
 - [x] decide on "final" instruction set
   - what is a setting? what is a command?
   - when should pdfs be created?
 - [x] change session.go accordingly
+>>>>>>> b5cef29d44e884792ea17ab26e469f3298a0cd4b
 - [ ] decide package structure
 - [ ] implement all commands
 - [ ] write user manual
@@ -24,6 +31,11 @@ Since Monkey is a language intended for learning purposes, the implementations a
     - mainly to check installation requirements
 - [ ] write discussion doc 
 - [ ] add tests for ast: String-methods
+
+### Possible Extensions:
+
+- command-line tool for creating pdfs 
+  - with option `setup` for environment setup
 
 ## The New Interactive Environment
 
