@@ -25,6 +25,11 @@ Since Monkey is a language intended for learning purposes, the implementations a
 - [ ] write discussion doc 
 - [ ] add tests for ast: String-methods
 
+### Possible Extensions:
+
+- command-line tool for creating pdfs 
+  - with option `setup` for environment setup
+
 ## The New Interactive Environment
 
 - implemented in monkey/session
