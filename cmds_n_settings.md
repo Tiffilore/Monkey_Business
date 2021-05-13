@@ -9,9 +9,9 @@
   - before: in alphabetical order 
   - now: in order of registration
 - [X] check paths for "clear" and "pdflatex" at beginning
-- ask for file if not there?
-
-- write top-level user manual
+- [X] add secondary prompt for paste
+- [ ] ask for file if not there?
+- [ ] write top-level user manual
 
 
 ## Commands new:

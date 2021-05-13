@@ -389,6 +389,8 @@ func (s *Session) supportsPdflatex() bool {
 
 func (s *Session) multiline_input(input string) string {
 	for {
+		fmt.Fprint(s.out, "... ") // secondary prompt
+
 		scanned := s.scanner.Scan()
 		if !scanned {
 			return input //TODO!! when can that happen anyway?
