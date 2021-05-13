@@ -32,6 +32,10 @@ see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
 
 - revise instruction set again
 
+### 2021-05-13
+
+- add secondary prompt
+
 ## [Summary of what happened before 2021-04-20]
 
 ### Step 0: Starting Point: Copy the Code
