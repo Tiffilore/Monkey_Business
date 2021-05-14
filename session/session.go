@@ -328,7 +328,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 			if process != EvalTreeP {
 				fmt.Fprint(s.out, "log evaltree:\t")
 			}
-			fmt.Fprintln(s.out, "display ptree in console")
+			fmt.Fprintln(s.out, "display etree in console")
 		}
 		if currentSettings.displays[PdfD] {
 			if !s.supportsPdflatex() {
@@ -368,19 +368,10 @@ func parse_level(p *parser.Parser, level inputLevel) ast.Node {
 	}
 }
 
-func (s *Session) eval_process(node ast.Node, trace_required bool) (object.Object, *evaluator.Tracer) {
+func (s *Session) eval_process(node ast.Node, trace_required bool) (object.Object, *evaluator.Trace) {
 
-	if trace_required {
-		evaluator.StartTracer()
-	}
+	return evaluator.EvalT(node, s.environment, trace_required)
 
-	obj := evaluator.Eval(node, s.environment)
-
-	if trace_required {
-		evaluator.StopTracer()
-		return obj, evaluator.T
-	}
-	return obj, nil
 }
 
 func (s *Session) supportsPdflatex() bool {

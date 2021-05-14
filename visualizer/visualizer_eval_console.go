@@ -15,7 +15,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-func RepresentEvalTraceConsole(t *evaluator.Tracer, out io.Writer) {
+func RepresentEvalTraceConsole(t *evaluator.Trace, out io.Writer) {
 	tab := table.NewWriter()
 	tab.SetOutputMirror(out)
 	tab.AppendHeader(table.Row{"", "Nodetype", "Node", "Valuetype", "Value"})
@@ -51,7 +51,7 @@ func RepresentEvalTraceConsole(t *evaluator.Tracer, out io.Writer) {
 	}
 	tab.Render()
 }
-func TraceEvalConsole(t *evaluator.Tracer, out io.Writer, scanner *bufio.Scanner) {
+func TraceEvalConsole(t *evaluator.Trace, out io.Writer, scanner *bufio.Scanner) {
 
 	calls := t.Calls
 	exits := t.Exits
@@ -117,7 +117,7 @@ func TraceEvalConsole(t *evaluator.Tracer, out io.Writer, scanner *bufio.Scanner
 		case "a":
 			return
 		case "h":
-			fmt.Fprintf(out, "\tOptions: a: abort, c:continue, e:display environment\n")
+			fmt.Fprintf(out, "\tOptions: a: abort, c: continue, e: display environment\n")
 		case "c", "":
 			cur_step++
 			continue

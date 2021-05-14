@@ -24,103 +24,92 @@ type Exit struct {
 	Val     object.Object
 }
 
-type Tracer struct {
+type Trace struct {
 	Calls        map[int]Call
 	Exits        map[int]Exit
+	Environments []*object.Environment
+	counter      int
+}
+
+type tracer struct {
 	active       bool
 	counter      int
 	id           int
 	depth        int
-	Environments []*object.Environment
+	calls        map[int]Call
+	exits        map[int]Exit
+	environments []*object.Environment
 }
 
-func NewTracer() *Tracer {
+func newTracer() *tracer {
 	calls := make(map[int]Call)
 	exits := make(map[int]Exit)
 	environments := make([]*object.Environment, 0)
-	return &Tracer{
-		Calls:        calls,
-		Exits:        exits,
+
+	return &tracer{
+		calls:        calls,
+		exits:        exits,
 		active:       false,
 		counter:      0,
 		id:           0,
 		depth:        0,
-		Environments: environments,
+		environments: environments,
 	}
 }
 
-func (t Tracer) GetRoot() ast.Node {
-	if len(t.Calls) == 0 {
-		return nil
-	}
-	return t.Calls[0].Node
+func startTracer() {
+	t = newTracer()
+	t.active = true
 }
 
-func (t Tracer) Steps() int {
-	return t.counter
-}
-
-func (t Tracer) Clear() {
-	t.Calls = make(map[int]Call)
-	t.Exits = make(map[int]Exit)
-	t.counter = 0
-	t.depth = 0
-	t.id = 0
-}
-
-func StartTracer() {
-	T = NewTracer()
-	T.active = true
-}
-
-func StopTracer() {
-	T.active = false
+func stopTracer() {
+	t.active = false
 }
 
 func traceCall(node ast.Node, env *object.Environment) int {
-	if !T.active {
+	if !t.active {
 		return 0
 	}
 	var call Call
-	call.No = T.counter
+	call.No = t.counter
 	no := call.No
-	T.counter++
-	call.Depth = T.depth
-	T.depth++
-	call.Id = T.id
-	T.id++
+	t.counter++
+	call.Depth = t.depth
+	t.depth++
+	call.Id = t.id
+	t.id++
 	call.Node = node
 	call.Env = env
 	call.EnvSnap = copyEnv(env)
-	T.Calls[no] = call
+	t.calls[no] = call
 	new := true
-	for _, e := range T.Environments {
+	for _, e := range t.environments {
 		if env == e {
 			new = false
 		}
 	}
 	if new {
-		T.Environments = append(T.Environments, env)
+		t.environments = append(t.environments, env)
 	}
 	return call.Id
 }
 
 func traceExit(id int, node ast.Node, env *object.Environment, val object.Object) {
-	if !T.active {
+	if !t.active {
 		return
 	}
 	var exit Exit
-	exit.No = T.counter
+	exit.No = t.counter
 	no := exit.No
-	T.counter++
-	T.depth--
-	exit.Depth = T.depth
+	t.counter++
+	t.depth--
+	exit.Depth = t.depth
 	exit.Id = id
 	exit.Node = node
 	exit.Env = env
 	exit.EnvSnap = copyEnv(env)
 	exit.Val = val
-	T.Exits[no] = exit
+	t.exits[no] = exit
 }
 
 func copyEnv(env *object.Environment) *object.Environment {
@@ -132,4 +121,24 @@ func copyEnv(env *object.Environment) *object.Environment {
 		newEnv.Outer = copyEnv(env.Outer)
 	}
 	return newEnv
+}
+
+func (t tracer) getTrace() *Trace {
+	return &Trace{
+		Calls:        t.calls,
+		Exits:        t.exits,
+		Environments: t.environments,
+		counter:      t.counter,
+	}
+}
+
+func (t Trace) GetRoot() ast.Node {
+	if len(t.Calls) == 0 {
+		return nil
+	}
+	return t.Calls[0].Node
+}
+
+func (t Trace) Steps() int {
+	return t.counter
 }
