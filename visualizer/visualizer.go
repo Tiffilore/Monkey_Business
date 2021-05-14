@@ -2,57 +2,8 @@ package visualizer
 
 import "reflect"
 
-func abbreviateNodeType(nodetype string) string {
-	switch nodetype {
-	case "Program": //Program
-		return "Prog"
-	case "LetStatement": //Statements
-		return "LetS"
-	case "ExpressionStatement":
-		return "ExpS"
-	case "BlockStatement":
-		return "BlkS"
-	case "ReturnStatement":
-		return "RetS"
-	case "IfExpression": //Expressions
-		return "IfEx"
-	case "InfixExpression":
-		return "InfE"
-	case "PrefixExpression":
-		return "PreE"
-	case "CallExpression":
-		return "CalE"
-	case "Identifier":
-		return "Iden"
-	case "Boolean":
-		return "Bool"
-	case "IntegerLiteral":
-		return "IntL"
-	case "FunctionLiteral":
-		return "FctL"
-
-	default:
-		return nodetype
-	}
-}
-
 func abbreviateObjectType(objecttype string) string {
-	switch objecttype {
-	case "Integer":
-		return "Intg"
-	case "Boolean":
-		return "Bool"
-	case "Null":
-		return "Null"
-	case "ReturnValue":
-		return "RetV"
-	case "Error":
-		return "Errr"
-	case "Function":
-		return "Func"
-	default:
-		return objecttype
-	}
+	return abbreviateGoObjectType(objecttype)
 }
 
 func isLiterallyNil(i interface{}) bool {

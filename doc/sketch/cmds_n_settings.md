@@ -104,14 +104,14 @@
 - [X] paste
   - session.go: [session.]exec_paste 
   + revise [session.]exec_cmd for commands that take argument
-- [ ] expr[ession]
-- [ ] stmt|statement
-- [ ] prog[ram]
-- [ ] p[arse]
+- [X] expr[ession]
+- [X] stmt|statement
+- [X] prog[ram]
+- [X] p[arse]
 - [ ] p[arse]tree
-- [ ] e[val]
-- [ ] t[ype]
-- [ ] tr[ace]
+- [X] e[val]
+- [X] t[ype]
+- [X] tr[ace]
 - [ ] e[val]tree
 - [X] settings
   - settings.go: [session.]exec_settings --> settings.go: menuSettings() string
