@@ -16,7 +16,7 @@ func Ast2pdf(node ast.Node, excltoken bool, filename string, path string) {
 	tex2pdf(document, filename, path)
 }
 
-func EvalTree2pdf(t *evaluator.Tracer, filename string, path string) {
+func EvalTree2pdf(t *evaluator.Trace, filename string, path string) {
 
 	evalqtreenode := QTreeEval(t)
 	document := makeTeX(evalqtreenode)

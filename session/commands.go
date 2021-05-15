@@ -441,6 +441,7 @@ func (s *Session) init_commands() error {
 			{"~ inclToken", "include tokens in representations of asts"},
 			{"~ inclEnv", "include environments in representations of asts"},
 			{"~ file <f>", "set file for pdfs to <f>"},
+			{"~ goObjType", "display Go type instead of Monkey type"},
 		},
 	}
 	if err := commands.register("set", c_set); err != nil {

@@ -20,6 +20,7 @@ type settings struct {
 	inclToken bool
 	inclEnv   bool
 	file      string
+	goObjType bool
 }
 
 func newSettings() *settings {
@@ -46,6 +47,7 @@ func newSettings() *settings {
 		inclToken: false,
 		inclEnv:   false,
 		file:      "tree.pdf",
+		goObjType: false,
 	}
 
 	return &s
@@ -77,6 +79,8 @@ func menuSettings() string {
 	t.AppendRow([]interface{}{"inclToken", currentSettings.inclToken, defaultSettings.inclToken})
 	t.AppendRow([]interface{}{"inclEnv", currentSettings.inclEnv, defaultSettings.inclEnv})
 	t.AppendRow([]interface{}{"file", currentSettings.file, defaultSettings.file})
+	t.AppendRow([]interface{}{"goObjType", currentSettings.goObjType, defaultSettings.goObjType})
+
 	//t.SetStyle(table.StyleColoredBright)
 	t.Render()
 	return out.String()
@@ -93,6 +97,9 @@ func unset(input string) bool {
 		return true
 	case "inclEnv":
 		currentSettings.inclEnv = false
+		return true
+	case "goObjType":
+		currentSettings.goObjType = false
 		return true
 	default:
 		return false
@@ -115,8 +122,10 @@ func set(input string) bool {
 		case "inclEnv":
 			currentSettings.inclEnv = true
 			return true
+		case "goObjType":
+			currentSettings.goObjType = true
+			return true
 		}
-
 	} else {
 		arg := splits[1]
 		switch setting {
@@ -188,6 +197,8 @@ func reset(input string) bool {
 		currentSettings.inclEnv = defaultSettings.inclEnv
 	case "file":
 		currentSettings.file = defaultSettings.file
+	case "goObjType":
+		currentSettings.goObjType = defaultSettings.goObjType
 	default:
 		return false
 	}

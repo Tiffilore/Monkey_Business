@@ -1,8 +1,6 @@
 # Commands and Settings
 
 ## TODO 
-
-- set displays => check whether command pdflatex available!
 - set filenames => what if we have both, log etree and log ptree?
 
 ## Ch-ch-ch-changes
@@ -12,6 +10,7 @@
   - before: in alphabetical order
   - now: in order of registration
 - [X] check paths for "clear" and "pdflatex" at beginning
+- [X] add secondary prompt for paste
 - ask for file if not there?
 
 - write top-level user manual
@@ -105,14 +104,14 @@
 - [X] paste
   - session.go: [session.]exec_paste 
   + revise [session.]exec_cmd for commands that take argument
-- [ ] expr[ession]
-- [ ] stmt|statement
-- [ ] prog[ram]
-- [ ] p[arse]
+- [X] expr[ession]
+- [X] stmt|statement
+- [X] prog[ram]
+- [X] p[arse]
 - [ ] p[arse]tree
-- [ ] e[val]
-- [ ] t[ype]
-- [ ] tr[ace]
+- [X] e[val]
+- [X] t[ype]
+- [X] tr[ace]
 - [ ] e[val]tree
 - [X] settings
   - settings.go: [session.]exec_settings --> settings.go: menuSettings() string

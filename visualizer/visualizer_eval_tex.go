@@ -10,12 +10,12 @@ import (
 
 // use indent from visualizer_ast_tex.go
 
-func QTreeEval(t *evaluator.Tracer) string {
+func QTreeEval(t *evaluator.Trace) string {
 	rootNode := t.Calls[0].Node
 	return "\\Tree" + evalNodeQtree(rootNode, "", t) + "\n"
 }
 
-func evalNodeQtree(node ast.Node, thisIndent string, t *evaluator.Tracer) string {
+func evalNodeQtree(node ast.Node, thisIndent string, t *evaluator.Trace) string {
 
 	left := ""
 	right := ""
@@ -73,7 +73,7 @@ func evalNodeQtree(node ast.Node, thisIndent string, t *evaluator.Tracer) string
 
 }
 
-func evalChildrenQTree(node ast.Node, thisIndent string, t *evaluator.Tracer) string {
+func evalChildrenQTree(node ast.Node, thisIndent string, t *evaluator.Trace) string {
 	var out bytes.Buffer
 	nextIndent := thisIndent + indent
 	switch node := node.(type) {
@@ -189,7 +189,7 @@ func evalChildrenQTree(node ast.Node, thisIndent string, t *evaluator.Tracer) st
 	return out.String()
 }
 
-func evalObjQTree(obj object.Object, thisIndent string, t *evaluator.Tracer) string {
+func evalObjQTree(obj object.Object, thisIndent string, t *evaluator.Trace) string {
 	typestr := objTypeQTree(obj, 2)
 
 	var out bytes.Buffer

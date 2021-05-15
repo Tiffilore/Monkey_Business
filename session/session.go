@@ -14,7 +14,6 @@ import (
 	"monkey/visualizer"
 	"os"
 	"os/exec"
-	"reflect"
 	"strings"
 )
 
@@ -125,7 +124,7 @@ func (s *Session) exec_clear() {
 
 func (s *Session) exec_list() {
 
-	table := visualizer.GetStoreTable(s.environment)
+	table := visualizer.GetStoreTable(s.environment, currentSettings.verbosity, currentSettings.goObjType)
 	lines := strings.Split(table, "\n")
 	for _, line := range lines {
 		if line != "" {
@@ -268,6 +267,8 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				fmt.Fprint(s.out, "log parsetree:\t")
 			}
 			fmt.Fprintln(s.out, "display ptree in console")
+			fmt.Fprintln(s.out, "relative to: verbosity, inclToken")
+
 		}
 		if currentSettings.displays[PdfD] {
 			if !s.supportsPdflatex() {
@@ -275,6 +276,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 			} else {
 				visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, s.path_pdflatex)
 				fmt.Fprintln(s.out, "print ptree in file ", currentSettings.file)
+				fmt.Fprintln(s.out, "relative to: verbosity, inclToken")
 			}
 		}
 	}
@@ -301,25 +303,21 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 
 	obj, trace := s.eval_process(node, trace_required)
 
-	if process == TraceP { // no evaluation logging
-		visualizer.TraceEvalConsole(trace, s.out, s.scanner)
+	if process == TraceP {
+		visualizer.VisTraceInteractive(trace, s.out, s.scanner, currentSettings.verbosity, currentSettings.goObjType)
+		return // no additional evaluation logging !
 	}
 
 	if logTrace {
-		visualizer.RepresentEvalTraceConsole(trace, s.out)
+		visualizer.VisTraceTable(trace, s.out, currentSettings.verbosity, currentSettings.goObjType)
 	}
 
 	if process == TypeP || logType {
+
 		if process != TypeP {
 			fmt.Fprint(s.out, "log type:\t")
 		}
-		fmt.Fprint(s.out, reflect.TypeOf(obj), "\t")
-		if obj != nil {
-			fmt.Fprintln(s.out, obj.Type())
-		} else {
-			fmt.Fprintln(s.out, "nil")
-		}
-		return
+		fmt.Fprintln(s.out, visualizer.VisObjectType(obj, currentSettings.verbosity, currentSettings.goObjType))
 	}
 
 	if process == EvalTreeP || logEtree {
@@ -328,13 +326,16 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 			if process != EvalTreeP {
 				fmt.Fprint(s.out, "log evaltree:\t")
 			}
-			fmt.Fprintln(s.out, "display ptree in console")
+			fmt.Fprintln(s.out, "display etree in console")
+			fmt.Fprintln(s.out, "relative to: verbosity, inclToken, inclEnv, goObjType")
+
 		}
 		if currentSettings.displays[PdfD] {
 			if !s.supportsPdflatex() {
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
 				fmt.Fprintln(s.out, "print etree in file ", currentSettings.file)
+				fmt.Fprintln(s.out, "relative to: verbosity, inclToken, inclEnv, goObjType")
 			}
 		}
 		// 			visualizer.EvalTree2pdf(evaluator.T, currentSettings.file, path)
@@ -368,19 +369,10 @@ func parse_level(p *parser.Parser, level inputLevel) ast.Node {
 	}
 }
 
-func (s *Session) eval_process(node ast.Node, trace_required bool) (object.Object, *evaluator.Tracer) {
+func (s *Session) eval_process(node ast.Node, trace_required bool) (object.Object, *evaluator.Trace) {
 
-	if trace_required {
-		evaluator.StartTracer()
-	}
+	return evaluator.EvalT(node, s.environment, trace_required)
 
-	obj := evaluator.Eval(node, s.environment)
-
-	if trace_required {
-		evaluator.StopTracer()
-		return obj, evaluator.T
-	}
-	return obj, nil
 }
 
 func (s *Session) supportsPdflatex() bool {
