@@ -274,7 +274,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 			if !s.supportsPdflatex() {
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
-				visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, s.path_pdflatex)
+				//visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, s.path_pdflatex)
 				fmt.Fprintln(s.out, "print ptree in file ", currentSettings.file)
 				fmt.Fprintln(s.out, "relative to: verbosity, inclToken")
 			}

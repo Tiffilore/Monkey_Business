@@ -8,16 +8,17 @@ import (
 	"strings"
 )
 
-var Reset = "\033[0m"
-var Red = "\033[31m"
-var Green = "\033[32m"
-var Yellow = "\033[33m"
-var Blue = "\033[34m"
-var Cyan = "\033[36m"
-var White = "\033[97m"
-
-//var Purple = "\033[35m"
-//var Gray = "\033[37m"
+var (
+	Reset  = "\033[0m"
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+	Blue   = "\033[34m"
+	Cyan   = "\033[36m"
+	White  = "\033[97m"
+	// Purple = "\033[35m"
+	// Gray = "\033[37m"
+)
 
 func init() {
 	if runtime.GOOS == "windows" {

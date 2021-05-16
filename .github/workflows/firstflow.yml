@@ -19,6 +19,6 @@ jobs:
         run: |
           w=$(which pdflatex)
           echo $w
-      - name: Run go tests
+      - name: Run Visualizer tests
         run: |
-          go test
+          cd visualizer && go test -v

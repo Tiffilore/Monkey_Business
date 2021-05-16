@@ -47,6 +47,10 @@ see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
     - [ ] cmd :etree and setting log etree
  - revise cmd and log trace --> relative to set verbosity and goObjType
 
+### 2021-05-16
+
+- revise ptree and etree
+
 ## [Summary of what happened before 2021-04-20]
 
 ### Step 0: Starting Point: Copy the Code

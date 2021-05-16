@@ -42,7 +42,7 @@ func VisTraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scann
 			fmt.Fprint(out, consColorize(fmt.Sprintf("call %v", call.Depth), Red))
 			fmt.Fprint(out, ",")
 			if envChanged {
-				fmt.Fprint(out, consColorize(fmt.Sprintf("e%v: ", envNo), Red))
+				fmt.Fprint(out, consColorize(fmt.Sprintf(" e%v: ", envNo), Red))
 			} else {
 				fmt.Fprintf(out, " e%v: ", envNo)
 			}
