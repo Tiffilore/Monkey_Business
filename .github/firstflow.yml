@@ -1,0 +1,24 @@
+name: Run-Tests
+
+on: [push, pull_request]
+
+jobs:
+  run-tests:
+    name: Run Go and LaTeX tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@master
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: '1.15'
+      - name: Setup LaTeX
+        run: sudo apt-get install texlive-base texlive-latex-extra
+      - name: check pdflatex
+        run: |
+          w=$(which pdflatex)
+          echo $w
+      - name: Run go tests
+        run: |
+          go test
