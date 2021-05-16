@@ -22,9 +22,8 @@ jobs:
       - name: Run Visualizer tests
         run: |
           cd visualizer && go test -v
-          pwd
       - name: save pdfs
         uses: actions/upload-artifact@v2
         with:
           name: tex-tests
-          path: ./tests/*.pdf
+          path: .visualizer/tests/*.pdf
