@@ -20,7 +20,7 @@ Since Monkey is a language intended for learning purposes, the implementations a
 - [ ] decide package structure
 - [ ] implement all commands
 - [ ] write user manual
-- [ ] add workflow 
+- [X] add workflow 
     - mainly to check installation requirements
 - [ ] write discussion doc 
 - [ ] add tests for ast: String-methods
@@ -38,7 +38,7 @@ Since Monkey is a language intended for learning purposes, the implementations a
 
 ### Run
 
-#### Prerequisites [not tested yet, TODO]
+#### Prerequisites
 
 In addition to go,  the command `pdflatex` needs to be installed for creating pdfs. 
 You can check whether `pdflatex` is installed by `which pdflatex`.

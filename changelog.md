@@ -49,7 +49,9 @@ see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
 
 ### 2021-05-16
 
-- revise ptree and etree
+- [X] add workflow
+- [ ] revise ptree and etree
+- [ ] revise visualizer/README.md
 
 ## [Summary of what happened before 2021-04-20]
 
