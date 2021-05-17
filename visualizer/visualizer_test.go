@@ -1,6 +1,7 @@
 package visualizer
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -93,7 +94,7 @@ func Test_teXify(t *testing.T) {
 		content = content + "\n\\item " + translation
 
 		if containsUnExpChars {
-			t.Log(input, "\t", translation)
+			fmt.Println(input, "\t", translation) // the go in the action's environment seems to dislike t.Log
 		}
 	}
 	content = content + "\n\\end{itemize}"
