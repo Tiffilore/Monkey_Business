@@ -14,7 +14,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-func VisTraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scanner, verbosity int, goObjType bool) { // before: TraceEvalConsole
+func TraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scanner, verbosity int, goObjType bool) { // before: TraceEvalConsole
 
 	calls := t.Calls
 	exits := t.Exits
@@ -99,7 +99,7 @@ func VisTraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scann
 	}
 }
 
-func VisTraceTable(t *evaluator.Trace, out io.Writer, verbosity int, goObjType bool) { // before: RepresentEvalTraceConsole
+func TraceTable(t *evaluator.Trace, out io.Writer, verbosity int, goObjType bool) { // before: RepresentEvalTraceConsole
 	tab := table.NewWriter()
 	tab.SetOutputMirror(out)
 	tab.AppendHeader(table.Row{"", "Nodetype", "Node", "Objecttype", "Value"})

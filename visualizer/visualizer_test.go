@@ -1,6 +1,14 @@
 package visualizer
 
-import "testing"
+import (
+	"testing"
+)
+
+/*
+The tests here only test whether rendering works.
+In addition they output pdf-files in directory test/ that may be checked
+for accuracy
+*/
 
 const latexPath = "/usr/bin/pdflatex"
 
@@ -14,7 +22,6 @@ func Test_tex2pdf_Standalone(t *testing.T) {
 	if err != nil {
 		t.Errorf("Rendering did not succeed. Reason: %q", err)
 	}
-
 }
 
 func Test_tex2pdf_StandaloneTikz(t *testing.T) {
@@ -27,4 +34,78 @@ func Test_tex2pdf_StandaloneTikz(t *testing.T) {
 	if err != nil {
 		t.Errorf("Rendering did not succeed. Reason: %q", err)
 	}
+}
+
+/*
+
+	alphabet to be considered by Monkey fragment at end of chapter 3:
+	--> all Tokens since there is the option inclToken
+	IDENT may contains underscore
+	--> in chapter 4 + String ==> all characters !!!!
+
+*/
+
+func Test_teXify(t *testing.T) {
+
+	tests := []string{
+		// Identifier
+		"a12ab",
+		"a12_c",
+		// String
+		"\"hello\"",
+		"\"&%*$#~&\"",
+		"\"a&a%a*a$a#a~a&a\"",
+		// Not supported characters
+		"°",
+		"°°",
+		"a°a",
+		"+°+",
+		"%°%",
+		// Operators
+		"=",  // ASSIGN
+		"+",  // PLUS
+		"-",  // MINUS
+		"!",  // BANG
+		"*",  // ASTERISK
+		"/",  // SLASH
+		"<",  // LT
+		">",  // GT
+		"==", // EQ
+		"!=", // NOT_EQ
+		"+-!*/<>==!=",
+		// Delimiters
+		",", // COMMA
+		";", // SEMICOLON
+		":", // COLON
+		"(", // LPAREN
+		")", // RPAREN
+		"{", // LBRACE
+		"}", // RBRACE
+		"[", // LBRACKET
+		"]", // RBRACKET
+		",;:(){}[]",
+	}
+
+	content := "\\begin{itemize}"
+
+	for _, input := range tests {
+		translation, containsUnExpChars := teXify(input)
+		content = content + "\n\\item " + translation
+
+		if containsUnExpChars {
+			t.Log(input, "\t", translation)
+		}
+	}
+	content = content + "\n\\end{itemize}"
+
+	document := makeStandalone(content)
+
+	err := tex2pdf(document, "tests/texify_all.pdf", latexPath)
+
+	if err != nil {
+		t.Errorf("Rendering did not succeed. Reason: %q", err)
+		t.Error(document)
+
+	}
+
 }

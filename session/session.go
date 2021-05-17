@@ -266,8 +266,13 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 			if process != ParseTreeP {
 				fmt.Fprint(s.out, "log parsetree:\t")
 			}
-			fmt.Fprintln(s.out, "display ptree in console")
-			fmt.Fprintln(s.out, "relative to: verbosity, inclToken")
+			consPtree := visualizer.ConsParseTree(
+				node,
+				currentSettings.verbosity,
+				currentSettings.inclToken,
+			)
+			fmt.Fprintln(s.out, "display ptree in console: ")
+			fmt.Fprintln(s.out, consPtree)
 
 		}
 		if currentSettings.displays[PdfD] {
@@ -275,8 +280,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
 				//visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, s.path_pdflatex)
-				fmt.Fprintln(s.out, "print ptree in file ", currentSettings.file)
-				fmt.Fprintln(s.out, "relative to: verbosity, inclToken")
+				visualizer.TeXParseTree(node, currentSettings.verbosity, currentSettings.inclToken, currentSettings.pfile)
 			}
 		}
 	}
@@ -304,12 +308,12 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 	obj, trace := s.eval_process(node, trace_required)
 
 	if process == TraceP {
-		visualizer.VisTraceInteractive(trace, s.out, s.scanner, currentSettings.verbosity, currentSettings.goObjType)
+		visualizer.TraceInteractive(trace, s.out, s.scanner, currentSettings.verbosity, currentSettings.goObjType)
 		return // no additional evaluation logging !
 	}
 
 	if logTrace {
-		visualizer.VisTraceTable(trace, s.out, currentSettings.verbosity, currentSettings.goObjType)
+		visualizer.TraceTable(trace, s.out, currentSettings.verbosity, currentSettings.goObjType)
 	}
 
 	if process == TypeP || logType {
@@ -326,16 +330,29 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 			if process != EvalTreeP {
 				fmt.Fprint(s.out, "log evaltree:\t")
 			}
+			consEtree := visualizer.ConsEvalTree(
+				trace,
+				currentSettings.verbosity,
+				currentSettings.inclToken,
+				currentSettings.goObjType,
+				currentSettings.inclEnv,
+			)
 			fmt.Fprintln(s.out, "display etree in console")
-			fmt.Fprintln(s.out, "relative to: verbosity, inclToken, inclEnv, goObjType")
+			fmt.Fprintln(s.out, consEtree)
 
 		}
 		if currentSettings.displays[PdfD] {
 			if !s.supportsPdflatex() {
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
-				fmt.Fprintln(s.out, "print etree in file ", currentSettings.file)
-				fmt.Fprintln(s.out, "relative to: verbosity, inclToken, inclEnv, goObjType")
+				visualizer.TeXEvalTree(
+					trace,
+					currentSettings.verbosity,
+					currentSettings.inclToken,
+					currentSettings.goObjType,
+					currentSettings.inclEnv,
+					currentSettings.efile)
+
 			}
 		}
 		// 			visualizer.EvalTree2pdf(evaluator.T, currentSettings.file, path)

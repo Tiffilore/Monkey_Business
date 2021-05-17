@@ -19,7 +19,8 @@ type settings struct {
 	verbosity int
 	inclToken bool
 	inclEnv   bool
-	file      string
+	pfile     string
+	efile     string
 	goObjType bool
 }
 
@@ -46,7 +47,8 @@ func newSettings() *settings {
 		verbosity: 0,
 		inclToken: false,
 		inclEnv:   false,
-		file:      "tree.pdf",
+		pfile:     "pTree.pdf",
+		efile:     "eTree.pdf",
 		goObjType: false,
 	}
 
@@ -78,7 +80,8 @@ func menuSettings() string {
 	t.AppendRow([]interface{}{"verbosity", currentSettings.verbosity, defaultSettings.verbosity})
 	t.AppendRow([]interface{}{"inclToken", currentSettings.inclToken, defaultSettings.inclToken})
 	t.AppendRow([]interface{}{"inclEnv", currentSettings.inclEnv, defaultSettings.inclEnv})
-	t.AppendRow([]interface{}{"file", currentSettings.file, defaultSettings.file})
+	t.AppendRow([]interface{}{"pfile", currentSettings.pfile, defaultSettings.pfile})
+	t.AppendRow([]interface{}{"efile", currentSettings.efile, defaultSettings.efile})
 	t.AppendRow([]interface{}{"goObjType", currentSettings.goObjType, defaultSettings.goObjType})
 
 	//t.SetStyle(table.StyleColoredBright)
@@ -160,11 +163,17 @@ func set(input string) bool {
 				currentSettings.verbosity = i
 				return true
 			}
-		case "file":
+		case "pfile":
 			if !strings.HasSuffix(arg, ".pdf") {
 				arg = arg + ".pdf"
 			}
-			currentSettings.file = arg
+			currentSettings.pfile = arg
+			return true
+		case "efile":
+			if !strings.HasSuffix(arg, ".pdf") {
+				arg = arg + ".pdf"
+			}
+			currentSettings.efile = arg
 			return true
 		}
 	}
@@ -195,8 +204,10 @@ func reset(input string) bool {
 		currentSettings.inclToken = defaultSettings.inclToken
 	case "inclEnv":
 		currentSettings.inclEnv = defaultSettings.inclEnv
-	case "file":
-		currentSettings.file = defaultSettings.file
+	case "pfile":
+		currentSettings.pfile = defaultSettings.pfile
+	case "efile":
+		currentSettings.efile = defaultSettings.efile
 	case "goObjType":
 		currentSettings.goObjType = defaultSettings.goObjType
 	default:

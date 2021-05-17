@@ -440,7 +440,8 @@ func (s *Session) init_commands() error {
 			{"~ verbosity <v>", "<v> must be 0, 1, 2"},
 			{"~ inclToken", "include tokens in representations of asts"},
 			{"~ inclEnv", "include environments in representations of asts"},
-			{"~ file <f>", "set file for pdfs to <f>"},
+			{"~ pfile <f>", "set file for parsetree to <f>"},
+			{"~ efile <f>", "set file for evaltree to <f>"},
 			{"~ goObjType", "display Go type instead of Monkey type"},
 		},
 	}

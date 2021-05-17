@@ -50,6 +50,11 @@ see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
 ### 2021-05-16
 
 - [X] add workflow
+
+### 2021-05-17
+
+- [>>] add tests to visualizer
+- add settings `pfile` and `efile` instead of `file`
 - [ ] revise ptree and etree
 - [ ] revise visualizer/README.md
 
