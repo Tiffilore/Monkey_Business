@@ -24,7 +24,7 @@ func tex2pdf(document string, filename string, path string) error {
 		log.Println("render failed ", err)
 		return err
 	} else {
-		err := ioutil.Writefile(filename, pdf, 0664)
+		err := ioutil.WriteFile(filename, pdf, 0664)
 		if err != nil {
 			log.Println(" failed ", err)
 			return err
