@@ -2,19 +2,21 @@ package visualizer
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"monkey/evaluator"
 	"monkey/object"
 	"reflect"
-	"sort"
 	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-func VisTraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scanner, verbosity int, goObjType bool) { // before: TraceEvalConsole
+func TraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scanner, verbosity int, goObjType bool) {
+	traceInteractive(t, out, scanner, getVerbosity(verbosity), goObjType)
+}
+
+func traceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scanner, verbosity verbosity, goObjType bool) { // before: TraceEvalConsole
 
 	calls := t.Calls
 	exits := t.Exits
@@ -42,11 +44,11 @@ func VisTraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scann
 			fmt.Fprint(out, consColorize(fmt.Sprintf("call %v", call.Depth), Red))
 			fmt.Fprint(out, ",")
 			if envChanged {
-				fmt.Fprint(out, consColorize(fmt.Sprintf("e%v: ", envNo), Red))
+				fmt.Fprint(out, consColorize(fmt.Sprintf(" e%v: ", envNo), Red))
 			} else {
 				fmt.Fprintf(out, " e%v: ", envNo)
 			}
-			fmt.Fprintf(out, "%v %v", consColorNode(call.Node, verbosity), call.Node)
+			fmt.Fprintf(out, "%v %v", consNode(call.Node, verbosity), call.Node)
 		} else if exit, ok := exits[cur_step]; ok {
 			if cur_env != exit.Env || !reflect.DeepEqual(exit.EnvSnap, cur_env_snap) {
 				envChanged = true
@@ -62,12 +64,12 @@ func VisTraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scann
 			} else {
 				fmt.Fprintf(out, " e%v: ", envNo)
 			}
-			fmt.Fprintf(out, "%v %v", consColorNode(exit.Node, verbosity), exit.Node)
+			fmt.Fprintf(out, "%v %v", consNode(exit.Node, verbosity), exit.Node)
 			val := "nil"
 			if exit.Val != nil {
 				val = strings.ReplaceAll(exit.Val.Inspect(), "\n", " ")
 			}
-			fmt.Fprintf(out, " -> %v %v ", VisObjectType(exit.Val, verbosity, goObjType), val)
+			fmt.Fprintf(out, " -> %v %v ", visObjectType(exit.Val, verbosity, goObjType), val)
 
 		} else {
 			fmt.Fprint(out, "We have a problem")
@@ -88,7 +90,7 @@ func VisTraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scann
 			cur_step++
 			continue
 		case "e":
-			env_rep := visualizeEnvTable(cur_env_snap, "   ", verbosity, goObjType)
+			env_rep := consEnvTable(cur_env_snap, "   ", verbosity, goObjType)
 			cur_step++
 			fmt.Fprint(out, env_rep)
 			continue
@@ -99,7 +101,11 @@ func VisTraceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scann
 	}
 }
 
-func VisTraceTable(t *evaluator.Trace, out io.Writer, verbosity int, goObjType bool) { // before: RepresentEvalTraceConsole
+func TraceTable(t *evaluator.Trace, out io.Writer, verbosity int, goObjType bool) { // before: RepresentEvalTraceConsole
+	traceTable(t, out, getVerbosity(verbosity), goObjType)
+}
+
+func traceTable(t *evaluator.Trace, out io.Writer, verbosity verbosity, goObjType bool) { // before: RepresentEvalTraceConsole
 	tab := table.NewWriter()
 	tab.SetOutputMirror(out)
 	tab.AppendHeader(table.Row{"", "Nodetype", "Node", "Objecttype", "Value"})
@@ -113,7 +119,8 @@ func VisTraceTable(t *evaluator.Trace, out io.Writer, verbosity int, goObjType b
 		if call, ok := calls[i]; ok {
 			tab.AppendRow([]interface{}{
 				consColorize(fmt.Sprintf("call %v", call.Depth), Red),
-				consColorNode(call.Node, verbosity),
+
+				consNode(call.Node, verbosity),
 				fmt.Sprintf("%v", call.Node)})
 		} else if exit, ok := exits[i]; ok {
 			val := "nil"
@@ -122,9 +129,9 @@ func VisTraceTable(t *evaluator.Trace, out io.Writer, verbosity int, goObjType b
 			}
 			tab.AppendRow([]interface{}{
 				consColorize(fmt.Sprintf("exit %v", exit.Depth), Green),
-				consColorNode(exit.Node, verbosity),
+				consNode(exit.Node, verbosity),
 				fmt.Sprintf("%v", exit.Node),
-				VisObjectType(exit.Val, verbosity, goObjType),
+				visObjectType(exit.Val, verbosity, goObjType),
 				val,
 			})
 		} else {
@@ -133,66 +140,4 @@ func VisTraceTable(t *evaluator.Trace, out io.Writer, verbosity int, goObjType b
 
 	}
 	tab.Render()
-}
-
-func visualizeEnvTable(env *object.Environment, indent string, verbosity int, goObjType bool) string {
-
-	var temp_out bytes.Buffer
-
-	table := GetStoreTable(env, verbosity, goObjType)
-	lines := strings.Split(table, "\n")
-	for _, line := range lines {
-		if line != "" {
-			fmt.Fprintln(&temp_out, indent, line)
-		}
-	}
-	if env.Outer == nil {
-		fmt.Fprintln(&temp_out, indent, "--> outer: nil")
-		return temp_out.String()
-	}
-
-	fmt.Fprintln(&temp_out, indent, "--> outer: ")
-	table = visualizeEnvTable(env.Outer, indent, verbosity, goObjType)
-	lines = strings.Split(table, "\n")
-	for _, line := range lines {
-		if line != "" {
-			fmt.Fprintln(&temp_out, indent, line)
-		}
-	}
-
-	return temp_out.String()
-}
-
-func GetStoreTable(env *object.Environment, verbosity int, goObjType bool) string {
-
-	var temp_out bytes.Buffer
-	store := env.Store
-
-	//sort alphabetically
-	keys := make([]string, 0, len(store))
-	for k := range store {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-
-	t := table.NewWriter()
-	t.SetOutputMirror(&temp_out)
-	t.AppendHeader(table.Row{"Identifier", "Type", "Value"})
-	t.AppendSeparator()
-
-	for _, key := range keys {
-		object := store[key]
-		objecttype := VisObjectType(object, verbosity, goObjType)
-		var value string
-		if object == nil {
-			value = "<nil>"
-		} else {
-			value = object.Inspect() //strings.ReplaceAll(object.Inspect(), "\n", "\n\t  ")
-		}
-		t.AppendRow([]interface{}{key, objecttype, value})
-	}
-
-	t.Render()
-	return temp_out.String()
 }

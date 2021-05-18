@@ -27,7 +27,7 @@ type Exit struct {
 type Trace struct {
 	Calls        map[int]Call
 	Exits        map[int]Exit
-	Environments []*object.Environment
+	Environments []*object.Environment // not used by cmd/log TraceP // could be used for numbering environments?
 	counter      int
 }
 

@@ -98,7 +98,7 @@
 - [X] cl[earscreen]
   - session.go: returned by f_exec_clearscreen at init
 - [-] l[ist]
-  - session.go: [session.]exec_list --> visualizer.GetStoreTable(object.env)
+  - session.go: [session.]exec_list --> visualizer.ConsStoreTable(object.env)
 - [X] c[lear]
   - session.go: [session.]exec_clear
 - [X] paste

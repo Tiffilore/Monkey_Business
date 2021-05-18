@@ -19,6 +19,11 @@ jobs:
         run: |
           w=$(which pdflatex)
           echo $w
-      - name: Run go tests
+      - name: Run Visualizer tests
         run: |
-          go test
+          cd visualizer && go test -v
+      - name: save pdfs
+        uses: actions/upload-artifact@v2
+        with:
+          name: tex-tests
+          path: ./visualizer/tests/*.pdf

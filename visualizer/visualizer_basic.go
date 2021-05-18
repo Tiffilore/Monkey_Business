@@ -8,16 +8,17 @@ import (
 	"strings"
 )
 
-var Reset = "\033[0m"
-var Red = "\033[31m"
-var Green = "\033[32m"
-var Yellow = "\033[33m"
-var Blue = "\033[34m"
-var Cyan = "\033[36m"
-var White = "\033[97m"
-
-//var Purple = "\033[35m"
-//var Gray = "\033[37m"
+var (
+	Reset  = "\033[0m"
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+	Blue   = "\033[34m"
+	Cyan   = "\033[36m"
+	White  = "\033[97m"
+	// Purple = "\033[35m"
+	// Gray = "\033[37m"
+)
 
 func init() {
 	if runtime.GOOS == "windows" {
@@ -37,11 +38,15 @@ func consColorize(str, color string) string {
 	return color + str + Reset
 }
 
-func consColorNode(node ast.Node, verbosity int) string {
+func consNode(node ast.Node, verbosity verbosity) string {
 	// was	func (v *Visualizer) colorNode(str string, node ast.Node) string {
 
 	nodeType := visNodeType(node, verbosity)
+	return consColorNodeStr(nodeType, node)
 
+}
+
+func consColorNodeStr(nodeType string, node ast.Node) string {
 	if _, ok := node.(ast.Expression); ok {
 		return consColorize(nodeType, Cyan)
 	} else if _, ok := node.(ast.Statement); ok {
@@ -54,6 +59,11 @@ func consColorNode(node ast.Node, verbosity int) string {
 }
 
 func VisObjectType(obj object.Object, verbosity int, goObjType bool) string {
+
+	return visObjectType(obj, getVerbosity(verbosity), goObjType)
+}
+
+func visObjectType(obj object.Object, verbosity verbosity, goObjType bool) string {
 	if obj == nil {
 		return "<nil>"
 	}
@@ -64,30 +74,30 @@ func VisObjectType(obj object.Object, verbosity int, goObjType bool) string {
 	return goObjectType(obj, verbosity)
 }
 
-func goObjectType(obj object.Object, verbosity int) string { // was (v *Visualizer) stringObjectType(obj object.Object) string
+func goObjectType(obj object.Object, verbosity verbosity) string { // was (v *Visualizer) stringObjectType(obj object.Object) string
 
 	str_objtype := fmt.Sprintf("%T", obj)
-	if verbosity < 2 {
+	if verbosity < VVV {
 		str_objtype = strings.TrimLeft(str_objtype, "*object.")
 	}
-	if verbosity < 1 {
+	if verbosity < VV {
 		str_objtype = abbreviateGoObjectType(str_objtype)
 	}
 
 	return str_objtype
 }
 
-func visNodeType(node ast.Node, verbosity int) string { // was (v *Visualizer) stringNodeType(node ast.Node) string {
+func visNodeType(node ast.Node, verbosity verbosity) string { // was (v *Visualizer) stringNodeType(node ast.Node) string {
 
 	if node == nil {
 		return "<nil>"
 	}
 	str_nodetype := fmt.Sprintf("%T", node)
 
-	if verbosity < 2 {
+	if verbosity < VVV {
 		str_nodetype = strings.TrimLeft(str_nodetype, "*ast.")
 	}
-	if verbosity < 1 {
+	if verbosity < VV {
 		str_nodetype = abbreviateNodeType(str_nodetype)
 	}
 
@@ -145,5 +155,63 @@ func abbreviateNodeType(nodetype string) string {
 			return nodetype[0:4]
 		}
 		return nodetype
+	}
+}
+
+func abbreviateFieldName(fieldname string) string {
+	switch fieldname {
+	case "Statements":
+		return "Stmts"
+	case "Name":
+		return "Name"
+	case "Value":
+		return "Val"
+	case "ReturnValue":
+		return "RetV"
+	case "Expression":
+		return "Expr"
+	case "Operator":
+		return "Op"
+	case "Right":
+		return "Right"
+	case "Left":
+		return "Left"
+	case "Condition":
+		return "Cond"
+	case "Consequence":
+		return "Cons"
+	case "Alternative":
+		return "Altr"
+	case "Parameters":
+		return "Params"
+	case "Body":
+		return "Body"
+	case "Function":
+		return "Func"
+	case "Arguments":
+		return "Args"
+	default:
+		if len(fieldname) > 4 {
+			return fieldname[0:4]
+		}
+		return fieldname
+	}
+}
+
+func abbreviateObjectType(objtype string) string {
+	switch objtype {
+	case "Integer":
+		return "Int"
+	case "Function":
+		return "Fun"
+	case "Error":
+		return "Err"
+	case "ReturnValue":
+		return "RetV"
+	default:
+		if len(objtype) > 4 {
+			return objtype[0:4]
+		}
+		return objtype
 	}
 }
