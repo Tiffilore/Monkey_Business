@@ -43,8 +43,8 @@ see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
     - [X] cmd :type and setting log type
     - [X] cmd :list [lists environment]
     - [X] cmd :trace and setting log trace 
-    - [ ] cmd :ptree and setting log ptree 
-    - [ ] cmd :etree and setting log etree
+    - [X] cmd :ptree and setting log ptree 
+    - [X] cmd :etree and setting log etree
  - revise cmd and log trace --> relative to set verbosity and goObjType
 
 ### 2021-05-16
@@ -55,7 +55,8 @@ see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
 
 - [>>] add tests to visualizer
 - add settings `pfile` and `efile` instead of `file`
-- [ ] revise ptree and etree
+- [X] revise ptree and etree  
+- [ ] add option of displaying envs
 - [ ] revise visualizer/README.md
 
 ## [Summary of what happened before 2021-04-20]

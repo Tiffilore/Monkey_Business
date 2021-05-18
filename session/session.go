@@ -17,6 +17,11 @@ import (
 	"strings"
 )
 
+const (
+	prefixCons = ""    //prefix for trees in console
+	indentCons = "   " //indentation for trees in console
+)
+
 func Start(in io.Reader, out io.Writer) error {
 
 	s, err := NewSession(in, out)
@@ -124,7 +129,7 @@ func (s *Session) exec_clear() {
 
 func (s *Session) exec_list() {
 
-	table := visualizer.GetStoreTable(s.environment, currentSettings.verbosity, currentSettings.goObjType)
+	table := visualizer.VisEnvStoreCons(s.environment, currentSettings.verbosity, currentSettings.goObjType)
 	lines := strings.Split(table, "\n")
 	for _, line := range lines {
 		if line != "" {
@@ -270,6 +275,8 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				node,
 				currentSettings.verbosity,
 				currentSettings.inclToken,
+				prefixCons,
+				indentCons,
 			)
 			fmt.Fprintln(s.out, "display ptree in console: ")
 			fmt.Fprintln(s.out, consPtree)
@@ -280,7 +287,10 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
 				//visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, s.path_pdflatex)
-				visualizer.TeXParseTree(node, currentSettings.verbosity, currentSettings.inclToken, currentSettings.pfile)
+				err := visualizer.TeXParseTree(node, currentSettings.verbosity, currentSettings.inclToken, currentSettings.pfile, s.path_pdflatex)
+				if err != nil {
+					fmt.Fprintln(s.out, err)
+				}
 			}
 		}
 	}
@@ -336,6 +346,8 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				currentSettings.inclToken,
 				currentSettings.goObjType,
 				currentSettings.inclEnv,
+				prefixCons,
+				indentCons,
 			)
 			fmt.Fprintln(s.out, "display etree in console")
 			fmt.Fprintln(s.out, consEtree)
@@ -345,13 +357,17 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 			if !s.supportsPdflatex() {
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
-				visualizer.TeXEvalTree(
+				err := visualizer.TeXEvalTree(
 					trace,
 					currentSettings.verbosity,
 					currentSettings.inclToken,
 					currentSettings.goObjType,
 					currentSettings.inclEnv,
-					currentSettings.efile)
+					currentSettings.efile,
+					s.path_pdflatex)
+				if err != nil {
+					fmt.Fprintln(s.out, err)
+				}
 
 			}
 		}

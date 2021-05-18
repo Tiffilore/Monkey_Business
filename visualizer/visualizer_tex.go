@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"monkey/ast"
 	"regexp"
 	"strings"
 
@@ -46,7 +47,7 @@ func teXify(input string) (string, bool) {
 	containsUnExpChars := false
 	// replace all characters we provide no solution for
 
-	re := regexp.MustCompile(`[^a-zA-Z0-9_\"=+\-!*//<>,;:(){}\[\]&%*$#~]`)
+	re := regexp.MustCompile(`[^a-zA-Z0-9_\"=+\-!*//<>,;:(){}\[\]&%*$#~]\n`)
 	replacement := re.ReplaceAllString(input, "\\textdagger") //
 
 	//strings.Count("cheese", "e"))
@@ -93,14 +94,15 @@ func texColorize(str, bcolor, tcolor string) string { //TODO: includes also \tt
 	return "\\colorbox{" + bcolor + "}{\\textcolor{" + tcolor + "}{\\tt " + str + "}}"
 }
 
+// %047C9C dark go-blue
 var document_prefix = `
-\documentclass[varwidth, border=0.2cm]{standalone} %varwidth for itemize
+\documentclass[varwidth, border=0.2cm]{standalone} 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{xcolor}
-%\usepackage{qtree}
 \usepackage{tikz}
 \usepackage{tikz-qtree}
+\usetikzlibrary{positioning}
 
 \definecolor{bluish}{HTML}{E0EBF5}
 \definecolor{yellish}{HTML}{FFFFA8}
@@ -109,7 +111,7 @@ var document_prefix = `
 \definecolor{darkish}{HTML}{6F6B69}
 \definecolor{darkish2}{HTML}{848475}
 
-%047C9C dark go-blue
+
 
 
 \begin{document}
@@ -131,3 +133,15 @@ var tikz_prefix = `
 var tikz_suffix = `
 \end{tikzpicture}
 `
+
+func texColorNodeStr(nodeType string, node ast.Node) string {
+	if _, ok := node.(ast.Expression); ok {
+		return texColorize(nodeType, "bluish", "black")
+	} else if _, ok := node.(ast.Statement); ok {
+		return texColorize(nodeType, "yellish", "black")
+	} else if _, ok := node.(*ast.Program); ok {
+		return texColorize(nodeType, "dbluish", "white")
+	} else { //new nodes that fall under neither of these cases
+		return texColorize(nodeType, "red", "black")
+	}
+}
