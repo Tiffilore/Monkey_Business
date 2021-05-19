@@ -96,7 +96,7 @@ func texColorize(str, bcolor, tcolor string) string { //TODO: includes also \tt
 
 // %047C9C dark go-blue
 var document_prefix = `
-\documentclass[varwidth, border=0.2cm]{standalone} 
+\documentclass[varwidth=\maxdimen, border=0.2cm]{standalone} 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{xcolor}
