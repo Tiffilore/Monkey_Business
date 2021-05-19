@@ -47,7 +47,7 @@ func teXify(input string) (string, bool) {
 	containsUnExpChars := false
 	// replace all characters we provide no solution for
 
-	re := regexp.MustCompile(`[^a-zA-Z0-9_\"=+\-!*//<>,;:(){}\[\]&%*$#~]\n`)
+	re := regexp.MustCompile(`[^a-zA-Z0-9_\"=+\-!*//<>,;:(){}\[\]&%*$#~\n]`)
 	replacement := re.ReplaceAllString(input, "\\textdagger") //
 
 	//strings.Count("cheese", "e"))
