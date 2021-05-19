@@ -197,21 +197,3 @@ func abbreviateFieldName(fieldname string) string {
 		return fieldname
 	}
 }
-
-func abbreviateObjectType(objtype string) string {
-	switch objtype {
-	case "Integer":
-		return "Int"
-	case "Function":
-		return "Fun"
-	case "Error":
-		return "Err"
-	case "ReturnValue":
-		return "RetV"
-	default:
-		if len(objtype) > 4 {
-			return objtype[0:4]
-		}
-		return objtype
-	}
-}

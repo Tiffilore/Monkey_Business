@@ -194,7 +194,7 @@ func Test_TeXParseTree(t *testing.T) {
 		p := parser.New(l)
 		node := p.ParseProgram()
 		file := fmt.Sprintf("tests/p_%v.pdf", i)
-		err := TeXParseTree(node, 0, false, file, latexPath)
+		err := TeXParseTree(input, node, 0, false, file, latexPath)
 		//t.Error("aha")
 		if err != nil {
 			t.Error(err)
@@ -218,8 +218,8 @@ func Test_TeXEvalTree(t *testing.T) {
 		env := object.NewEnvironment()
 		_, trace := evaluator.EvalT(node, env, true)
 		file := fmt.Sprintf("tests/e_%v.pdf", i)
-		err := TeXEvalTree(trace, 0, false, false, false, file, latexPath)
-		//t.Error("aha")
+		err := TeXEvalTree(input, trace, 2, false, false, false, file, latexPath)
+		t.Error("aha")
 		if err != nil {
 			t.Error(err)
 		}

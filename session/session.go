@@ -287,7 +287,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
 				//visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, s.path_pdflatex)
-				err := visualizer.TeXParseTree(node, currentSettings.verbosity, currentSettings.inclToken, currentSettings.pfile, s.path_pdflatex)
+				err := visualizer.TeXParseTree(input, node, currentSettings.verbosity, currentSettings.inclToken, currentSettings.pfile, s.path_pdflatex)
 				if err != nil {
 					fmt.Fprintln(s.out, err)
 				}
@@ -358,6 +358,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
 				err := visualizer.TeXEvalTree(
+					input,
 					trace,
 					currentSettings.verbosity,
 					currentSettings.inclToken,

@@ -145,3 +145,8 @@ func texColorNodeStr(nodeType string, node ast.Node) string {
 		return texColorize(nodeType, "red", "black")
 	}
 }
+
+func texInput(input string) string {
+	tex_input, _ := teXify(strings.ReplaceAll(input, "\n", " "))
+	return "\\begin{center}\n" + tex_input + "\n\\end{center}"
+}

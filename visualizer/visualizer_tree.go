@@ -41,6 +41,7 @@ func ConsParseTree(
 }
 
 func TeXParseTree(
+	input string,
 	node ast.Node,
 	verbosity int,
 	inclToken bool,
@@ -58,9 +59,9 @@ func TeXParseTree(
 		false,
 		false,
 	)
-	tree := makeTikz(v.tree(node, nil))
 
-	document := makeStandalone(tree)
+	tree := makeTikz(v.tree(node, nil))
+	document := makeStandalone(texInput(input) + "\n" + tree)
 
 	err := tex2pdf(document, file, path)
 
@@ -98,6 +99,7 @@ func ConsEvalTree(
 }
 
 func TeXEvalTree(
+	input string,
 	trace *evaluator.Trace,
 	verbosity int,
 	inclToken bool,
@@ -118,17 +120,18 @@ func TeXEvalTree(
 		goObjType,
 	)
 	tree := makeTikz(v.tree(trace.GetRoot(), trace))
+
 	//qtreenode := vis.VisualizeEvalQTree(evaluator.T, TEX)
 	// 	evalqtreenode := QTreeEval(t, brevity)
 
-	content := tree
-	//fmt.Println(content)
+	content := texInput(input) + "\n" + tree
 	if inclEnv {
 		envs := "environments"
 		content = content + "\n" + envs
 	}
 
 	document := makeStandalone(content)
+	fmt.Println(document)
 
 	err := tex2pdf(document, file, path)
 
@@ -186,19 +189,19 @@ func (v *visRun) visualizeNode(node ast.Node, trace *evaluator.Trace, mode mode)
 		return
 	}
 
-	if node, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
-		v.visualizeRoofed(node.String(), mode)
-	}
+	// if node, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
+	// 	v.visualizeRoofed(node.String(), mode)
+	// }
 
 	// children
 	if !visited { // we do not need to ask whether it is a pointer
 		v.visitedNodes[node] = true
 
-		if _, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
-			v.endNode(visited, mode)
+		// if _, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
+		// 	v.endNode(visited, mode)
 
-			return
-		}
+		// 	return
+		// }
 		nodeContVal := reflect.ValueOf(node).Elem()
 		//if nodeContVal.Kind() != reflect.Struct {
 		//	v.printW(" NO STRUCT VALUE") // TODO: might be an err ? für Erweiterungen
@@ -354,7 +357,9 @@ func (v *visRun) visualizeObject(obj object.Object, trace *evaluator.Trace, mode
 
 	// case nil
 	if obj == nil {
-		v.visualizeNil()
+		if mode == WRITE {
+			v.visualizeNil()
+		}
 		return
 	}
 
