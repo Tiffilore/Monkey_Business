@@ -131,7 +131,7 @@ func TeXEvalTree(
 	}
 
 	document := makeStandalone(content)
-	fmt.Println(document)
+	//fmt.Println(document)
 
 	err := tex2pdf(document, file, path)
 

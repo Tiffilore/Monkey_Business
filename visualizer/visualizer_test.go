@@ -204,22 +204,30 @@ func Test_TeXParseTree(t *testing.T) {
 
 func Test_TeXEvalTree(t *testing.T) {
 
-	inputs := []string{
-		"1",
-		"true",
-		"fn(x){x}",
-		// "@",
+	tests := []struct {
+		setup string
+		input string
+	}{
+		{"", "1"},
+		{"", "true"},
+		{"", "fn(x){x}"},
 	}
 
-	for i, input := range inputs {
-		l := lexer.New(input)
+	for i, tt := range tests {
+		env := object.NewEnvironment()
+		//setup
+		l_setup := lexer.New(tt.setup)
+		p_setup := parser.New(l_setup)
+		node_setup := p_setup.ParseProgram()
+		evaluator.EvalT(node_setup, env, true)
+		//input
+		l := lexer.New(tt.input)
 		p := parser.New(l)
 		node := p.ParseProgram()
-		env := object.NewEnvironment()
 		_, trace := evaluator.EvalT(node, env, true)
+
 		file := fmt.Sprintf("tests/e_%v.pdf", i)
-		err := TeXEvalTree(input, trace, 2, false, false, false, file, latexPath)
-		t.Error("aha")
+		err := TeXEvalTree(tt.input, trace, 2, false, false, false, file, latexPath)
 		if err != nil {
 			t.Error(err)
 		}
