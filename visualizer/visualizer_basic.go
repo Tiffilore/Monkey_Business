@@ -190,6 +190,8 @@ func abbreviateFieldName(fieldname string) string {
 		return "Func"
 	case "Arguments":
 		return "Args"
+	case "Token":
+		return "Tok"
 	default:
 		if len(fieldname) > 4 {
 			return fieldname[0:4]

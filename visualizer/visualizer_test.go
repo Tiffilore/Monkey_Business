@@ -182,22 +182,46 @@ func Test_envTableTeX(t *testing.T) {
 
 func Test_TeXParseTree(t *testing.T) {
 
-	//TODO: one example for every nodetype, might be within a bigger example
+	//at least one example for every nodetype, might be within a bigger example
+	/*
+		nil + isNil +
+
+		Program
+
+		LetStatement
+		ReturnStatement
+		ExpressionStatement
+		BlockStatement
+
+		Identifier
+		Boolean
+		IntegerLiteral
+		PrefixExpression
+		InfixExpression
+		IfExpression
+		FunctionLiteral
+		CallExpression
+
+		--- chap 4:
+		StringLiteral
+		ArrayLiteral
+		IndexExpression
+		HashLiteral
+
+	*/
 	tests := []struct {
 		input string
 		file  string
 	}{
-		{"@", "illegal"},
-		{"1", "number"},
-		{"true", "boolean"},
-		{"fn(){}", "function_with_0_params"},
+		{"@", "nil"},                         //nil
+		{"if(1){}", "isNil"},                 // empty alternative - Nil value
+		{"fn(){}", "function_with_0_params"}, // + empty block statement
 		{"fn(x){x}", "function_with_1_params"},
 		{"fn(x,y){x+y}", "function_with_2_params"},
-		{"a + 3", "identifier"},
-		{"let a = 1", "let"},
-		{"return a", "return"},
-		{"!a", "prefix"},
-		{"if(1){}", "if"}, // empty alternative - Nil value
+		{"double(a)", "identifiers-call"},
+		{"!true", "bang"},
+		{"let a = if(a>2){}", "let-if"},
+		{"return if(false){} else {}", "return-if"},
 	}
 
 	for _, tt := range tests {
@@ -206,6 +230,35 @@ func Test_TeXParseTree(t *testing.T) {
 		node := p.ParseProgram()
 		file := fmt.Sprintf("tests/p_%v.pdf", tt.file)
 		err := TeXParseTree(tt.input, node, 0, false, file, latexPath)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+}
+
+func Test_TeXParseTree_inclToken(t *testing.T) {
+
+	tests := []struct {
+		input string
+		file  string
+	}{
+		{"@", "nil"},                         //nil
+		{"if(1){}", "isNil"},                 // empty alternative - Nil value
+		{"fn(){}", "function_with_0_params"}, // + empty block statement
+		{"fn(x){x}", "function_with_1_params"},
+		{"fn(x,y){x+y}", "function_with_2_params"},
+		{"double(a)", "identifiers-call"},
+		{"!true", "bang"},
+		{"let a = if(a>2){}", "let-if"},
+		{"return if(false){} else {}", "return-if"},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := parser.New(l)
+		node := p.ParseProgram()
+		file := fmt.Sprintf("tests/p_%v_tok.pdf", tt.file)
+		err := TeXParseTree(tt.input, node, 0, true, file, latexPath)
 		if err != nil {
 			t.Error(err)
 		}
