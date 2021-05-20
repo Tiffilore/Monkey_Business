@@ -61,6 +61,7 @@ func TeXParseTree(
 	)
 
 	tree := makeTikz(v.tree(node, nil))
+	fmt.Println(tree)
 	document := makeStandalone(texInput(input) + "\n" + tree)
 
 	err := tex2pdf(document, file, path)
@@ -183,8 +184,10 @@ func (v *visRun) visualizeNode(node ast.Node, trace *evaluator.Trace, mode mode)
 	// label node
 	v.beginNode(node, trace, visited, mode) // case CONS: with objects!
 
-	if reflect.ValueOf(node).IsNil() && mode == WRITE {
-		v.visualizeNilValue()
+	if reflect.ValueOf(node).IsNil() {
+		if mode == WRITE {
+			v.visualizeNilValue()
+		}
 		v.endNode(visited, mode)
 		return
 	}
@@ -300,7 +303,9 @@ func (v *visRun) visualizeFieldValue(i interface{}, trace *evaluator.Trace, mode
 
 	//case nil
 	if i == nil {
-		v.visualizeNil() // fieldvalue
+		if mode == WRITE {
+			v.visualizeNil() // fieldvalue
+		}
 		return
 	}
 
@@ -373,7 +378,9 @@ func (v *visRun) visualizeObject(obj object.Object, trace *evaluator.Trace, mode
 	}
 
 	if reflect.ValueOf(obj).IsNil() { // so far never happens
-		v.visualizeNilValue()
+		if mode == WRITE {
+			v.visualizeNilValue()
+		}
 		v.endObject(mode)
 		return
 	}

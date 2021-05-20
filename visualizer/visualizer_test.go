@@ -182,23 +182,34 @@ func Test_envTableTeX(t *testing.T) {
 
 func Test_TeXParseTree(t *testing.T) {
 
-	inputs := []string{
-		"1",
-		"true",
-		"fn(x){x}",
-		"@",
+	//TODO: one example for every nodetype, might be within a bigger example
+	tests := []struct {
+		input string
+		file  string
+	}{
+		{"@", "illegal"},
+		{"1", "number"},
+		{"true", "boolean"},
+		{"fn(){}", "function_with_0_params"},
+		{"fn(x){x}", "function_with_1_params"},
+		{"fn(x,y){x+y}", "function_with_2_params"},
+		{"a + 3", "identifier"},
+		{"let a = 1", "let"},
+		{"return a", "return"},
+		{"!a", "prefix"},
+		{"if(1){}", "if"}, // empty alternative - Nil value
 	}
 
-	for i, input := range inputs {
-		l := lexer.New(input)
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
 		p := parser.New(l)
 		node := p.ParseProgram()
-		file := fmt.Sprintf("tests/p_%v.pdf", i)
-		err := TeXParseTree(input, node, 0, false, file, latexPath)
-		//t.Error("aha")
+		file := fmt.Sprintf("tests/p_%v.pdf", tt.file)
+		err := TeXParseTree(tt.input, node, 0, false, file, latexPath)
 		if err != nil {
 			t.Error(err)
 		}
+		t.Errorf("")
 	}
 }
 
