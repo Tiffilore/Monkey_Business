@@ -209,7 +209,6 @@ func Test_TeXParseTree(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		t.Errorf("")
 	}
 }
 
