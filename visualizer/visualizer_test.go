@@ -236,7 +236,7 @@ func Test_TeXParseTree(t *testing.T) {
 	}
 }
 
-func Test_TeXParseTree_inclToken(t *testing.T) {
+func Test_TeXParseTree_inclToken_verb(t *testing.T) {
 
 	tests := []struct {
 		input string
@@ -257,10 +257,12 @@ func Test_TeXParseTree_inclToken(t *testing.T) {
 		l := lexer.New(tt.input)
 		p := parser.New(l)
 		node := p.ParseProgram()
-		file := fmt.Sprintf("tests/p_%v_tok.pdf", tt.file)
-		err := TeXParseTree(tt.input, node, 0, true, file, latexPath)
-		if err != nil {
-			t.Error(err)
+		for verbosity := 0; verbosity < 3; verbosity++ {
+			file := fmt.Sprintf("tests/p_%v_tok_%v.pdf", tt.file, verbosity)
+			err := TeXParseTree(tt.input, node, verbosity, true, file, latexPath)
+			if err != nil {
+				t.Error(err)
+			}
 		}
 	}
 }

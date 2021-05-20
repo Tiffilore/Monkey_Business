@@ -556,19 +556,25 @@ func (v *visRun) visualizeToken(t token.Token, trace *evaluator.Trace, mode mode
 	// super-verbose:
 	if v.verbosity == VVV && v.display == TEX {
 		// label
-		v.printInd("[.{\\tt ", reflect.TypeOf(t), "}")
+		v.printW("[.{\\tt ", reflect.TypeOf(t), "}")
 		v.incrIndent()
+
 		// fields
-		v.printInd("[.Type")
+		v.printInd("[.")
+		v.representFieldName("Type")
+
 		v.incrIndent()
 		v.visualizeFieldValue(t.Type, trace, mode) // take method for strings
 		v.decrIndent()
 		v.printInd("]")
-		v.printInd("[.Literal")
+
+		v.printInd("[.")
+		v.representFieldName("Literal")
 		v.incrIndent()
 		v.visualizeFieldValue(t.Literal, trace, mode) // take method for strings
 		v.decrIndent()
 		v.printInd("]")
+
 		//
 		v.decrIndent()
 		v.printInd("]")
