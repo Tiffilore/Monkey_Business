@@ -304,7 +304,9 @@ func Test_TeXEvalTree_Objects(t *testing.T) {
 		{"let double = fn(x){2*x} let a= 3", "double(a)", "identifiers-call"},
 		{"", "!true", "bang-bool"},
 		{"", "let a = if(3>2){1}", "let-if-nil"},
-		{"", "return if(false){} else {}", "return-if-null"},
+		{"", "return if(false){}", "return-if-null"},
+		{"let v_int = 1; let v_bool = true; let v_null = if(false){}; let v_nil = if(true){}; let v_error = 1 + true",
+			"v_int; v_bool; v_null; v_nil; v_error", "some_objects"},
 	}
 
 	for _, tt := range tests {

@@ -14,7 +14,7 @@ import (
 const (
 	prefixTeX = ""   //prefix for teX-trees
 	indentTeX = "  " //indentation for teX-trees
-	DEBUG     = true
+	DEBUG     = false
 )
 
 func ConsParseTree(
@@ -467,7 +467,8 @@ func (v *visRun) visualizeErrorMsgShort(obj *object.Error, mode mode) {
 	switch v.display {
 	case TEX:
 		message := obj.Message
-		message = strings.ReplaceAll(message, ":", ":\\\\\\small\\it")
+		tex_msg, _ := teXify(message)
+		message = strings.ReplaceAll(tex_msg, ":", ":\\\\\\small\\it")
 		if v.verbosity < VV {
 			message = strings.ReplaceAll(message, "INTEGER", "INT")
 			message = strings.ReplaceAll(message, "BOOLEAN", "BOOL")
@@ -517,7 +518,15 @@ func (v *visRun) ObjLabel(obj object.Object) string {
 	if name, ok := v.getObjectName(obj); ok {
 		return name
 	}
-	return visObjectType(obj, v.verbosity, v.goObjType)
+	switch v.display {
+	case TEX:
+		tex_label, _ := teXify(visObjectType(obj, v.verbosity, v.goObjType))
+		return tex_label
+	case CONSOLE:
+		return visObjectType(obj, v.verbosity, v.goObjType)
+	default:
+		return "unimplemented display"
+	}
 }
 
 func (v *visRun) getObjectName(obj object.Object) (string, bool) {
@@ -845,8 +854,7 @@ func (v *visRun) representObjectType(obj object.Object, mode mode) string {
 	}
 	switch v.display {
 	case TEX:
-		tex_label, _ := teXify(v.ObjLabel(obj))
-		return v.colorObj(tex_label, mode)
+		return v.colorObj(v.ObjLabel(obj), mode)
 	case CONSOLE:
 		return v.colorObj(v.ObjLabel(obj), mode)
 	default:
