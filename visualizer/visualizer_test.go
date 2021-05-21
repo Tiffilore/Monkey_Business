@@ -267,18 +267,47 @@ func Test_TeXParseTree_inclToken_verb(t *testing.T) {
 	}
 }
 
-func Test_TeXEvalTree(t *testing.T) {
+/*
+Object types:
+
+	NULL_OBJ  = "NULL"
+	ERROR_OBJ = "ERROR"
+
+	INTEGER_OBJ = "INTEGER"
+	BOOLEAN_OBJ = "BOOLEAN"
+	STRING_OBJ  = "STRING"
+
+	RETURN_VALUE_OBJ = "RETURN_VALUE"
+
+	FUNCTION_OBJ = "FUNCTION"
+
+	---
+	chap4:
+	BUILTIN_OBJ  = "BUILTIN"
+
+	ARRAY_OBJ = "ARRAY"
+	HASH_OBJ  = "HASH"
+
+
+*/
+func Test_TeXEvalTree_Objects(t *testing.T) {
 
 	tests := []struct {
 		setup string
 		input string
+		file  string
 	}{
-		{"", "1"},
-		{"", "true"},
-		{"", "fn(x){x}"},
+		{"", "if(1){}", "isNil"},                 // empty alternative - Nil value
+		{"", "fn(){}", "function_with_0_params"}, // + empty block statement
+		{"", "fn(x){x}", "function_with_1_params"},
+		{"", "fn(x,y){x+y}", "function_with_2_params"},
+		{"let double = fn(x){2*x} let a= 3", "double(a)", "identifiers-call"},
+		{"", "!true", "bang-bool"},
+		{"", "let a = if(3>2){1}", "let-if-nil"},
+		{"", "return if(false){} else {}", "return-if-null"},
 	}
 
-	for i, tt := range tests {
+	for _, tt := range tests {
 		env := object.NewEnvironment()
 		//setup
 		l_setup := lexer.New(tt.setup)
@@ -291,8 +320,8 @@ func Test_TeXEvalTree(t *testing.T) {
 		node := p.ParseProgram()
 		_, trace := evaluator.EvalT(node, env, true)
 
-		file := fmt.Sprintf("tests/e_%v.pdf", i)
-		err := TeXEvalTree(tt.input, trace, 2, false, false, false, file, latexPath)
+		file := fmt.Sprintf("tests/e_%v.pdf", tt.file)
+		err := TeXEvalTree(tt.input, trace, 0, false, false, false, file, latexPath)
 		if err != nil {
 			t.Error(err)
 		}

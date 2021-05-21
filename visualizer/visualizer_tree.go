@@ -14,6 +14,7 @@ import (
 const (
 	prefixTeX = ""   //prefix for teX-trees
 	indentTeX = "  " //indentation for teX-trees
+	DEBUG     = true
 )
 
 func ConsParseTree(
@@ -61,7 +62,9 @@ func TeXParseTree(
 	)
 
 	tree := makeTikz(v.tree(node, nil))
-	fmt.Println(tree)
+	if DEBUG {
+		fmt.Println(tree)
+	}
 	document := makeStandalone(texInput(input) + "\n" + tree)
 
 	err := tex2pdf(document, file, path)
@@ -122,8 +125,9 @@ func TeXEvalTree(
 	)
 	tree := makeTikz(v.tree(trace.GetRoot(), trace))
 
-	//qtreenode := vis.VisualizeEvalQTree(evaluator.T, TEX)
-	// 	evalqtreenode := QTreeEval(t, brevity)
+	if DEBUG {
+		fmt.Println(tree)
+	}
 
 	content := texInput(input) + "\n" + tree
 	if inclEnv {
@@ -363,7 +367,7 @@ func (v *visRun) visualizeObject(obj object.Object, trace *evaluator.Trace, mode
 	// case nil
 	if obj == nil {
 		if mode == WRITE {
-			v.visualizeNil()
+			v.visualizeNilObject()
 		}
 		return
 	}
@@ -485,19 +489,13 @@ func (v *visRun) beginObject(obj object.Object, mode mode) {
 
 	switch v.display {
 	case TEX:
+
 		v.printW("[.", v.representObjectType(obj, mode))
 	case CONSOLE:
 		v.printW(v.representObjectType(obj, mode))
 	}
 	v.incrIndent()
 
-}
-func (v *visRun) representObjectType(obj object.Object, mode mode) string {
-	if mode == COLLECT { // should not be called
-		return ""
-	}
-
-	return v.colorObj(v.ObjLabel(obj), mode)
 }
 
 func (v *visRun) colorObj(str string, mode mode) string {
@@ -789,7 +787,8 @@ func (v *visRun) representFieldName(str_fieldname string) string {
 	}
 	switch v.display {
 	case TEX:
-		return "{\\small " + str_fieldname + "}"
+		tex_fieldname, _ := teXify(str_fieldname)
+		return "{\\small " + tex_fieldname + "}"
 	default:
 		return str_fieldname
 	}
@@ -831,9 +830,25 @@ func (v *visRun) visualizeRoofed(str string, mode mode) { // if CONSOLE: use it 
 func (v *visRun) representNodeType(node ast.Node) string {
 	switch v.display {
 	case TEX:
-		return texColorNodeStr(v.NodeLabel(node), node)
+		tex_label, _ := teXify(v.NodeLabel(node))
+		return texColorNodeStr(tex_label, node)
 	case CONSOLE:
 		return consColorNodeStr(v.NodeLabel(node), node)
+	default:
+		return "unknown"
+	}
+}
+
+func (v *visRun) representObjectType(obj object.Object, mode mode) string {
+	if mode == COLLECT { // should not be called
+		return ""
+	}
+	switch v.display {
+	case TEX:
+		tex_label, _ := teXify(v.ObjLabel(obj))
+		return v.colorObj(tex_label, mode)
+	case CONSOLE:
+		return v.colorObj(v.ObjLabel(obj), mode)
 	default:
 		return "unknown"
 	}
@@ -904,6 +919,15 @@ func (v *visRun) visualizeNil() {
 	switch v.display {
 	case TEX:
 		v.printW("[.", texColorize("nil", "red", "black"), " ]")
+	case CONSOLE:
+		v.printW(consColorize("nil", Red))
+	}
+}
+
+func (v *visRun) visualizeNilObject() {
+	switch v.display {
+	case TEX:
+		v.printW("[.", texColorize("nil", "black", "red"), " ]")
 	case CONSOLE:
 		v.printW(consColorize("nil", Red))
 	}
