@@ -839,8 +839,7 @@ func (v *visRun) visualizeRoofed(str string, mode mode) { // if CONSOLE: use it 
 func (v *visRun) representNodeType(node ast.Node) string {
 	switch v.display {
 	case TEX:
-		tex_label, _ := teXify(v.NodeLabel(node))
-		return texColorNodeStr(tex_label, node)
+		return texColorNodeStr(v.NodeLabel(node), node)
 	case CONSOLE:
 		return consColorNodeStr(v.NodeLabel(node), node)
 	default:
@@ -867,7 +866,16 @@ func (v *visRun) NodeLabel(node ast.Node) string {
 	if name, ok := v.getNodeName(node); ok {
 		return name
 	}
-	return visNodeType(node, v.verbosity)
+
+	switch v.display {
+	case TEX:
+		tex_label, _ := teXify(visNodeType(node, v.verbosity))
+		return tex_label
+	case CONSOLE:
+		return visNodeType(node, v.verbosity)
+	default:
+		return "unknown"
+	}
 }
 
 func (v *visRun) createNodeName(node ast.Node) {

@@ -329,3 +329,44 @@ func Test_TeXEvalTree_Objects(t *testing.T) {
 		}
 	}
 }
+
+func Test_TeXEvalTree_goObjType_verbosity(t *testing.T) {
+
+	tests := []struct {
+		setup string
+		input string
+		file  string
+	}{
+		{"", "if(1){}", "isNil"},                 // empty alternative - Nil value
+		{"", "fn(){}", "function_with_0_params"}, // + empty block statement
+		{"", "fn(x){x}", "function_with_1_params"},
+		{"", "fn(x,y){x+y}", "function_with_2_params"},
+		{"let double = fn(x){2*x} let a= 3", "double(a)", "identifiers-call"},
+		{"", "!true", "bang-bool"},
+		{"", "let a = if(3>2){1}", "let-if-nil"},
+		{"", "return if(false){}", "return-if-null"},
+		{"let v_int = 1; let v_bool = true; let v_null = if(false){}; let v_nil = if(true){}; let v_error = 1 + true",
+			"v_int; v_bool; v_null; v_nil; v_error", "some_objects"},
+	}
+
+	for _, tt := range tests {
+		env := object.NewEnvironment()
+		//setup
+		l_setup := lexer.New(tt.setup)
+		p_setup := parser.New(l_setup)
+		node_setup := p_setup.ParseProgram()
+		evaluator.EvalT(node_setup, env, true)
+		//input
+		l := lexer.New(tt.input)
+		p := parser.New(l)
+		node := p.ParseProgram()
+		_, trace := evaluator.EvalT(node, env, true)
+		for verbosity := 0; verbosity < 3; verbosity++ {
+			file := fmt.Sprintf("tests/e_%v_got_%v.pdf", tt.file, verbosity)
+			err := TeXEvalTree(tt.input, trace, verbosity, false, true, false, file, latexPath)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+	}
+}
