@@ -51,6 +51,7 @@ func Test_tex2pdf_StandaloneTikz(t *testing.T) {
 func Test_teXify(t *testing.T) {
 
 	tests := []string{
+		"*ast.Node",
 		// Identifier
 		"a12ab",
 		"a12_c",
@@ -251,6 +252,8 @@ func Test_TeXParseTree_inclToken_verb(t *testing.T) {
 		{"!true", "bang"},
 		{"let a = if(a>2){}", "let-if"},
 		{"return if(false){} else {}", "return-if"},
+		{`"hello"`, "simple-string"},
+		{`"she said 'what?'"`, "complicated-string"},
 	}
 
 	for _, tt := range tests {
@@ -268,7 +271,7 @@ func Test_TeXParseTree_inclToken_verb(t *testing.T) {
 }
 
 /*
-Object types:
+	Object types:
 
 	NULL_OBJ  = "NULL"
 	ERROR_OBJ = "ERROR"
@@ -363,6 +366,41 @@ func Test_TeXEvalTree_goObjType_verbosity(t *testing.T) {
 		_, trace := evaluator.EvalT(node, env, true)
 		for verbosity := 0; verbosity < 3; verbosity++ {
 			file := fmt.Sprintf("tests/e_%v_got_%v.pdf", tt.file, verbosity)
+			err := TeXEvalTree(tt.input, trace, verbosity, false, true, false, file, latexPath)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+	}
+}
+
+func Test_TeXEvalTree_Errors_goObjType_verbosity(t *testing.T) {
+
+	tests := []struct {
+		setup string
+		input string
+		file  string
+	}{
+		{"", "1 + true", "type-mismatch"},
+		{"", "-true", "unknown-op-minus"},
+		{"", "a", "ident-not-found"},
+		{"let a = 1", "a()", "not-a-fct"},
+	}
+
+	for _, tt := range tests {
+		env := object.NewEnvironment()
+		//setup
+		l_setup := lexer.New(tt.setup)
+		p_setup := parser.New(l_setup)
+		node_setup := p_setup.ParseProgram()
+		evaluator.EvalT(node_setup, env, true)
+		//input
+		l := lexer.New(tt.input)
+		p := parser.New(l)
+		node := p.ParseProgram()
+		_, trace := evaluator.EvalT(node, env, true)
+		for verbosity := 0; verbosity < 3; verbosity++ {
+			file := fmt.Sprintf("tests/err_%v_got_%v.pdf", tt.file, verbosity)
 			err := TeXEvalTree(tt.input, trace, verbosity, false, true, false, file, latexPath)
 			if err != nil {
 				t.Error(err)
