@@ -300,6 +300,7 @@ func Test_TeXEvalTree_Objects(t *testing.T) {
 		input string
 		file  string
 	}{
+		{"let counter = fn(){let c = 0; return fn(){let c = c+1; return c}}()", "counter()", "counter"},
 		{"", "if(1){}", "isNil"},                 // empty alternative - Nil value
 		{"", "fn(){}", "function_with_0_params"}, // + empty block statement
 		{"", "fn(x){x}", "function_with_1_params"},
@@ -408,3 +409,5 @@ func Test_TeXEvalTree_Errors_goObjType_verbosity(t *testing.T) {
 		}
 	}
 }
+
+// test cons!!!

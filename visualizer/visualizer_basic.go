@@ -1,6 +1,7 @@
 package visualizer
 
 import (
+	"encoding/json"
 	"fmt"
 	"monkey/ast"
 	"monkey/object"
@@ -198,4 +199,13 @@ func abbreviateFieldName(fieldname string) string {
 		}
 		return fieldname
 	}
+}
+
+// is not in use
+func RepresentAsJson(i interface{}, indent string) string {
+	json, err := json.MarshalIndent(i, "", indent)
+	if err == nil {
+		return string(json)
+	}
+	return ""
 }

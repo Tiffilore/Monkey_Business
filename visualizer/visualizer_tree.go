@@ -11,6 +11,11 @@ import (
 	"strings"
 )
 
+// preconditions:
+//   non-circular
+//   nodes are structs
+//   Tokens have fields Type and Literal
+
 const (
 	prefixTeX = ""   //prefix for teX-trees
 	indentTeX = "  " //indentation for teX-trees
@@ -352,9 +357,16 @@ func (v *visRun) visualizeFieldValue(i interface{}, trace *evaluator.Trace, mode
 }
 func (v *visRun) visualizeEnv(env *object.Environment, mode mode) {
 	if mode == COLLECT {
+		if _, ok := v.visitedEnvs[env]; !ok {
+			v.createEnvName(env)
+			v.visitedEnvs[env] = true
+		}
 		return
 	}
-	name, _ := v.getEnvName(env)
+	name, ok := v.getEnvName(env)
+	if !ok {
+		name = "todo"
+	}
 	switch v.display {
 	case TEX:
 		v.printW("[.", name, " ]")
@@ -518,12 +530,17 @@ func (v *visRun) ObjLabel(obj object.Object) string {
 	if name, ok := v.getObjectName(obj); ok {
 		return name
 	}
+	return v.objectType(obj)
+}
+
+func (v *visRun) objectType(obj object.Object) string {
+	vOT := visObjectType(obj, v.verbosity, v.goObjType)
 	switch v.display {
 	case TEX:
-		tex_label, _ := teXify(visObjectType(obj, v.verbosity, v.goObjType))
+		tex_label, _ := teXify(vOT)
 		return tex_label
 	case CONSOLE:
-		return visObjectType(obj, v.verbosity, v.goObjType)
+		return vOT
 	default:
 		return "unimplemented display"
 	}
@@ -531,7 +548,7 @@ func (v *visRun) ObjLabel(obj object.Object) string {
 
 func (v *visRun) getObjectName(obj object.Object) (string, bool) {
 
-	typestr := visObjectType(obj, v.verbosity, v.goObjType)
+	typestr := v.objectType(obj)
 	name, ok := v.namesObjects[typestr][obj]
 	return name, ok
 }
@@ -713,7 +730,7 @@ func (v *visRun) beginNodeTEX(node ast.Node, trace *evaluator.Trace, visited boo
 		calls, exits := v.getCallsAndExits(node, trace)
 		for _, call := range calls {
 			eName, _ := v.getEnvName(call.Env)
-			left = left + fmt.Sprintf("%v,%v$\\downarrow$ ", call.No, eName)
+			left = left + fmt.Sprintf("%v,%v $\\downarrow$ ", call.No, eName)
 		}
 		for _, exit := range exits {
 			eName, _ := v.getEnvName(exit.Env)
@@ -910,7 +927,7 @@ func (v *visRun) createObjectName(obj object.Object) {
 		return
 	}
 
-	typestr := visObjectType(obj, v.verbosity, v.goObjType)
+	typestr := v.objectType(obj)
 	if _, ok := v.namesObjects[typestr]; !ok {
 		v.namesObjects[typestr] = make(map[object.Object]string)
 	}
