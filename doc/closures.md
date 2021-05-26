@@ -162,7 +162,8 @@ A closure is a function value that references variables from outside its body. T
 In Monkey, you can only **access** variables from an outer environment, but not **assign** to them. 
 That is because Monkey does not differentiate between variable declarations and variable assignments.
 
-![Demo12](../../assets/demos/demo12.gif)
+![Demo12](../assets/demos/demo12.gif)
+
 
 The closure in the **Go example** has the same behaviour if we add a variable declaration within the closure:
 [playground](https://play.golang.org/p/btP4AA9_Ujq)
