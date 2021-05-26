@@ -123,6 +123,8 @@ func main() {
 }
 ```
 
+[playground](https://play.golang.org/p/Y8sFuuNKY13)
+
 #### Translation to Monkey
 
 ```
@@ -140,11 +142,32 @@ f(3)
 f(3)
 ```
 
+However, in Monkey, the arguments of all calls of the function `f` are not cumulatively added to sum, but `sum` is set back to its original value after each call:
+
+```
+>> f(1)
+1
+>> f(3)
+3
+>> f(3)
+3
+```
+
 #### Definition of Closures again
 
 A closure is a function value that references variables from outside its body. The function may **access** and **assign** to the referenced variables; in this sense the function is "bound" to the variables. 
 
+#### Explanation
+
 In Monkey, you can only **access** variables from an outer environment, but not **assign** to them. 
+That is because Monkey does not differentiate between variable declarations and variable assignments.
+
+![Demo12](../../assets/demos/demo12.gif)
+
+The closure in the **Go example** has the same behaviour if we add a variable declaration within the closure:
+[playground](https://play.golang.org/p/btP4AA9_Ujq)
+
+
 
 
 
