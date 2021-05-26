@@ -4,11 +4,13 @@
 
 ## Definition
 
-A closure is a function value that references variables from outside its body. The function may access and assign to the referenced variables; in this sense the function is "bound" to the variables. 
+A closure is a function value that references variables from outside its body. The function may **access** and **assign** to the referenced variables; in this sense the function is "bound" to the variables. 
 
 ## Implementation in Monkey 
 
 ### Implementation of functions in Monkey
+
+#### Environments
 
 - every node of an ast is evaluated in an environment, which maps identifiers to objects
 
@@ -16,15 +18,8 @@ A closure is a function value that references variables from outside its body. T
 let a = 1
 a + 3 
 ```
+#### Function Objects
 
-```
-    +------------+---------+-------+
-    | IDENTIFIER | TYPE    | VALUE |
-    +------------+---------+-------+
-    | a          | INTEGER | 1     |
-    +------------+---------+-------+
-    --> outer: nil
-```
 - every function object has three fields:
   - a list of parameters (variable names)
   - a body (block statement)
@@ -37,6 +32,14 @@ type Function struct {
 	Env        *Environment
 }
 ```
+```
+let add = fn(x,y){x+y}
+add
+```
+
+![](add.png)
+
+#### Function Calls 
 
 - in a function call, the block statement of the function is evaluated in an **extended environment**, in which the parameters of the function are bound to the arguments of the function call, and which points to the function's environment 
 
@@ -45,23 +48,6 @@ let add = fn(x,y){x+y}
 add(2,3)
 ```
 
-```
-    +------------+---------+-------+
-    | IDENTIFIER | TYPE    | VALUE |
-    +------------+---------+-------+
-    | x          | INTEGER | 2     |
-    | y          | INTEGER | 3     |
-    +------------+---------+-------+
-    --> outer: 
-        +------------+----------+------------+
-        | IDENTIFIER | TYPE     | VALUE      |
-        +------------+----------+------------+
-        | add        | FUNCTION | fn(x, y) { |
-        |            |          | (x + y)    |
-        |            |          | }          |
-        +------------+----------+------------+
-        --> outer: nil
-```
 
 - example for use of outer environment:
 
@@ -71,23 +57,6 @@ let f = fn(x){global + x}
 f(2)
 let global = 4
 f(2)
-```
-```
-    +------------+---------+-------+
-    | IDENTIFIER | TYPE    | VALUE |
-    +------------+---------+-------+
-    | x          | INTEGER | 2     |
-    +------------+---------+-------+
-    --> outer: 
-        +------------+----------+--------------+
-        | IDENTIFIER | TYPE     | VALUE        |
-        +------------+----------+--------------+
-        | f          | FUNCTION | fn(x) {      |
-        |            |          | (global + x) |
-        |            |          | }            |
-        | global     | INTEGER  | 0            |
-        +------------+----------+--------------+
-        --> outer: nil
 ```
 
 ### Implementations of Closures in Monkey 
@@ -169,6 +138,9 @@ f(3)
 f(3)
 ```
 
+#### Definition of Closures again
+
+A closure is a function value that references variables from outside its body. The function may **access** and **assign** to the referenced variables; in this sense the function is "bound" to the variables. 
 
 
 
