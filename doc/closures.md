@@ -123,6 +123,8 @@ func main() {
 }
 ```
 
+#### Translation to Monkey
+
 ```
 let adder = fn(){
     let sum = 0
@@ -141,6 +143,8 @@ f(3)
 #### Definition of Closures again
 
 A closure is a function value that references variables from outside its body. The function may **access** and **assign** to the referenced variables; in this sense the function is "bound" to the variables. 
+
+In Monkey, you can only **access** variables from an outer environment, but not **assign** to them. 
 
 
 
