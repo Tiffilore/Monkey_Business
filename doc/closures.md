@@ -6,6 +6,8 @@
 
 A closure is a function value that references variables from outside its body. The function may access and assign to the referenced variables; in this sense the function is "bound" to the variables. 
 
+## Implementation in Monkey 
+
 ### Implementation of functions in Monkey
 
 - every node of an ast is evaluated in an environment, which maps identifiers to objects
@@ -88,6 +90,7 @@ f(2)
         --> outer: nil
 ```
 
+### Implementations of Closures in Monkey 
 - in a closure, the environment of the function object is a special environment that is only accessible from the closure:
 
 ```
@@ -155,7 +158,7 @@ func main() {
 let adder = fn(){
     let sum = 0
     return fn(x){
-        sum = sum + x
+        let sum = sum + x
         return sum
     }
 }
