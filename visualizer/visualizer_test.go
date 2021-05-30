@@ -156,6 +156,8 @@ func (v *visRun) testVisRunIndent(content []string) {
 
 func Test_TeXParseTree(t *testing.T) {
 
+	file_infix := "p"
+
 	//at least one example for every nodetype, might be within a bigger example
 	/*
 		nil + isNil +
@@ -202,7 +204,7 @@ func Test_TeXParseTree(t *testing.T) {
 		l := lexer.New(tt.input)
 		p := parser.New(l)
 		node := p.ParseProgram()
-		file := fmt.Sprintf("tests/p_%v.pdf", tt.file)
+		file := fmt.Sprintf("tests/%v_%v.pdf", file_infix, tt.file)
 		err := TeXParseTree(tt.input, node, 0, false, file, latexPath)
 		if err != nil {
 			t.Error(err)
@@ -211,6 +213,8 @@ func Test_TeXParseTree(t *testing.T) {
 }
 
 func Test_TeXParseTree_inclToken_verb(t *testing.T) {
+
+	file_infix := "p"
 
 	tests := []struct {
 		input string
@@ -234,7 +238,7 @@ func Test_TeXParseTree_inclToken_verb(t *testing.T) {
 		p := parser.New(l)
 		node := p.ParseProgram()
 		for verbosity := 0; verbosity < 3; verbosity++ {
-			file := fmt.Sprintf("tests/p_%v_tok_%v.pdf", tt.file, verbosity)
+			file := fmt.Sprintf("tests/%v_%v_tok_%v.pdf", file_infix, tt.file, verbosity)
 			err := TeXParseTree(tt.input, node, verbosity, true, file, latexPath)
 			if err != nil {
 				t.Error(err)
@@ -243,31 +247,32 @@ func Test_TeXParseTree_inclToken_verb(t *testing.T) {
 	}
 }
 
-/*
-	Object types:
-
-	NULL_OBJ  = "NULL"
-	ERROR_OBJ = "ERROR"
-
-	INTEGER_OBJ = "INTEGER"
-	BOOLEAN_OBJ = "BOOLEAN"
-	STRING_OBJ  = "STRING"
-
-	RETURN_VALUE_OBJ = "RETURN_VALUE"
-
-	FUNCTION_OBJ = "FUNCTION"
-
-	---
-	chap4:
-	BUILTIN_OBJ  = "BUILTIN"
-
-	ARRAY_OBJ = "ARRAY"
-	HASH_OBJ  = "HASH"
-
-
-*/
 func Test_TeXEvalTree_Objects(t *testing.T) {
 
+	file_infix := "e"
+
+	/*
+		Object types:
+
+		NULL_OBJ  = "NULL"
+		ERROR_OBJ = "ERROR"
+
+		INTEGER_OBJ = "INTEGER"
+		BOOLEAN_OBJ = "BOOLEAN"
+		STRING_OBJ  = "STRING"
+
+		RETURN_VALUE_OBJ = "RETURN_VALUE"
+
+		FUNCTION_OBJ = "FUNCTION"
+
+		---
+		chap4:
+		BUILTIN_OBJ  = "BUILTIN"
+
+		ARRAY_OBJ = "ARRAY"
+		HASH_OBJ  = "HASH"
+
+	*/
 	tests := []struct {
 		setup string
 		input string
@@ -299,7 +304,7 @@ func Test_TeXEvalTree_Objects(t *testing.T) {
 		node := p.ParseProgram()
 		_, trace := evaluator.EvalT(node, env, true)
 
-		file := fmt.Sprintf("tests/e_%v.pdf", tt.file)
+		file := fmt.Sprintf("tests/%v_%v.pdf", file_infix, tt.file)
 		err := TeXEvalTree(tt.input, trace, 0, false, false, false, file, latexPath)
 		if err != nil {
 			t.Error(err)
@@ -308,6 +313,8 @@ func Test_TeXEvalTree_Objects(t *testing.T) {
 }
 
 func Test_TeXEvalTree_goObjType_verbosity(t *testing.T) {
+
+	file_infix := "e"
 
 	tests := []struct {
 		setup string
@@ -339,7 +346,7 @@ func Test_TeXEvalTree_goObjType_verbosity(t *testing.T) {
 		node := p.ParseProgram()
 		_, trace := evaluator.EvalT(node, env, true)
 		for verbosity := 0; verbosity < 3; verbosity++ {
-			file := fmt.Sprintf("tests/e_%v_got_%v.pdf", tt.file, verbosity)
+			file := fmt.Sprintf("tests/%v_%v_got_%v.pdf", file_infix, tt.file, verbosity)
 			err := TeXEvalTree(tt.input, trace, verbosity, false, true, false, file, latexPath)
 			if err != nil {
 				t.Error(err)
@@ -349,6 +356,8 @@ func Test_TeXEvalTree_goObjType_verbosity(t *testing.T) {
 }
 
 func Test_TeXEvalTree_Errors_goObjType_verbosity(t *testing.T) {
+
+	file_infix := "err"
 
 	tests := []struct {
 		setup string
@@ -374,7 +383,7 @@ func Test_TeXEvalTree_Errors_goObjType_verbosity(t *testing.T) {
 		node := p.ParseProgram()
 		_, trace := evaluator.EvalT(node, env, true)
 		for verbosity := 0; verbosity < 3; verbosity++ {
-			file := fmt.Sprintf("tests/err_%v_got_%v.pdf", tt.file, verbosity)
+			file := fmt.Sprintf("tests/%v_%v_got_%v.pdf", file_infix, tt.file, verbosity)
 			err := TeXEvalTree(tt.input, trace, verbosity, false, true, false, file, latexPath)
 			if err != nil {
 				t.Error(err)
@@ -384,6 +393,8 @@ func Test_TeXEvalTree_Errors_goObjType_verbosity(t *testing.T) {
 }
 
 func Test_texEnvTables(t *testing.T) {
+
+	file_infix := "single-env"
 
 	//tests
 	tests := []struct {
@@ -399,7 +410,7 @@ func Test_texEnvTables(t *testing.T) {
 
 		content := texEnvTables(tt.env, 0, true)
 		document := makeStandalone(content)
-		file := fmt.Sprintf("tests/single-env_%v.pdf", tt.file)
+		file := fmt.Sprintf("tests/%v_%v.pdf", file_infix, tt.file)
 		err := tex2pdf(document, file, latexPath)
 		//t.Errorf(document)
 		if err != nil {
@@ -425,6 +436,7 @@ func Test_consEnvTables(t *testing.T) {
 
 	}
 }
+
 func setup_env_objects() *object.Environment {
 	env := object.NewEnvironment()
 	setup := []string{
@@ -464,6 +476,8 @@ func setup_env_closure() *object.Environment {
 
 func Test_TeXEvalTree_inclEnv(t *testing.T) {
 
+	file_infix := "inclEnv"
+
 	tests := []struct {
 		setup string
 		input string
@@ -488,7 +502,7 @@ func Test_TeXEvalTree_inclEnv(t *testing.T) {
 		p := parser.New(l)
 		node := p.ParseProgram()
 		_, trace := evaluator.EvalT(node, env, true)
-		file := fmt.Sprintf("tests/env_%v.pdf", tt.file)
+		file := fmt.Sprintf("tests/%v_%v.pdf", file_infix, tt.file)
 		err := TeXEvalTree(tt.input, trace, 0, false, false, true, file, latexPath)
 		if err != nil {
 			t.Error(err)
@@ -499,7 +513,6 @@ func Test_TeXEvalTree_inclEnv(t *testing.T) {
 
 /*
 TODO:
-* envs testen!
 * sinnvoll durch Trace iterieren, um Liste darzustellen
 */
 
