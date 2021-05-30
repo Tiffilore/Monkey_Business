@@ -253,9 +253,9 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 		logTrace = currentSettings.logs[TraceP]
 		logPtree = currentSettings.logs[ParseTreeP]
 		logEtree = currentSettings.logs[EvalTreeP]
-		if logEtree {
-			logPtree = false
-		}
+		// if logEtree {
+		// 	logPtree = false
+		// }
 	}
 
 	// parse input dependent on LEVEL
