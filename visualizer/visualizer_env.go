@@ -177,6 +177,9 @@ func makeTikzNode(content string, nodeNumber int) string {
 // + parameter: env-Liste
 func (v *visRun) envs(trace *evaluator.Trace) string {
 
+	// new buffer
+	var out bytes.Buffer
+	v.out = &out
 	// durch Liste iterieren!
 	for _, env := range v.envsOrdered {
 		// stelle Abhängigkeiten dar, e.g. e0 --> e1 --> nil
@@ -188,14 +191,16 @@ func (v *visRun) envs(trace *evaluator.Trace) string {
 			v.printInd("\\begin{itemize}\n")
 		}
 		for _, interval := range getEnvIntervals(env, trace) {
-			if v.display == TEX {
+			switch v.display {
+			case TEX:
 				v.printInd("\\item ", interval.from, " - ", interval.to, "\n\n")
-			} else {
+				table := texEnvTables(interval.envSnap, v.verbosity, v.goObjType)
+				v.printInd(table)
+			case CONSOLE:
 				v.printInd(interval.from, " - ", interval.to, "\n")
+				table := consEnvTables(interval.envSnap, v.indent, v.verbosity, v.goObjType)
+				v.printW(table)
 			}
-
-			table := texEnvTables(interval.envSnap, v.verbosity, v.goObjType)
-			v.printInd(table)
 		}
 		if v.display == TEX {
 			v.printInd("\\end{itemize}\n")
@@ -255,6 +260,7 @@ func getEnvIntervals(env *object.Environment, t *evaluator.Trace) []*envSnapInte
 
 	if curInterval.to < 0 { // if env is field value of a function which is not called
 		curInterval.to = t.Steps() - 1
+		curInterval.envSnap = env
 	}
 
 	return envSnapIntervals

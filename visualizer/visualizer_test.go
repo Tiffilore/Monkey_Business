@@ -329,7 +329,7 @@ func Test_TeXEvalTree_goObjType_verbosity(t *testing.T) {
 		{"", "!true", "bang-bool"},
 		{"", "let a = if(3>2){1}", "let-if-nil"},
 		{"", "return if(false){}", "return-if-null"},
-		{"let v_int = 1; let v_bool = true; let v_null = if(false){}; let v_nil = if(true){}; let v_error = 1 + true",
+		{"let v_int = 1; let v_bool = true; let v_null = if(false){}; let v_nil = if(true){}",
 			"v_int; v_bool; v_null; v_nil; v_error", "some_objects"},
 	}
 
@@ -483,12 +483,12 @@ func Test_TeXEvalTree_inclEnv(t *testing.T) {
 		input string
 		file  string
 	}{
-		// {"", "1", "simple"},
-		// {"let dbl = fn(x){2 * x}", "dbl", "function"},
-		// {"let dbl = fn(x){2 * x}", "dbl(3)", "function call"},
-		// {"let addThree = fn(x){fn(y){x+y}}(3)", "addThree", "closure"},
-		// {"let addThree = fn(x){fn(y){x+y}}(3)", "addThree(1)", "closure call"},
-		// {"", "let a = 1", "simple-let"},
+		{"", "1", "simple"},
+		{"let dbl = fn(x){2 * x}", "dbl", "function"},
+		{"let dbl = fn(x){2 * x}", "dbl(3)", "function call"},
+		{"let addThree = fn(x){fn(y){x+y}}(3)", "addThree", "closure"},
+		{"let addThree = fn(x){fn(y){x+y}}(3)", "addThree(1)", "closure call"},
+		{"", "let a = 1", "simple-let"},
 		{"let adder = fn(){let sum = 0 return fn(x){ let sum = sum + x 	return sum } }; let f = adder()", "f(1)", "embedded-let"},
 	}
 
@@ -514,4 +514,4 @@ func Test_TeXEvalTree_inclEnv(t *testing.T) {
 	}
 }
 
-// test cons!!!
+// cons tested mainly manually!!!

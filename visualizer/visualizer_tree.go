@@ -103,8 +103,16 @@ func ConsEvalTree(
 		goObjType,
 	)
 	tree := v.tree(trace.GetRoot(), trace)
+	if !inclEnv {
+		return tree
+	}
 
-	return tree
+	envs := v.envs(trace)
+	if DEBUG {
+		fmt.Println(envs)
+	}
+	return tree + "\n" + envs
+
 }
 
 func TeXEvalTree(
@@ -136,9 +144,6 @@ func TeXEvalTree(
 
 	content := texInput(input) + "\n" + tree
 	if inclEnv {
-		// new buffer
-		var out bytes.Buffer
-		v.out = &out
 		envs := v.envs(trace)
 		if DEBUG || true {
 			fmt.Println(envs)
