@@ -136,8 +136,11 @@ func TeXEvalTree(
 
 	content := texInput(input) + "\n" + tree
 	if inclEnv {
-		envs := v.usedEnvs(trace)
-		if DEBUG {
+		// new buffer
+		var out bytes.Buffer
+		v.out = &out
+		envs := v.envs(trace)
+		if DEBUG || true {
 			fmt.Println(envs)
 		}
 		content = content + "\n" + envs

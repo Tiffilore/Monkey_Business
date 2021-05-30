@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"monkey/evaluator"
 	"monkey/object"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -172,35 +173,118 @@ func makeTikzNode(content string, nodeNumber int) string {
 
 }
 
-// precondition: walk through tree; visit envs & name them
+// precondition: walk through tree; visit envs & put them into list
 // + parameter: env-Liste
-func (v *visRun) usedEnvs(trace *evaluator.Trace) string {
-	// new buffer
-	var out bytes.Buffer
-	v.out = &out
+func (v *visRun) envs(trace *evaluator.Trace) string {
 
 	// durch Liste iterieren!
 	for _, env := range v.envsOrdered {
-		name := v.getEnvName(env)
-		k_tex, _ := teXify(fmt.Sprintf("%v", env))
-		v.printInd(name, ":\t", k_tex, "\n")
-
-		//Name über get-env-name
-
-		// stelle Abhängigkeiten dar e0 --> e1 --> nil
+		// stelle Abhängigkeiten dar, e.g. e0 --> e1 --> nil
 		v.visEnvDep(env)
 
 		// iteriere durch Trace und stelle Intervalle dar!
+		v.incrIndent()
+		if v.display == TEX {
+			v.printInd("\\begin{itemize}\n")
+		}
+		for _, interval := range getEnvIntervals(env, trace) {
+			if v.display == TEX {
+				v.printInd("\\item ", interval.from, " - ", interval.to, "\n\n")
+			} else {
+				v.printInd(interval.from, " - ", interval.to, "\n")
+			}
+
+			table := texEnvTables(interval.envSnap, v.verbosity, v.goObjType)
+			v.printInd(table)
+		}
+		if v.display == TEX {
+			v.printInd("\\end{itemize}\n")
+		}
+		v.decrIndent()
 
 	}
 	return v.out.String()
 }
 
-func (v *visRun) visEnvDep(env *object.Environment) {
-	if env == nil {
-		v.printW("nil")
+type envSnapInterval struct {
+	envSnap *object.Environment
+	from    int
+	to      int
+}
+
+func getEnvIntervals(env *object.Environment, t *evaluator.Trace) []*envSnapInterval {
+
+	envSnapIntervals := make([]*envSnapInterval, 0)
+
+	curInterval := &envSnapInterval{nil, 0, -1}
+	envSnapIntervals = append(envSnapIntervals, curInterval)
+
+	for step := 0; step < t.Steps(); step++ {
+		// current step, snap
+		var snap *object.Environment
+		hit := false
+
+		if call, ok := t.Calls[step]; ok {
+			if call.Env == env {
+				hit = true
+				snap = call.EnvSnap
+			}
+		} else if exit, ok := t.Exits[step]; ok {
+			if exit.Env == env {
+				hit = true
+				snap = exit.EnvSnap
+			}
+		}
+		if !hit {
+			continue
+		}
+
+		//
+		switch {
+		case curInterval.to < 0: // first hit
+			curInterval.from = step
+			curInterval.to = step
+			curInterval.envSnap = snap
+		case reflect.DeepEqual(snap, curInterval.envSnap): // no change
+			curInterval.to = step
+		default: // change
+			curInterval = &envSnapInterval{snap, step, step}
+			envSnapIntervals = append(envSnapIntervals, curInterval)
+		}
 	}
 
+	if curInterval.to < 0 { // if env is field value of a function which is not called
+		curInterval.to = t.Steps() - 1
+	}
+
+	return envSnapIntervals
+}
+
+func (v *visRun) visEnvDep(env *object.Environment) {
+
+	switch v.display {
+	case CONSOLE:
+		v.printInd()
+		v.printInd(v.strEnvDep(env), "\n")
+	case TEX:
+		v.printInd()
+		v.printInd("{\\large ", v.strEnvDep(env), "} \n")
+	}
+}
+
+func (v *visRun) strEnvDep(env *object.Environment) string {
+	name := v.getEnvName(env)
+	if env == nil {
+		return name
+	}
+	var arrow string
+	switch v.display {
+	case TEX:
+		arrow = " $\\rightarrow$ "
+	case CONSOLE:
+		arrow = " --> "
+	}
+	return name + arrow + v.strEnvDep(env.Outer)
 }
 
 //

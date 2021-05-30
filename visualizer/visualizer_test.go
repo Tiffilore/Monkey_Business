@@ -483,11 +483,13 @@ func Test_TeXEvalTree_inclEnv(t *testing.T) {
 		input string
 		file  string
 	}{
-		{"", "1", "simple"},
-		{"let dbl = fn(x){2 * x}", "dbl", "function"},
-		{"let dbl = fn(x){2 * x}", "dbl(3)", "function call"},
-		{"let addThree = fn(x){fn(y){x+y}}(3)", "addThree", "closure"},
-		{"let addThree = fn(x){fn(y){x+y}}(3)", "addThree(1)", "closure call"},
+		// {"", "1", "simple"},
+		// {"let dbl = fn(x){2 * x}", "dbl", "function"},
+		// {"let dbl = fn(x){2 * x}", "dbl(3)", "function call"},
+		// {"let addThree = fn(x){fn(y){x+y}}(3)", "addThree", "closure"},
+		// {"let addThree = fn(x){fn(y){x+y}}(3)", "addThree(1)", "closure call"},
+		// {"", "let a = 1", "simple-let"},
+		{"let adder = fn(){let sum = 0 return fn(x){ let sum = sum + x 	return sum } }; let f = adder()", "f(1)", "embedded-let"},
 	}
 
 	for _, tt := range tests {
@@ -507,13 +509,9 @@ func Test_TeXEvalTree_inclEnv(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		//t.Error()
 
 	}
 }
-
-/*
-TODO:
-* sinnvoll durch Trace iterieren, um Liste darzustellen
-*/
 
 // test cons!!!
