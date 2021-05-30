@@ -154,33 +154,6 @@ func (v *visRun) testVisRunIndent(content []string) {
 
 }
 
-func Test_envTableTeX(t *testing.T) {
-
-	env := object.NewEnvironment()
-	setup := []string{
-		"let a = 1",
-		"let b = true",
-		"let a_b = fn(x){x}",
-	}
-
-	for _, input := range setup {
-		l := lexer.New(input)
-		p := parser.New(l)
-		ast := p.ParseProgram()
-		evaluator.Eval(ast, env)
-	}
-
-	content := texEnvTables(env, 0, true)
-	document := makeStandalone(content)
-
-	err := tex2pdf(document, "tests/env.pdf", latexPath)
-	//t.Errorf(document)
-	if err != nil {
-		t.Errorf("Rendering did not succeed. Reason: %q", err)
-	}
-
-}
-
 func Test_TeXParseTree(t *testing.T) {
 
 	//at least one example for every nodetype, might be within a bigger example
@@ -409,5 +382,125 @@ func Test_TeXEvalTree_Errors_goObjType_verbosity(t *testing.T) {
 		}
 	}
 }
+
+func Test_texEnvTables(t *testing.T) {
+
+	//tests
+	tests := []struct {
+		env  *object.Environment
+		file string
+	}{
+		{nil, "nil"},
+		{setup_env_objects(), "objects"},
+		{setup_env_closure(), "closure"},
+	}
+
+	for _, tt := range tests {
+
+		content := texEnvTables(tt.env, 0, true)
+		document := makeStandalone(content)
+		file := fmt.Sprintf("tests/single-env_%v.pdf", tt.file)
+		err := tex2pdf(document, file, latexPath)
+		//t.Errorf(document)
+		if err != nil {
+			t.Errorf("Rendering did not succeed. Reason: %q", err)
+		}
+	}
+}
+
+func Test_consEnvTables(t *testing.T) {
+
+	//tests
+	tests := []*object.Environment{
+		nil,
+		setup_env_objects(),
+		setup_env_closure(),
+	}
+
+	for _, env := range tests {
+
+		env_rep := consEnvTables(env, "    ", 0, true)
+		fmt.Println(env_rep)
+		//t.Error()
+
+	}
+}
+func setup_env_objects() *object.Environment {
+	env := object.NewEnvironment()
+	setup := []string{
+		"let a = 1",
+		"let b = true",
+		"let a_b = fn(x){x}",
+	}
+	for _, input := range setup {
+		l := lexer.New(input)
+		p := parser.New(l)
+		ast := p.ParseProgram()
+		evaluator.Eval(ast, env)
+	}
+	return env
+}
+
+func setup_env_closure() *object.Environment {
+	env := object.NewEnvironment()
+	input := `
+	fn(y){
+		fn(x){
+			x + y
+		}
+	}(2)
+	`
+
+	l := lexer.New(input)
+	p := parser.New(l)
+	ast := p.ParseProgram()
+	obj := evaluator.Eval(ast, env)
+	var env_closure *object.Environment
+	if obj, ok := obj.(*object.Function); ok {
+		env_closure = obj.Env
+	}
+	return env_closure
+}
+
+func Test_TeXEvalTree_inclEnv(t *testing.T) {
+
+	tests := []struct {
+		setup string
+		input string
+		file  string
+	}{
+		{"", "1", "simple"},
+		{"let dbl = fn(x){2 * x}", "dbl", "function"},
+		{"let dbl = fn(x){2 * x}", "dbl(3)", "function call"},
+		{"let addThree = fn(x){fn(y){x+y}}(3)", "addThree", "closure"},
+		{"let addThree = fn(x){fn(y){x+y}}(3)", "addThree(1)", "closure call"},
+	}
+
+	for _, tt := range tests {
+		env := object.NewEnvironment()
+		//setup
+		l_setup := lexer.New(tt.setup)
+		p_setup := parser.New(l_setup)
+		node_setup := p_setup.ParseProgram()
+		evaluator.EvalT(node_setup, env, true)
+		//input
+		l := lexer.New(tt.input)
+		p := parser.New(l)
+		node := p.ParseProgram()
+		_, trace := evaluator.EvalT(node, env, true)
+		file := fmt.Sprintf("tests/env_%v.pdf", tt.file)
+		err := TeXEvalTree(tt.input, trace, 0, false, false, true, file, latexPath)
+		if err != nil {
+			t.Error(err)
+		}
+
+	}
+}
+
+/*
+TODO:
+* envs testen!
+* sinnvoll durch Trace iterieren, um Liste darzustellen
+*/
 
 // test cons!!!

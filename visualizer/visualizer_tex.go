@@ -148,5 +148,5 @@ func texColorNodeStr(nodeType string, node ast.Node) string {
 
 func texInput(input string) string {
 	tex_input, _ := teXify(strings.ReplaceAll(input, "\n", " "))
-	return "\\begin{center}\n {\\tt " + tex_input + "} \n\\end{center}"
+	return "\\begin{center}\n {\\large\\tt " + tex_input + "} \n\\end{center}"
 }

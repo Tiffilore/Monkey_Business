@@ -3,6 +3,7 @@ package visualizer
 import (
 	"bytes"
 	"fmt"
+	"monkey/evaluator"
 	"monkey/object"
 	"sort"
 	"strings"
@@ -10,14 +11,48 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
+// precondition: env != nil
 func VisEnvStoreCons(env *object.Environment, verbosity int, goObjType bool) string {
-	return consStoreTable(env, getVerbosity(verbosity), goObjType)
+	return consStoreTable(env.Store, getVerbosity(verbosity), goObjType)
 }
 
-func consStoreTable(env *object.Environment, verbosity verbosity, goObjType bool) string {
+// prints envs indented!
+func consEnvTables(env *object.Environment, indent string, verbosity verbosity, goObjType bool) string {
 
 	var temp_out bytes.Buffer
-	store := env.Store
+
+	if env == nil {
+		return indent + "nil"
+	}
+
+	table := consStoreTable(env.Store, verbosity, goObjType)
+	lines := strings.Split(table, "\n")
+	for _, line := range lines {
+		if line != "" {
+			fmt.Fprintln(&temp_out, indent, line)
+		}
+	}
+	if env.Outer == nil {
+		fmt.Fprintln(&temp_out, indent, "--> outer: nil")
+		return temp_out.String()
+	}
+
+	fmt.Fprintln(&temp_out, indent, "--> outer: ")
+
+	table = consEnvTables(env.Outer, indent, verbosity, goObjType)
+	lines = strings.Split(table, "\n")
+	for _, line := range lines {
+		if line != "" {
+			fmt.Fprintln(&temp_out, indent, line)
+		}
+	}
+
+	return temp_out.String()
+}
+
+func consStoreTable(store map[string]object.Object, verbosity verbosity, goObjType bool) string {
+
+	var temp_out bytes.Buffer
 
 	//sort alphabetically
 	keys := make([]string, 0, len(store))
@@ -48,64 +83,34 @@ func consStoreTable(env *object.Environment, verbosity verbosity, goObjType bool
 	return temp_out.String()
 }
 
-func consEnvTable(env *object.Environment, indent string, verbosity verbosity, goObjType bool) string {
-
-	var temp_out bytes.Buffer
-
-	table := consStoreTable(env, verbosity, goObjType)
-	lines := strings.Split(table, "\n")
-	for _, line := range lines {
-		if line != "" {
-			fmt.Fprintln(&temp_out, indent, line)
-		}
-	}
-	if env.Outer == nil {
-		fmt.Fprintln(&temp_out, indent, "--> outer: nil")
-		return temp_out.String()
-	}
-
-	fmt.Fprintln(&temp_out, indent, "--> outer: ")
-	table = consEnvTable(env.Outer, indent, verbosity, goObjType)
-	lines = strings.Split(table, "\n")
-	for _, line := range lines {
-		if line != "" {
-			fmt.Fprintln(&temp_out, indent, line)
-		}
-	}
-
-	return temp_out.String()
-}
-
 func texEnvTables(env *object.Environment, verbosity verbosity, goObjType bool) string {
 
-	content := texEnvNodes(env, 0, verbosity, goObjType)
+	content := texEnvTableNodes(env, 0, verbosity, goObjType)
 	return makeTikz(content)
 }
 
-func texEnvNodes(env *object.Environment, depth int, verbosity verbosity, goObjType bool) string {
+func texEnvTableNodes(env *object.Environment, depth int, verbosity verbosity, goObjType bool) string {
 
 	var temp_out bytes.Buffer
 
-	table := texStoreTable(env, verbosity, goObjType)
+	if env == nil {
+		return makeTikzNode("nil", depth)
+	}
+
+	table := texStoreTable(env.Store, verbosity, goObjType)
 	node := makeTikzNode(table, depth)
 
 	fmt.Fprintln(&temp_out, node)
 
-	if env.Outer == nil {
-		outer := makeTikzNode("nil", depth+1)
-		fmt.Fprintln(&temp_out, outer)
-	} else {
-		outer := texEnvNodes(env.Outer, depth+1, verbosity, goObjType)
-		fmt.Fprintln(&temp_out, outer)
-	}
+	outer := texEnvTableNodes(env.Outer, depth+1, verbosity, goObjType)
+	fmt.Fprintln(&temp_out, outer)
 
 	return temp_out.String()
 }
 
-func texStoreTable(env *object.Environment, verbosity verbosity, goObjType bool) string {
+func texStoreTable(store map[string]object.Object, verbosity verbosity, goObjType bool) string {
 
 	var temp_out bytes.Buffer
-	store := env.Store
 
 	//sort alphabetically
 	keys := make([]string, 0, len(store))
@@ -166,3 +171,36 @@ func makeTikzNode(content string, nodeNumber int) string {
 	return node + "\n" + arrow
 
 }
+
+// precondition: walk through tree; visit envs & name them
+// + parameter: env-Liste
+func (v *visRun) usedEnvs(trace *evaluator.Trace) string {
+	// new buffer
+	var out bytes.Buffer
+	v.out = &out
+
+	// durch Liste iterieren!
+	for _, env := range v.envsOrdered {
+		name := v.getEnvName(env)
+		k_tex, _ := teXify(fmt.Sprintf("%v", env))
+		v.printInd(name, ":\t", k_tex, "\n")
+
+		//Name über get-env-name
+
+		// stelle Abhängigkeiten dar e0 --> e1 --> nil
+		v.visEnvDep(env)
+
+		// iteriere durch Trace und stelle Intervalle dar!
+
+	}
+	return v.out.String()
+}
+
+func (v *visRun) visEnvDep(env *object.Environment) {
+	if env == nil {
+		v.printW("nil")
+	}
+
+}
+
+//
