@@ -74,11 +74,6 @@ func TeXParseTree(
 
 	err := tex2pdf(document, file, path)
 
-	strT := ""
-	if inclToken {
-		strT = ", with Tokens"
-	}
-	fmt.Printf("representation of parsetree of %v with verbosity %v%v in file %v\n", node, verbosity, strT, file)
 	return err
 }
 
