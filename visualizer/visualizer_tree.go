@@ -7,19 +7,20 @@ import (
 	"monkey/evaluator"
 	"monkey/object"
 	"monkey/token"
+	"os"
 	"reflect"
 	"strings"
 )
 
 // preconditions:
-//   non-circular
+//   non-circular environments :-)
 //   nodes are structs
 //   Tokens have fields Type and Literal
 
 const (
 	prefixTeX = ""   //prefix for teX-trees
 	indentTeX = "  " //indentation for teX-trees
-	DEBUG     = false
+	DEBUG     = true
 )
 
 func ConsParseTree(
@@ -67,13 +68,14 @@ func TeXParseTree(
 	)
 
 	tree := v.tree(node, nil)
-	if DEBUG {
-		fmt.Println(tree)
-	}
+
 	document := makeStandalone(texInput(input) + "\n" + tree)
 
 	err := tex2pdf(document, file, path)
 
+	if err == nil && DEBUG {
+		err = debug_tex(document, "ptree.tex")
+	}
 	return err
 }
 
@@ -103,9 +105,7 @@ func ConsEvalTree(
 	}
 
 	envs := v.envs(trace)
-	if DEBUG {
-		fmt.Println(envs)
-	}
+
 	return tree + "\n" + envs
 
 }
@@ -133,16 +133,9 @@ func TeXEvalTree(
 	)
 	tree := v.tree(trace.GetRoot(), trace)
 
-	if DEBUG {
-		fmt.Println(tree)
-	}
-
 	content := texInput(input) + "\n" + tree
 	if inclEnv {
 		envs := v.envs(trace)
-		if DEBUG || true {
-			fmt.Println(envs)
-		}
 		content = content + "\n" + envs
 	}
 
@@ -150,6 +143,23 @@ func TeXEvalTree(
 
 	err := tex2pdf(document, file, path)
 
+	if err == nil && DEBUG {
+		err = debug_tex(document, "etree.tex")
+	}
+
+	return err
+}
+
+func debug_tex(document string, filename string) error {
+	f, err := os.Create(filename)
+
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	_, err = f.WriteString(document)
 	return err
 }
 
