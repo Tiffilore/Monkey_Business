@@ -47,7 +47,7 @@ func teXify(input string) (string, bool) {
 	containsUnExpChars := false
 	// replace all characters we provide no solution for
 
-	re := regexp.MustCompile(`[^a-zA-Z0-9_\"=+\-!*//<>,;:(){}\[\]&%*$#~]\n`)
+	re := regexp.MustCompile(`[^a-zA-Z0-9_\"=+\-!*//<>,;:(){}\[\]&%*$#~\n\. ]`)
 	replacement := re.ReplaceAllString(input, "\\textdagger") //
 
 	//strings.Count("cheese", "e"))
@@ -96,7 +96,7 @@ func texColorize(str, bcolor, tcolor string) string { //TODO: includes also \tt
 
 // %047C9C dark go-blue
 var document_prefix = `
-\documentclass[varwidth, border=0.2cm]{standalone} 
+\documentclass[varwidth=\maxdimen, border=0.2cm]{standalone} 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{xcolor}
@@ -144,4 +144,9 @@ func texColorNodeStr(nodeType string, node ast.Node) string {
 	} else { //new nodes that fall under neither of these cases
 		return texColorize(nodeType, "red", "black")
 	}
+}
+
+func texInput(input string) string {
+	tex_input, _ := teXify(strings.ReplaceAll(input, "\n", " "))
+	return "\\begin{center}\n {\\large\\tt " + tex_input + "} \n\\end{center}"
 }

@@ -60,7 +60,7 @@ func traceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scanner,
 
 			fmt.Fprint(out, ",")
 			if envChanged {
-				fmt.Fprint(out, consColorize(fmt.Sprintf("e%v: ", envNo), Red))
+				fmt.Fprint(out, consColorize(fmt.Sprintf(" e%v: ", envNo), Red))
 			} else {
 				fmt.Fprintf(out, " e%v: ", envNo)
 			}
@@ -90,7 +90,7 @@ func traceInteractive(t *evaluator.Trace, out io.Writer, scanner *bufio.Scanner,
 			cur_step++
 			continue
 		case "e":
-			env_rep := consEnvTable(cur_env_snap, "   ", verbosity, goObjType)
+			env_rep := consEnvTables(cur_env_snap, "   ", verbosity, goObjType)
 			cur_step++
 			fmt.Fprint(out, env_rep)
 			continue

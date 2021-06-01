@@ -253,9 +253,6 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 		logTrace = currentSettings.logs[TraceP]
 		logPtree = currentSettings.logs[ParseTreeP]
 		logEtree = currentSettings.logs[EvalTreeP]
-		if logEtree {
-			logPtree = false
-		}
 	}
 
 	// parse input dependent on LEVEL
@@ -269,7 +266,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 	if process == ParseTreeP || logPtree {
 		if currentSettings.displays[ConsD] {
 			if process != ParseTreeP {
-				fmt.Fprint(s.out, "log parsetree:\t")
+				fmt.Fprint(s.out, "log parsetree:\n")
 			}
 			consPtree := visualizer.ConsParseTree(
 				node,
@@ -278,7 +275,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				prefixCons,
 				indentCons,
 			)
-			fmt.Fprintln(s.out, "display ptree in console: ")
+			//fmt.Fprintln(s.out, "display ptree in console: ")
 			fmt.Fprintln(s.out, consPtree)
 
 		}
@@ -286,10 +283,12 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 			if !s.supportsPdflatex() {
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
-				//visualizer.Ast2pdf(node, !currentSettings.inclToken, currentSettings.file, s.path_pdflatex)
-				err := visualizer.TeXParseTree(node, currentSettings.verbosity, currentSettings.inclToken, currentSettings.pfile, s.path_pdflatex)
+				err := visualizer.TeXParseTree(input, node, currentSettings.verbosity, currentSettings.inclToken, currentSettings.pfile, s.path_pdflatex)
 				if err != nil {
 					fmt.Fprintln(s.out, err)
+				} else {
+					fmt.Fprintf(s.out, "parsetree is printed to %v\n", currentSettings.pfile)
+
 				}
 			}
 		}
@@ -338,7 +337,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 
 		if currentSettings.displays[ConsD] {
 			if process != EvalTreeP {
-				fmt.Fprint(s.out, "log evaltree:\t")
+				fmt.Fprint(s.out, "log evaltree:\n")
 			}
 			consEtree := visualizer.ConsEvalTree(
 				trace,
@@ -349,7 +348,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				prefixCons,
 				indentCons,
 			)
-			fmt.Fprintln(s.out, "display etree in console")
+			//fmt.Fprintln(s.out, "display etree in console")
 			fmt.Fprintln(s.out, consEtree)
 
 		}
@@ -358,6 +357,7 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 				fmt.Fprintln(s.out, "Displaying trees as pdfs is not available to you, since you have not installed pdflatex.")
 			} else {
 				err := visualizer.TeXEvalTree(
+					input,
 					trace,
 					currentSettings.verbosity,
 					currentSettings.inclToken,
@@ -367,15 +367,16 @@ func (s *Session) process_input_dim(paste bool, level inputLevel, process inputP
 					s.path_pdflatex)
 				if err != nil {
 					fmt.Fprintln(s.out, err)
+				} else {
+					fmt.Fprintf(s.out, "evaltree is printed to %v\n", currentSettings.efile)
 				}
 
 			}
 		}
-		// 			visualizer.EvalTree2pdf(evaluator.T, currentSettings.file, path)
-		//visualizer.RepresentEvalConsole(evaluator.T, s.out)
-		// //fmt.Fprint(s.out, visualizer.QTreeEval(evaluator.T))
 
-		return
+		if process == EvalTreeP {
+			return
+		}
 	}
 
 	if process == EvalP {

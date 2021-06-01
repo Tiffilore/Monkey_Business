@@ -1,6 +1,7 @@
 package visualizer
 
 import (
+	"encoding/json"
 	"fmt"
 	"monkey/ast"
 	"monkey/object"
@@ -190,6 +191,8 @@ func abbreviateFieldName(fieldname string) string {
 		return "Func"
 	case "Arguments":
 		return "Args"
+	case "Token":
+		return "Tok"
 	default:
 		if len(fieldname) > 4 {
 			return fieldname[0:4]
@@ -198,20 +201,11 @@ func abbreviateFieldName(fieldname string) string {
 	}
 }
 
-func abbreviateObjectType(objtype string) string {
-	switch objtype {
-	case "Integer":
-		return "Int"
-	case "Function":
-		return "Fun"
-	case "Error":
-		return "Err"
-	case "ReturnValue":
-		return "RetV"
-	default:
-		if len(objtype) > 4 {
-			return objtype[0:4]
-		}
-		return objtype
+// is not in use
+func RepresentAsJson(i interface{}, indent string) string {
+	json, err := json.MarshalIndent(i, "", indent)
+	if err == nil {
+		return string(json)
 	}
+	return ""
 }

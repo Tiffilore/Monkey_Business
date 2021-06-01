@@ -7,13 +7,20 @@ import (
 	"monkey/evaluator"
 	"monkey/object"
 	"monkey/token"
+	"os"
 	"reflect"
 	"strings"
 )
 
+// preconditions:
+//   non-circular environments :-)
+//   nodes are structs
+//   Tokens have fields Type and Literal
+
 const (
 	prefixTeX = ""   //prefix for teX-trees
 	indentTeX = "  " //indentation for teX-trees
+	DEBUG     = true
 )
 
 func ConsParseTree(
@@ -41,6 +48,7 @@ func ConsParseTree(
 }
 
 func TeXParseTree(
+	input string,
 	node ast.Node,
 	verbosity int,
 	inclToken bool,
@@ -58,17 +66,16 @@ func TeXParseTree(
 		false,
 		false,
 	)
-	tree := makeTikz(v.tree(node, nil))
 
-	document := makeStandalone(tree)
+	tree := v.tree(node, nil)
+
+	document := makeStandalone(texInput(input) + "\n" + tree)
 
 	err := tex2pdf(document, file, path)
 
-	strT := ""
-	if inclToken {
-		strT = ", with Tokens"
+	if err == nil && DEBUG {
+		err = debug_tex(document, "ptree.tex")
 	}
-	fmt.Printf("representation of parsetree of %v with verbosity %v%v in file %v\n", node, verbosity, strT, file)
 	return err
 }
 
@@ -93,11 +100,18 @@ func ConsEvalTree(
 		goObjType,
 	)
 	tree := v.tree(trace.GetRoot(), trace)
+	if !inclEnv {
+		return tree
+	}
 
-	return tree
+	envs := v.envs(trace)
+
+	return tree + "\n" + envs
+
 }
 
 func TeXEvalTree(
+	input string,
 	trace *evaluator.Trace,
 	verbosity int,
 	inclToken bool,
@@ -117,14 +131,11 @@ func TeXEvalTree(
 		inclEnv,
 		goObjType,
 	)
-	tree := makeTikz(v.tree(trace.GetRoot(), trace))
-	//qtreenode := vis.VisualizeEvalQTree(evaluator.T, TEX)
-	// 	evalqtreenode := QTreeEval(t, brevity)
+	tree := v.tree(trace.GetRoot(), trace)
 
-	content := tree
-	//fmt.Println(content)
+	content := texInput(input) + "\n" + tree
 	if inclEnv {
-		envs := "environments"
+		envs := v.envs(trace)
 		content = content + "\n" + envs
 	}
 
@@ -132,6 +143,23 @@ func TeXEvalTree(
 
 	err := tex2pdf(document, file, path)
 
+	if err == nil && DEBUG {
+		err = debug_tex(document, "etree.tex")
+	}
+
+	return err
+}
+
+func debug_tex(document string, filename string) error {
+	f, err := os.Create(filename)
+
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	_, err = f.WriteString(document)
 	return err
 }
 
@@ -140,20 +168,18 @@ func (v *visRun) tree(node ast.Node, trace *evaluator.Trace) string { //replaces
 	v.visitedNodes = make(map[ast.Node]bool)
 	if v.process == EVAL {
 		v.visitedObjects = make(map[object.Object]bool)
-		v.visitedEnvs = make(map[*object.Environment]bool)
 	}
 	v.visualizeNode(node, trace, COLLECT)
 
 	v.visitedNodes = make(map[ast.Node]bool)
 	if v.process == EVAL {
 		v.visitedObjects = make(map[object.Object]bool)
-		v.visitedEnvs = make(map[*object.Environment]bool)
 	}
 	v.visualizeNode(node, trace, WRITE) // was: visualizeFieldValue(node)
 
 	switch v.display {
 	case TEX:
-		return "\\Tree " + v.out.String()
+		return makeTikz("\\Tree " + v.out.String())
 	case CONSOLE:
 		return v.prefix + v.out.String()
 	default:
@@ -180,25 +206,27 @@ func (v *visRun) visualizeNode(node ast.Node, trace *evaluator.Trace, mode mode)
 	// label node
 	v.beginNode(node, trace, visited, mode) // case CONS: with objects!
 
-	if reflect.ValueOf(node).IsNil() && mode == WRITE {
-		v.visualizeNilValue()
+	if reflect.ValueOf(node).IsNil() {
+		if mode == WRITE {
+			v.visualizeNilValue()
+		}
 		v.endNode(visited, mode)
 		return
 	}
 
-	if node, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
-		v.visualizeRoofed(node.String(), mode)
-	}
+	// if node, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
+	// 	v.visualizeRoofed(node.String(), mode)
+	// }
 
 	// children
 	if !visited { // we do not need to ask whether it is a pointer
 		v.visitedNodes[node] = true
 
-		if _, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
-			v.endNode(visited, mode)
+		// if _, ok := node.(*ast.Identifier); ok && v.verbosity < VVV && v.display == TEX { // also if it has already been displayed!
+		// 	v.endNode(visited, mode)
 
-			return
-		}
+		// 	return
+		// }
 		nodeContVal := reflect.ValueOf(node).Elem()
 		//if nodeContVal.Kind() != reflect.Struct {
 		//	v.printW(" NO STRUCT VALUE") // TODO: might be an err ? für Erweiterungen
@@ -297,7 +325,9 @@ func (v *visRun) visualizeFieldValue(i interface{}, trace *evaluator.Trace, mode
 
 	//case nil
 	if i == nil {
-		v.visualizeNil() // fieldvalue
+		if mode == WRITE {
+			v.visualizeNil() // fieldvalue
+		}
 		return
 	}
 
@@ -340,9 +370,11 @@ func (v *visRun) visualizeFieldValue(i interface{}, trace *evaluator.Trace, mode
 }
 func (v *visRun) visualizeEnv(env *object.Environment, mode mode) {
 	if mode == COLLECT {
+
 		return
 	}
-	name, _ := v.getEnvName(env)
+	name := v.getEnvName(env)
+
 	switch v.display {
 	case TEX:
 		v.printW("[.", name, " ]")
@@ -354,7 +386,9 @@ func (v *visRun) visualizeObject(obj object.Object, trace *evaluator.Trace, mode
 
 	// case nil
 	if obj == nil {
-		v.visualizeNil()
+		if mode == WRITE {
+			v.visualizeNilObject()
+		}
 		return
 	}
 
@@ -368,7 +402,9 @@ func (v *visRun) visualizeObject(obj object.Object, trace *evaluator.Trace, mode
 	}
 
 	if reflect.ValueOf(obj).IsNil() { // so far never happens
-		v.visualizeNilValue()
+		if mode == WRITE {
+			v.visualizeNilValue()
+		}
 		v.endObject(mode)
 		return
 	}
@@ -451,7 +487,8 @@ func (v *visRun) visualizeErrorMsgShort(obj *object.Error, mode mode) {
 	switch v.display {
 	case TEX:
 		message := obj.Message
-		message = strings.ReplaceAll(message, ":", ":\\\\\\small\\it")
+		tex_msg, _ := teXify(message)
+		message = strings.ReplaceAll(tex_msg, ":", ":\\\\\\small\\it")
 		if v.verbosity < VV {
 			message = strings.ReplaceAll(message, "INTEGER", "INT")
 			message = strings.ReplaceAll(message, "BOOLEAN", "BOOL")
@@ -473,19 +510,13 @@ func (v *visRun) beginObject(obj object.Object, mode mode) {
 
 	switch v.display {
 	case TEX:
+
 		v.printW("[.", v.representObjectType(obj, mode))
 	case CONSOLE:
 		v.printW(v.representObjectType(obj, mode))
 	}
 	v.incrIndent()
 
-}
-func (v *visRun) representObjectType(obj object.Object, mode mode) string {
-	if mode == COLLECT { // should not be called
-		return ""
-	}
-
-	return v.colorObj(v.ObjLabel(obj), mode)
 }
 
 func (v *visRun) colorObj(str string, mode mode) string {
@@ -507,12 +538,25 @@ func (v *visRun) ObjLabel(obj object.Object) string {
 	if name, ok := v.getObjectName(obj); ok {
 		return name
 	}
-	return visObjectType(obj, v.verbosity, v.goObjType)
+	return v.objectType(obj)
+}
+
+func (v *visRun) objectType(obj object.Object) string {
+	vOT := visObjectType(obj, v.verbosity, v.goObjType)
+	switch v.display {
+	case TEX:
+		tex_label, _ := teXify(vOT)
+		return tex_label
+	case CONSOLE:
+		return vOT
+	default:
+		return "unimplemented display"
+	}
 }
 
 func (v *visRun) getObjectName(obj object.Object) (string, bool) {
 
-	typestr := visObjectType(obj, v.verbosity, v.goObjType)
+	typestr := v.objectType(obj)
 	name, ok := v.namesObjects[typestr][obj]
 	return name, ok
 }
@@ -544,19 +588,25 @@ func (v *visRun) visualizeToken(t token.Token, trace *evaluator.Trace, mode mode
 	// super-verbose:
 	if v.verbosity == VVV && v.display == TEX {
 		// label
-		v.printInd("[.{\\tt ", reflect.TypeOf(t), "}")
+		v.printW("[.{\\tt ", reflect.TypeOf(t), "}")
 		v.incrIndent()
+
 		// fields
-		v.printInd("[.Type")
+		v.printInd("[.")
+		v.representFieldName("Type")
+
 		v.incrIndent()
 		v.visualizeFieldValue(t.Type, trace, mode) // take method for strings
 		v.decrIndent()
 		v.printInd("]")
-		v.printInd("[.Literal")
+
+		v.printInd("[.")
+		v.representFieldName("Literal")
 		v.incrIndent()
 		v.visualizeFieldValue(t.Literal, trace, mode) // take method for strings
 		v.decrIndent()
 		v.printInd("]")
+
 		//
 		v.decrIndent()
 		v.printInd("]")
@@ -630,17 +680,7 @@ func (v *visRun) endList(mode mode) {
 }
 
 func (v *visRun) beginNode(node ast.Node, trace *evaluator.Trace, visited bool, mode mode) {
-	if !visited && v.process == EVAL && mode == COLLECT {
-		calls, _ := v.getCallsAndExits(node, trace)
-		for _, call := range calls {
-			env := call.Env
-			// if not visited env, give it a name [if not nil]
-			if _, ok := v.visitedEnvs[env]; !ok {
-				v.createEnvName(env)
-				v.visitedEnvs[env] = true
-			}
-		}
-	}
+
 	switch v.display {
 	case TEX:
 		if mode == WRITE {
@@ -651,31 +691,24 @@ func (v *visRun) beginNode(node ast.Node, trace *evaluator.Trace, visited bool, 
 	}
 }
 
-func (v *visRun) createEnvName(env *object.Environment) {
+func (v *visRun) getEnvName(env *object.Environment) string {
 	if env == nil {
-		return
+		return "nil"
 	}
-
-	if _, ok := v.getEnvName(env); ok {
-		return
-	}
-
-	switch v.display {
-	case CONSOLE:
-		v.namesEnvs[env] = fmt.Sprintf("e%v", len(v.namesEnvs))
-	case TEX:
-		v.namesEnvs[env] = fmt.Sprintf("e$_{%v}$", len(v.namesEnvs))
+	for i, e := range v.envsOrdered {
+		if e == env {
+			switch v.display {
+			case CONSOLE:
+				return fmt.Sprintf("e%v", i)
+			case TEX:
+				return fmt.Sprintf("e$_{%v}$", i)
+			default:
+				return "unknown display"
+			}
+		}
 	}
 	v.envsOrdered = append(v.envsOrdered, env)
-
-}
-
-func (v *visRun) getEnvName(env *object.Environment) (string, bool) {
-	if env == nil {
-		return "nil", true
-	}
-	name, ok := v.namesEnvs[env] // every environment must have a name!
-	return name, ok
+	return v.getEnvName(env)
 }
 
 // only to be called if v.display == TEX and mode == WRITE
@@ -687,11 +720,11 @@ func (v *visRun) beginNodeTEX(node ast.Node, trace *evaluator.Trace, visited boo
 		left, right := "", ""
 		calls, exits := v.getCallsAndExits(node, trace)
 		for _, call := range calls {
-			eName, _ := v.getEnvName(call.Env)
-			left = left + fmt.Sprintf("%v,%v$\\downarrow$ ", call.No, eName)
+			eName := v.getEnvName(call.Env)
+			left = left + fmt.Sprintf("%v,%v $\\downarrow$ ", call.No, eName)
 		}
 		for _, exit := range exits {
-			eName, _ := v.getEnvName(exit.Env)
+			eName := v.getEnvName(exit.Env)
 			right = right + fmt.Sprintf(" $\\uparrow$%v,%v ", exit.No, eName)
 		}
 		v.printW("[.{{\\small ", left, "}", v.representNodeType(node), " {\\small ", right, "}}")
@@ -723,7 +756,7 @@ func (v *visRun) beginNodeCONSOLE(node ast.Node, trace *evaluator.Trace, visited
 			for _, exit := range exits {
 				if exit.Id == call.Id {
 					if mode == WRITE {
-						eName, _ := v.getEnvName(call.Env)
+						eName := v.getEnvName(call.Env)
 						v.printInd(fmt.Sprintf("[\u2193%v\u2191%v],%v: ", call.No, exit.No, eName))
 					}
 					v.visualizeObject(exit.Val, trace, mode)
@@ -771,7 +804,8 @@ func (v *visRun) representFieldName(str_fieldname string) string {
 	}
 	switch v.display {
 	case TEX:
-		return "{\\small " + str_fieldname + "}"
+		tex_fieldname, _ := teXify(str_fieldname)
+		return "{\\small " + tex_fieldname + "}"
 	default:
 		return str_fieldname
 	}
@@ -821,12 +855,35 @@ func (v *visRun) representNodeType(node ast.Node) string {
 	}
 }
 
+func (v *visRun) representObjectType(obj object.Object, mode mode) string {
+	if mode == COLLECT { // should not be called
+		return ""
+	}
+	switch v.display {
+	case TEX:
+		return v.colorObj(v.ObjLabel(obj), mode)
+	case CONSOLE:
+		return v.colorObj(v.ObjLabel(obj), mode)
+	default:
+		return "unknown"
+	}
+}
+
 func (v *visRun) NodeLabel(node ast.Node) string {
 
 	if name, ok := v.getNodeName(node); ok {
 		return name
 	}
-	return visNodeType(node, v.verbosity)
+
+	switch v.display {
+	case TEX:
+		tex_label, _ := teXify(visNodeType(node, v.verbosity))
+		return tex_label
+	case CONSOLE:
+		return visNodeType(node, v.verbosity)
+	default:
+		return "unknown"
+	}
 }
 
 func (v *visRun) createNodeName(node ast.Node) {
@@ -861,7 +918,7 @@ func (v *visRun) createObjectName(obj object.Object) {
 		return
 	}
 
-	typestr := visObjectType(obj, v.verbosity, v.goObjType)
+	typestr := v.objectType(obj)
 	if _, ok := v.namesObjects[typestr]; !ok {
 		v.namesObjects[typestr] = make(map[object.Object]string)
 	}
@@ -886,6 +943,15 @@ func (v *visRun) visualizeNil() {
 	switch v.display {
 	case TEX:
 		v.printW("[.", texColorize("nil", "red", "black"), " ]")
+	case CONSOLE:
+		v.printW(consColorize("nil", Red))
+	}
+}
+
+func (v *visRun) visualizeNilObject() {
+	switch v.display {
+	case TEX:
+		v.printW("[.", texColorize("nil", "black", "red"), " ]")
 	case CONSOLE:
 		v.printW(consColorize("nil", Red))
 	}
@@ -917,8 +983,6 @@ type visRun struct {
 	namesNodes     map[string]map[ast.Node]string
 	visitedObjects map[object.Object]bool
 	namesObjects   map[string]map[object.Object]string
-	visitedEnvs    map[*object.Environment]bool
-	namesEnvs      map[*object.Environment]string
 	envsOrdered    []*object.Environment
 
 	// visited --> to avoid printing out cycles
@@ -940,7 +1004,6 @@ func NewVisRun(
 	var out bytes.Buffer
 	namesNodes := make(map[string]map[ast.Node]string)
 	namesObjects := make(map[string]map[object.Object]string)
-	namesEnvs := make(map[*object.Environment]string)
 	envsOrdered := make([]*object.Environment, 0)
 
 	return &visRun{
@@ -957,7 +1020,6 @@ func NewVisRun(
 		goObjType:    goObjType,
 		namesNodes:   namesNodes,
 		namesObjects: namesObjects,
-		namesEnvs:    namesEnvs,
 		envsOrdered:  envsOrdered,
 	}
 }

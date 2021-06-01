@@ -51,12 +51,14 @@ see: [Commands'n'Settings](doc/sketch/cmds_n_settings.md)
 
 - [X] add workflow
 
-### 2021-05-17
+### 2021-05-30
 
-- [>>] add tests to visualizer
+- [X] add tests to visualizer
 - add settings `pfile` and `efile` instead of `file`
 - [X] revise ptree and etree  
-- [ ] add option of displaying envs
+- [X] add option of displaying envs
+  - [X] get rid of namesEnvs + visitedEnvs
+- [X] update tex-expls
 - [ ] revise visualizer/README.md
 
 ## [Summary of what happened before 2021-04-20]
